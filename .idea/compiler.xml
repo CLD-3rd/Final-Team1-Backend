@@ -15,9 +15,17 @@
         <processorPath useClasspath="false">
           <entry name="$MAVEN_REPOSITORY$/org/projectlombok/lombok/unknown/lombok-unknown.jar" />
         </processorPath>
-        <module name="mindscape (2)" />
         <module name="mindscape-info" />
         <module name="mindscape (1)" />
+      </profile>
+      <profile name="Annotation profile for mindscape (2)" enabled="true">
+        <sourceOutputDir name="target/generated-sources/annotations" />
+        <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
+        <outputRelativeToContentRoot value="true" />
+        <processorPath useClasspath="false">
+          <entry name="$MAVEN_REPOSITORY$/org/projectlombok/lombok/1.18.30/lombok-1.18.30.jar" />
+        </processorPath>
+        <module name="mindscape (2)" />
       </profile>
     </annotationProcessing>
     <bytecodeTargetLevel>

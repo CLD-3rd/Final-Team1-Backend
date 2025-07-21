@@ -1,10 +1,12 @@
 package likelion.team1.mindscape.content.entity;
 
 import jakarta.persistence.*;
+import lombok.Data;
 
 import java.util.Date;
 
 @Entity
+@Data
 @Table(name="movie")
 public class Movie {
     @Id
