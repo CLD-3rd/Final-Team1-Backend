@@ -31,4 +31,7 @@ build/
 
 ### VS Code ###
 .vscode/
-application.properties
+
+### properties ###
+application-env.properties
+

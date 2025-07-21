@@ -1,4 +1,4 @@
-package likelion.team1.mindscape.content.dto.response;
+package likelion.team1.mindscape.content.dto.response.content;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

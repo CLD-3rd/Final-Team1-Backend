@@ -1,6 +1,6 @@
 package likelion.team1.mindscape.content.service;
 
-import likelion.team1.mindscape.content.dto.response.BookResponse;
+import likelion.team1.mindscape.content.dto.response.content.BookResponse;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Value;
@@ -9,11 +9,10 @@ import org.springframework.stereotype.Service;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.io.UnsupportedEncodingException;
 import java.net.*;
 
 @Service
-public class ContentService {
+public class BookService {
     @Value("${service.api.kakaobooks}")
     private String kakaoApi;
 
