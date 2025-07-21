@@ -1,4 +1,4 @@
-package likelion.team1.mindscape.user.service;
+package likelion.team1.mindscape.test.service;
 
 import likelion.team1.mindscape.test.dto.TestRequestDto;
 import likelion.team1.mindscape.test.entity.Test;
