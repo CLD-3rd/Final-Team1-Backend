@@ -17,62 +17,46 @@ public class ContentService {
     @Value("${service.api.kakaobooks}")
     private String kakaoApi;
 
-    public BookResponse getBookDetails(String title) {
+    public BookResponse getBookDetails(String title) throws IOException {
         String apiURL = "https://dapi.kakao.com/v3/search/book?query=";
+        // set query and request url -> create url object
+        String query = URLEncoder.encode(title, "UTF-8");
+        String reqUrl = apiURL + query;
+        URL url = new URL(reqUrl);
 
-        try {
-            // set query and request url -> create url object
-            String query = URLEncoder.encode(title, "UTF-8");
-            String reqUrl = apiURL + query;
-            URL url = new URL(reqUrl);
+        // open http connection
+        HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+        connection.setRequestMethod("GET");
+        connection.setRequestProperty("Authorization", "KakaoAK " + kakaoApi);
 
-            // open http connection
-            HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-            connection.setRequestMethod("GET");
-            connection.setRequestProperty("Authorization", "KakaoAK " + kakaoApi);
+        // 200 = get inputstream, else = get errorstream
+        int responseCode = connection.getResponseCode();
+        BufferedReader br = new BufferedReader(
+                new InputStreamReader(
+                        responseCode == 200 ? connection.getInputStream() : connection.getErrorStream()
+                )
+        );
 
-            // 200 = get inputstream, else = get errorstream
-            int responseCode = connection.getResponseCode();
-            BufferedReader br = new BufferedReader(
-                    new InputStreamReader(
-                            responseCode == 200 ? connection.getInputStream() : connection.getErrorStream()
-                    )
-            );
+        // read response line -> parse into jsonobject
+        JSONObject bookJson = new JSONObject(br.readLine());
+        // extract "documents" array (incl. all books w/ same title)
+        JSONArray bookInfo = bookJson.getJSONArray("documents");
+        // get first book from bookInfo
+        JSONObject book = bookInfo.getJSONObject(0);
 
-            // read response line -> parse into jsonobject
-            JSONObject bookJson = new JSONObject(br.readLine());
-            // extract "documents" array (incl. all books w/ same title)
-            JSONArray bookInfo = bookJson.getJSONArray("documents");
-            // get first book from bookInfo
-            JSONObject book = bookInfo.getJSONObject(0);
+        // author = jsonarray type => extract authors and make it into string type
+        JSONArray authorsArray = book.getJSONArray("authors");
+        String authors = String.join(", ", authorsArray.toList().stream()
+                .map(Object::toString)
+                .toArray(String[]::new));
 
-            // author = jsonarray type => extract authors and make it into string type
-            JSONArray authorsArray = book.getJSONArray("authors");
-            String authors = String.join(", ", authorsArray.toList().stream()
-                    .map(Object::toString)
-                    .toArray(String[]::new));
+        // make result into bookresponse
+        BookResponse bookResponse = new BookResponse(
+                (String) book.get("title"),
+                authors,
+                (String) book.get("contents"),
+                (String) book.get("thumbnail"));
 
-            // make result into bookresponse
-            BookResponse bookResponse = new BookResponse(
-                    (String) book.get("title"),
-                    authors,
-                    (String) book.get("contents"),
-                    (String) book.get("thumbnail"));
-
-            return bookResponse;
-
-        } catch (UnsupportedEncodingException e) {
-            // encoding error
-            throw new RuntimeException(e);
-        } catch (MalformedURLException e) {
-            // url construction error
-            throw new RuntimeException(e);
-        } catch (ProtocolException e) {
-            // invalid http protocol error
-            throw new RuntimeException(e);
-        } catch (IOException e) {
-            // IO error during connection/data reading
-            throw new RuntimeException(e);
-        }
+        return bookResponse;
     }
 }
