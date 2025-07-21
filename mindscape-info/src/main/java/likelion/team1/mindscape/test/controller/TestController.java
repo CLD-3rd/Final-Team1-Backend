@@ -6,8 +6,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import likelion.team1.mindscape.test.dto.TestResponseDto;
-import likelion.team1.mindscape.user.service.TestService;
 import likelion.team1.mindscape.test.dto.TestResponseSimpleDto;
+import likelion.team1.mindscape.test.service.TestService;
+
 
 @RestController
 @RequestMapping("/test")
