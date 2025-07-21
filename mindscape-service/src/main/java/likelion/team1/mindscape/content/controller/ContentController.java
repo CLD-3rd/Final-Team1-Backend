@@ -18,8 +18,9 @@ import java.util.List;
 @RequestMapping("/content")
 public class ContentController {
     private final MovieService movieService;
+
     @GetMapping("/movie")
-    public ResponseEntity<Movie> getContents(@RequestParam String query, @RequestParam("userId") Long userId){
+    public ResponseEntity<Movie> getContents(@RequestParam String query, @RequestParam("userId") Long userId) {
         List<MovieDto> dto = movieService.getMovieInfo(query);
         Movie saved = movieService.saveMovie(dto, userId);
         return ResponseEntity.ok(saved);
