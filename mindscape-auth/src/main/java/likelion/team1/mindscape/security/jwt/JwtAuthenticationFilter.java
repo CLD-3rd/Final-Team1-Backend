@@ -51,7 +51,7 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
 
         // 2. 인증 토큰 생성 (아직 인증된거 아님)
         UsernamePasswordAuthenticationToken authToken =
-                new UsernamePasswordAuthenticationToken(loginRequestDTO.getUsername(), loginRequestDTO.getPassword());
+                new UsernamePasswordAuthenticationToken(loginRequestDTO.getAccountId(), loginRequestDTO.getPassword());
 
         // 3. 인증 검토 -> 여기서 인증 처리
         Authentication authentication = authenticationManager.authenticate(authToken);
@@ -68,7 +68,7 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
         PrincipalDetails principalDetails = (PrincipalDetails) authResult.getPrincipal();
 
         String jwtToken = JWT.create()
-                .withSubject(principalDetails.getUsername())
+                .withSubject(principalDetails.getAccountId())
                 .withClaim("uid", principalDetails.getUser().getId())
                 .withClaim("uname", principalDetails.getUser().getUsername())
                 .withExpiresAt(new Date(System.currentTimeMillis() + JwtProperties.EXPIRATION_TIME))

@@ -12,6 +12,9 @@ public class User {
     private long id;
 
     @Column(nullable = false, unique = true)
+    private String accountId;
+
+    @Column(nullable = false)
     private String username;
 
     @Column(nullable = false)

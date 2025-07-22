@@ -51,14 +51,14 @@ public class JwtAuthorizationFilter extends BasicAuthenticationFilter {
         try {
 
             // JWT 검증 및 사용자 정보 추출
-            String username = JWT.require(Algorithm.HMAC512(JwtProperties.SECRET))
+            String accountId = JWT.require(Algorithm.HMAC512(JwtProperties.SECRET))
                     .build()
                     .verify(token)
-                    .getClaim("uname").asString();
+                    .getSubject();
 
-           if(username != null) {
+           if(accountId != null) {
                // 추출된 사용자가 현재 DB에 등록된 사용자인지 확인
-               User user = userRepository.findByUsername(username);
+               User user = userRepository.findByAccountId(accountId);
 
                // 사용자 정보
                PrincipalDetails principalDetails = new PrincipalDetails(user);

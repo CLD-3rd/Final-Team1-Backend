@@ -34,7 +34,7 @@ public class AuthController {
             return ResponseEntity.status(401).build();
         }
 
-        User user = userRepository.findByUsername(principalDetails.getUsername());
+        User user = userRepository.findByAccountId(principalDetails.getAccountId());
 
         return ResponseEntity.ok(UserResponseDTO.from(user));
 
