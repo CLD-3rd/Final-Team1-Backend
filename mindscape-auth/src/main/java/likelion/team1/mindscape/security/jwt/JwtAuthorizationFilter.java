@@ -5,6 +5,7 @@ import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import likelion.team1.mindscape.entity.User;
@@ -31,19 +32,21 @@ public class JwtAuthorizationFilter extends BasicAuthenticationFilter {
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain chain) throws IOException, ServletException {
 
-        String header = request.getHeader(JwtProperties.HEADER_STRING);
+        //jwt 토큰 가져오기
+        String token = null;
 
-        if(header == null || !header.startsWith(JwtProperties.TOKEN_PREFIX)) {
+        Cookie[] cookies = request.getCookies();
+        if (cookies != null) {
+            for (Cookie cookie : cookies) {
+                if (cookie.getName().equals(JwtProperties.HEADER_STRING)) {
+                    token = cookie.getValue().replace(JwtProperties.TOKEN_PREFIX, "");
+                    break;
+                }
+            }
+        } else {
             chain.doFilter(request, response);
             return;
         }
-
-        System.out.println("header: " + header);
-
-
-        // 헤더에서 토큰 값 추출
-        String token = request.getHeader(JwtProperties.HEADER_STRING)
-                .replace(JwtProperties.TOKEN_PREFIX, "");
 
         try {
 
@@ -70,6 +73,7 @@ public class JwtAuthorizationFilter extends BasicAuthenticationFilter {
                SecurityContextHolder.getContext().setAuthentication(authentication);
            }
         } catch (Exception e) {
+            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
             throw new RuntimeException(e);
         }
         chain.doFilter(request, response);

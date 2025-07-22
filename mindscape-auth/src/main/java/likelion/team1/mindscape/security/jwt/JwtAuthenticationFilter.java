@@ -5,6 +5,7 @@ import com.auth0.jwt.algorithms.Algorithm;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import likelion.team1.mindscape.dto.LoginRequestDTO;
@@ -72,7 +73,15 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
                 .withClaim("uname", principalDetails.getUser().getUsername())
                 .withExpiresAt(new Date(System.currentTimeMillis() + JwtProperties.EXPIRATION_TIME))
                 .sign(Algorithm.HMAC512(JwtProperties.SECRET));
-        // key Authentication, value Bearer
-        response.addHeader(JwtProperties.HEADER_STRING, JwtProperties.TOKEN_PREFIX + jwtToken);
+
+
+        //jwt토큰 httponly 쿠키에 저장
+        Cookie cookie = new Cookie(JwtProperties.HEADER_STRING, jwtToken);
+        cookie.setHttpOnly(true);
+        cookie.setMaxAge(JwtProperties.EXPIRATION_TIME / 1000);
+        cookie.setPath("/");
+        cookie.setSecure(true);
+
+        response.addCookie(cookie);
     }
 }

@@ -42,7 +42,9 @@ public class SecurityConfig {
     //스프링 시큐리티의 필터 체인을 구성하는 메소드
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http, AuthenticationManager authenticationManager) throws Exception {
-        http    // JWT 인증 필터 추가
+        http
+                .addFilter(corsConfig.corsFilter())
+                // JWT 인증 필터 추가
                 .addFilter(new JwtAuthenticationFilter(authenticationManager))
 
                 // JWT 인가 필터 추가
@@ -68,7 +70,7 @@ public class SecurityConfig {
                 // 기본 인증은 보안에 취약하고 JWT를 사용하므로 불필요
                 // 매 요청마다 인증 정보를 보내는 방식이라 보안에 취약
                 .httpBasic(AbstractHttpConfigurer::disable)
-
+                // CORS 설정 추가
                 .authorizeHttpRequests(authorize -> authorize
 //                        .requestMatchers("/api/**").authenticated() //모든 API 호출 유저 인증 필요.
                         .anyRequest().permitAll()); // 이 외 요청은 권한 필요 X
