@@ -8,7 +8,9 @@ import java.util.List;
 import java.util.Map;
 
 import likelion.team1.mindscape.test.dto.TestResponseDto;
+import likelion.team1.mindscape.test.dto.TestResponseSimpleDto;
 import likelion.team1.mindscape.test.service.TestService;
+
 
 @RestController
 @RequestMapping("/api/test")
@@ -27,5 +29,11 @@ public class TestController {
     public ResponseEntity<List<TestResponseDto>> getHistory(@RequestParam Long userId) {
         List<TestResponseDto> history = testService.getTestHistory(userId);
         return ResponseEntity.ok(history);
+    }
+    
+    @GetMapping("/internal/tests/{testId}")
+    public ResponseEntity<TestResponseSimpleDto> getTestInfo(@PathVariable Long testId) {
+        TestResponseSimpleDto response = testService.getTestInfoById(testId);
+        return ResponseEntity.ok(response);
     }
 }
