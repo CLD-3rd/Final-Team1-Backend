@@ -29,7 +29,8 @@ public class ContentController {
     @GetMapping("/movie")
     public ResponseEntity<Movie> getContents(@RequestParam String query, @RequestParam("userId") Long userId) {
         List<MovieDto> dto = movieService.getMovieInfo(query);
-        Movie saved = movieService.saveMovie(dto, userId);
+        Movie saved = movieService.saveMovieToDB(dto, userId);
+        movieService.saveMovieToRedis(dto);
         return ResponseEntity.ok(saved);
     }
 
