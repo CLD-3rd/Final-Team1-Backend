@@ -8,6 +8,7 @@ import likelion.team1.mindscape.content.repository.MovieRepository;
 import likelion.team1.mindscape.content.repository.RecomConentRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriUtils;
@@ -16,6 +17,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 @Service
 @RequiredArgsConstructor
@@ -23,7 +25,9 @@ public class MovieService {
 
     @Value("${TMDB_API_KEY}")
     private String apiKey;
+    private final RedisService redisService;
     private final RestTemplate restTemplate;
+    private final RedisTemplate<String, Object> redisTemplate;
     private final MovieRepository movieRepository;
     private final RecomConentRepository recomContentRepository;
 
@@ -42,10 +46,10 @@ public class MovieService {
      * @param userId
      * @return
      */
-    public Movie saveMovie (List<MovieDto> movieList, Long userId){
+    public Movie saveMovieToDB (List<MovieDto> movieList, Long userId){
         // 영화 조회
         if (movieList == null || movieList.isEmpty()) {
-            throw new IllegalArgumentException("movie list is empty");
+            throw new IllegalArgumentException("movie list is empty(DB)");
         }
         MovieDto dto = movieList.get(0);
         RecomContent recom = recomContentRepository.findLatestByUserId(userId)
@@ -66,5 +70,23 @@ public class MovieService {
         movie.setRecommendedContent(recom);
         return movieRepository.save(movie);
     }
-
+    /**
+     * Redis 영화 저장
+     *
+     */
+    public void saveMovieToRedis(List<MovieDto> movieList){
+        if(movieList == null || movieList.isEmpty()){
+            throw new IllegalArgumentException("movie list is empty(Redis)");
+        }
+        MovieDto dto = movieList.get(0);
+        String searchPattern = "movie:*:title:"+dto.getTitle();
+        Set<String> keys = redisTemplate.keys(searchPattern);
+        if (keys != null && !keys.isEmpty()) {
+            System.out.println(dto.getTitle() + ": redis에 이미 존재");
+            return;
+        }
+        // redis 저장
+        Long id = redisService.MovieToRedis(dto);
+        System.out.println(dto.getTitle() + ": redis에 저장 완료 (id=" + id + ")");
+    }
 }
