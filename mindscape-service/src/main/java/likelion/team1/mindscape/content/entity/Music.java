@@ -1,9 +1,11 @@
 package likelion.team1.mindscape.content.entity;
 
 import jakarta.persistence.*;
+import lombok.Setter;
 
 @Entity
-@Table(name="music")
+@Table(name = "music")
+@Setter
 public class Music {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

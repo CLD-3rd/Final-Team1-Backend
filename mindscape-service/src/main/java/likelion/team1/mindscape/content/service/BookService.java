@@ -1,6 +1,13 @@
 package likelion.team1.mindscape.content.service;
 
+import jakarta.transaction.Transactional;
+import likelion.team1.mindscape.content.dto.response.content.BookDto;
 import likelion.team1.mindscape.content.dto.response.content.BookResponse;
+import likelion.team1.mindscape.content.entity.Book;
+import likelion.team1.mindscape.content.entity.RecomContent;
+import likelion.team1.mindscape.content.repository.BookRepository;
+import likelion.team1.mindscape.content.repository.RecomConentRepository;
+import lombok.RequiredArgsConstructor;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Value;
@@ -10,13 +17,28 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
 
 @Service
+@RequiredArgsConstructor
 public class BookService {
     @Value("${service.api.kakaobooks}")
     private String kakaoApi;
 
-    public BookResponse getBookDetails(String title) throws IOException {
+    private final BookRepository bookRepository;
+    private final RecomConentRepository recomContentRepository;
+
+    public List<BookResponse> getBooksDetails(List<String> titles) throws IOException {
+        List<BookResponse> books = new ArrayList<>();
+        for (String title : titles) {
+            books.add(getBookDetail(title));
+        }
+        return books;
+    }
+
+    public BookResponse getBookDetail(String title) throws IOException {
         String apiURL = "https://dapi.kakao.com/v3/search/book?query=";
         // set query and request url -> create url object
         String query = URLEncoder.encode(title, "UTF-8");
@@ -57,5 +79,36 @@ public class BookService {
                 (String) book.get("thumbnail"));
 
         return bookResponse;
+    }
+
+    @Transactional
+    public List<Book> saveBook(List<BookDto> bookList, Long userId) {
+        // book 조회
+        if (bookList == null || bookList.isEmpty()) {
+            throw new IllegalArgumentException("book list is empty");
+        }
+        RecomContent recom = recomContentRepository.findLatestByUserId(userId)
+                .orElseThrow(() -> new IllegalArgumentException("추천 결과가 없습니다."));
+
+        List<Book> toPersist = new ArrayList<>();
+
+        for (BookDto dto : bookList) {
+            bookRepository.findByTitle(dto.getTitle())
+                    .ifPresentOrElse(book -> {
+                        // existed -> refresh recom info
+                        book.setRecommendedContent(recom);
+                        toPersist.add(book);
+                    }, () -> {
+                        // new book
+                        Book book = new Book();
+                        book.setTitle(dto.getTitle());
+                        book.setAuthor(dto.getAuthor());
+                        book.setDescription(dto.getDescription());
+                        book.setImage(dto.getImage());
+                        book.setRecommendedContent(recom);
+                        toPersist.add(book);
+                    });
+        }
+        return bookRepository.saveAll(toPersist);
     }
 }
