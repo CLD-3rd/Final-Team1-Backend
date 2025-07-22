@@ -1,12 +1,9 @@
 package likelion.team1.mindscape.content.client;
-
 import com.google.genai.Client;
 import com.google.genai.ResponseStream;
 import com.google.genai.types.Content;
-import com.google.genai.types.GenerateContentConfig;
 import com.google.genai.types.GenerateContentResponse;
 import com.google.genai.types.Part;
-
 import likelion.team1.mindscape.content.dto.response.GeminiResponse;
 import likelion.team1.mindscape.content.global.config.GeminiConfig;
 import lombok.RequiredArgsConstructor;

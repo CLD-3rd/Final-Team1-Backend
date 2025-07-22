@@ -1,10 +1,10 @@
 package likelion.team1.mindscape.content.repository;
 
-import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.stereotype.Repository;
-
 import likelion.team1.mindscape.content.entity.Music;
+import org.springframework.data.jpa.repository.JpaRepository;
 
-@Repository
+import java.util.Optional;
+
 public interface MusicRepository extends JpaRepository<Music, Long> {
+    Optional<Music> findByTitleAndArtist(String title, String artist);
 }

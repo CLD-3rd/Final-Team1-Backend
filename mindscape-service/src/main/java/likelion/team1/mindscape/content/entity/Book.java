@@ -1,9 +1,14 @@
 package likelion.team1.mindscape.content.entity;
 
 import jakarta.persistence.*;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Entity
-@Table(name="book")
+@Table(name = "book")
+@Data
+@NoArgsConstructor
 public class Book {
 
     @Id

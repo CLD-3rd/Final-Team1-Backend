@@ -3,9 +3,14 @@ package likelion.team1.mindscape.content.entity;
 import java.util.Date;
 
 import jakarta.persistence.*;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Entity
-@Table(name="music")
+@Table(name = "music")
+@Data
+@NoArgsConstructor
 public class Music {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
