@@ -1,7 +1,7 @@
 package likelion.team1.mindscape.content.service;
 
 import likelion.team1.mindscape.content.dto.response.content.MovieDto;
-import likelion.team1.mindscape.content.dto.response.content.TmdbResponse;
+import likelion.team1.mindscape.content.dto.response.content.MovieResponse;
 import likelion.team1.mindscape.content.entity.Movie;
 import likelion.team1.mindscape.content.entity.RecomContent;
 import likelion.team1.mindscape.content.repository.MovieRepository;
@@ -36,7 +36,7 @@ public class MovieService {
                 + "?api_key=" + apiKey
                 + "&query=" + UriUtils.encode(query, StandardCharsets.UTF_8)
                 + "&language=ko&region=KR";
-        TmdbResponse response = restTemplate.getForObject(url, TmdbResponse.class);
+        MovieResponse response = restTemplate.getForObject(url, MovieResponse.class);
         return response != null ? response.getResults() : new ArrayList<>();
     }
 
@@ -79,7 +79,7 @@ public class MovieService {
             throw new IllegalArgumentException("movie list is empty(Redis)");
         }
         MovieDto dto = movieList.get(0);
-        String searchPattern = "movie:*:title:"+dto.getTitle();
+        String searchPattern = "movie:*"+dto.getTitle();
         Set<String> keys = redisTemplate.keys(searchPattern);
         if (keys != null && !keys.isEmpty()) {
             System.out.println(dto.getTitle() + ": redis에 이미 존재");

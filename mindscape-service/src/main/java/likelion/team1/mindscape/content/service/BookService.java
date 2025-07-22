@@ -3,6 +3,7 @@ package likelion.team1.mindscape.content.service;
 import jakarta.transaction.Transactional;
 import likelion.team1.mindscape.content.dto.response.content.BookDto;
 import likelion.team1.mindscape.content.dto.response.content.BookResponse;
+import likelion.team1.mindscape.content.dto.response.content.MovieDto;
 import likelion.team1.mindscape.content.entity.Book;
 import likelion.team1.mindscape.content.entity.RecomContent;
 import likelion.team1.mindscape.content.repository.BookRepository;
@@ -11,6 +12,7 @@ import lombok.RequiredArgsConstructor;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
 import java.io.BufferedReader;
@@ -20,6 +22,7 @@ import java.net.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 @Service
 @RequiredArgsConstructor
@@ -28,6 +31,8 @@ public class BookService {
     private String kakaoApi;
 
     private final BookRepository bookRepository;
+    private final RedisService redisService;
+    private final RedisTemplate<String, Object> redisTemplate;
     private final RecomConentRepository recomContentRepository;
 
     public List<BookResponse> getBooksDetails(List<String> titles) throws IOException {
@@ -110,5 +115,21 @@ public class BookService {
                     });
         }
         return bookRepository.saveAll(toPersist);
+    }
+
+    public void saveBookToRedis(List<BookDto> bookList){
+        if(bookList == null || bookList.isEmpty()){
+            throw new IllegalArgumentException("movie list is empty(Redis)");
+        }
+        BookDto dto = bookList.get(0);
+        String searchPattern = "book:*"+dto.getTitle();
+        Set<String> keys = redisTemplate.keys(searchPattern);
+        if (keys != null && !keys.isEmpty()) {
+            System.out.println(dto.getTitle() + ": redis에 이미 존재");
+            return;
+        }
+        // redis 저장
+        Long id = redisService.BookToRedis(dto);
+        System.out.println(dto.getTitle() + ": redis에 저장 완료 (id=" + id + ")");
     }
 }
