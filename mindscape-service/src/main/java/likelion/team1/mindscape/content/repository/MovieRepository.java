@@ -1,5 +1,4 @@
 package likelion.team1.mindscape.content.repository;
-
 import likelion.team1.mindscape.content.entity.Movie;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;

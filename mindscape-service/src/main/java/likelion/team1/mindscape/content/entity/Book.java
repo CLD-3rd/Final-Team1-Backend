@@ -28,4 +28,17 @@ public class Book {
     @ManyToOne
     @JoinColumn(name = "recomId", nullable = false)
     private RecomContent recommendedContent;
+    
+    
+    
+    
+    public Book(String title, String author, String description, String image, RecomContent recommendedContent) {
+        this.title = title;
+        this.author = author;
+        this.description = description;
+        this.image = image;
+        this.recommendedContent = recommendedContent;
+    }
 }
+
+

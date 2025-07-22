@@ -27,4 +27,13 @@ public class Movie {
     @ManyToOne
     @JoinColumn(name = "recomId", nullable = false)
     private RecomContent recommendedContent;
+    
+    public Movie(String title, Date releaseDate, String description, String poster, RecomContent recommendedContent) {
+        this.title = title;
+        this.releaseDate = releaseDate;
+        this.description = description;
+        this.poster = poster;
+        this.recommendedContent = recommendedContent;
+    }
+
 }

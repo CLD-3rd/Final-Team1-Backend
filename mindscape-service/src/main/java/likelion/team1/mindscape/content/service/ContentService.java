@@ -1,5 +1,4 @@
 package likelion.team1.mindscape.content.service;
-
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
@@ -32,3 +31,4 @@ public class ContentService {
                 .collect(Collectors.toList());
     }
 }
+
