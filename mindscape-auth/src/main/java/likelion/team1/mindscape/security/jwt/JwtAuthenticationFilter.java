@@ -55,7 +55,7 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
 
         // 3. 인증 검토 -> 여기서 인증 처리
         Authentication authentication = authenticationManager.authenticate(authToken);
-        System.out.println(authentication.getPrincipal());
+
 
         return authentication;
     }
