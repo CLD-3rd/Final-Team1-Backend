@@ -96,13 +96,29 @@ public class ContentController {
             // 3. save
             List<Music> saved = musicService.saveMusic(dtos, userId);
 
-            // 4. return
-//            return ResponseEntity.ok(saved);
             //4. save to redis
             musicService.saveMusicToRedis(dtos);
 
             //5. return
             return ResponseEntity.ok(saved);
+        } catch (IOException e) {
+            return ResponseEntity.internalServerError().body("Internal server error: " + e.getMessage());
+        }
+    }
+
+    @GetMapping("/music")
+    public ResponseEntity getMusicByTestId(@RequestParam("testId") String testId) {
+        try {
+            return ResponseEntity.ok(musicService.getMusicWithTestId(Long.valueOf(testId)));
+        } catch (IOException e) {
+            return ResponseEntity.internalServerError().body("Internal server error: " + e.getMessage());
+        }
+    }
+
+    @GetMapping("/book")
+    public ResponseEntity getBooksByTestId(@RequestParam("testId") String testId) {
+        try {
+            return ResponseEntity.ok(bookService.getBooksWithTestId(Long.valueOf(testId)));
         } catch (IOException e) {
             return ResponseEntity.internalServerError().body("Internal server error: " + e.getMessage());
         }

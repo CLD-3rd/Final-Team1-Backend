@@ -22,6 +22,7 @@ import java.net.URL;
 import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 @Service
@@ -68,13 +69,15 @@ public class MusicService {
         JSONObject musicInfo = musicJson.getJSONObject("track");
 
         // album image -> get lagrest one
-        JSONArray images = musicInfo.getJSONObject("album").getJSONArray("image");
         String imageUrl = null;
-        for (int i = images.length() - 1; i >= 0; i--) {
-            JSONObject imageObj = images.getJSONObject(i);
-            if (!imageObj.getString("#text").isEmpty()) {
-                imageUrl = imageObj.getString("#text");
-                break;
+        if (musicInfo.has("album") && musicInfo.getJSONObject("album").has("image")) {
+            JSONArray images = musicInfo.getJSONObject("album").getJSONArray("image");
+            for (int i = images.length() - 1; i >= 0; i--) {
+                String img = images.getJSONObject(i).getString("#text");
+                if (!img.isEmpty()) {
+                    imageUrl = img;
+                    break;
+                }
             }
         }
 
@@ -117,12 +120,12 @@ public class MusicService {
         return musicRepository.saveAll(toPersist);
     }
 
-    public void saveMusicToRedis(List<MusicDto> musicList){
-        if(musicList == null || musicList.isEmpty()){
+    public void saveMusicToRedis(List<MusicDto> musicList) {
+        if (musicList == null || musicList.isEmpty()) {
             throw new IllegalArgumentException("music list is empty(Redis)");
         }
         for (MusicDto dto : musicList) {
-            String searchPattern = "music:*"+dto.getTitle();
+            String searchPattern = "music:*" + dto.getTitle();
             Set<String> keys = redisTemplate.keys(searchPattern);
             if (keys != null && !keys.isEmpty()) {
                 System.out.println(dto.getTitle() + ": redis에 이미 존재");
@@ -132,5 +135,50 @@ public class MusicService {
             Long id = redisService.MusicToRedis(dto);
             System.out.println(dto.getTitle() + ": redis에 저장 완료 (id=" + id + ")");
         }
+    }
+
+    public List<Music> getMusicWithTestId(Long testId) throws IOException {
+        // 1. get recomm ID
+        Long recomId = testId; // testId = recomId
+
+        // 2. get pre-saved books with recom ID
+        List<Music> musicList = musicRepository.findAllByRecommendedContent_RecomId(recomId);
+        List<Music> toSave = new ArrayList<>();
+
+        for (Music music : musicList) {
+            System.out.println("music = " + music);
+            String artist = music.getArtist();
+            String title = music.getTitle();
+            String key = "music:" + title;
+
+            // 3. check redis
+            Map<Object, Object> cached = redisTemplate.opsForHash().entries(key);
+            MusicResponse info;
+            // not existed
+            if (cached == null || cached.isEmpty()) {
+                info = getMusicDetail(artist, title);
+                // save to redis
+                MusicDto dto = new MusicDto(info.getTitle(), info.getArtist(), info.getAlbum());
+                redisService.MusicToRedis(dto);
+            } else {
+                // existed
+                info = new MusicResponse(
+                        (String) cached.get("title"),
+                        (String) cached.get("artist"),
+                        (String) cached.get("album")
+                );
+            }
+
+            // 4. update
+            music.setTitle(info.getTitle());
+            music.setArtist(info.getArtist());
+            music.setElbum(info.getAlbum());
+            System.out.println("music = " + music);
+
+            toSave.add(music);
+        }
+
+        // 5. save to sql
+        return musicRepository.saveAll(toSave);
     }
 }
