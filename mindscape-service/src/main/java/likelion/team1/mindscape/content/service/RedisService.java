@@ -65,11 +65,7 @@ public class RedisService {
         redisTemplate.opsForHash().putAll(key, bookMap);
         return newId;
     }
-    public Map<Object, Object> getMovieByIdAndTitle(Long id, String title) {
-        String key = "movie:" + title;
-        return redisTemplate.opsForHash().entries(key);
-    }
-    private String buildKey(String title, String contentType){
-        return String.format("%s:%s", contentType, title);
+    public String makeRecomKey(Long userId, Long testId, String contentType) {
+        return String.format("user:%d:test:%d:%s", userId, testId, contentType);
     }
 }
