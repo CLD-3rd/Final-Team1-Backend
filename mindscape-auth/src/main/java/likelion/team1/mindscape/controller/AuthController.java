@@ -31,7 +31,7 @@ public class AuthController {
     public ResponseEntity<UserResponseDTO> info(@AuthenticationPrincipal PrincipalDetails principalDetails, Model model) {
 
         if (principalDetails == null) {
-            return ResponseEntity.status(401).build();
+            return ResponseEntity.status(204).build();
         }
 
         User user = userRepository.findByAccountId(principalDetails.getAccountId());
@@ -54,6 +54,21 @@ public class AuthController {
         return ResponseEntity.ok(HttpStatus.CREATED);
     }
 
+    //아아디 중복확인
+    @GetMapping("/duplicate")
+    public ResponseEntity<HttpStatus> duplicate(@RequestParam String accountId){
+
+        User user = userRepository.findByAccountId(accountId);
+
+        if(user != null){
+            return ResponseEntity.status(HttpStatus.CONFLICT).build();
+        }
+
+        return ResponseEntity.ok(HttpStatus.NOT_ACCEPTABLE);
+    }
+
+
+    //로그아웃
     @PostMapping("/logout")
     public ResponseEntity<HttpStatus> logout(HttpServletResponse response) {
 
