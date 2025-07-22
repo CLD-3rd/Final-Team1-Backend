@@ -16,6 +16,7 @@
           <entry name="$MAVEN_REPOSITORY$/org/projectlombok/lombok/unknown/lombok-unknown.jar" />
         </processorPath>
         <module name="mindscape-info" />
+        <module name="mindscape (1)" />
       </profile>
       <profile name="Annotation profile for mindscape-service" enabled="true">
         <sourceOutputDir name="target/generated-sources/annotations" />

@@ -5,6 +5,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.util.List;
 import java.util.Optional;
 
 public interface RecomContentRepository extends JpaRepository<RecomContent, Long> {
@@ -16,4 +17,10 @@ public interface RecomContentRepository extends JpaRepository<RecomContent, Long
             "WHERE t.user_id = :userId " +
             "ORDER BY t.created_at DESC LIMIT 1", nativeQuery = true)
     Optional<RecomContent> findLatestByUserId(@Param("userId") Long userId);
+
+    @Query(value = "SELECT rc.* FROM recommended_content rc " +
+            "JOIN mj_test t ON rc.test_id = t.testId " +
+            "WHERE t.user_id = :userId " +
+            "ORDER BY t.created_at DESC", nativeQuery = true)
+    List<RecomContent> findByUserIdOrderByCreatedAtDesc(@Param("userId") Long userId);
 }
