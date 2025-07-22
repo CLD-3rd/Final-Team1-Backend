@@ -97,6 +97,11 @@ public class ContentController {
             List<Music> saved = musicService.saveMusic(dtos, userId);
 
             // 4. return
+//            return ResponseEntity.ok(saved);
+            //4. save to redis
+            musicService.saveMusicToRedis(dtos);
+
+            //5. return
             return ResponseEntity.ok(saved);
         } catch (IOException e) {
             return ResponseEntity.internalServerError().body("Internal server error: " + e.getMessage());

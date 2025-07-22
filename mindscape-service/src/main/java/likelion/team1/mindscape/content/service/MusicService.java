@@ -1,10 +1,8 @@
 package likelion.team1.mindscape.content.service;
 
 import jakarta.transaction.Transactional;
-import likelion.team1.mindscape.content.dto.response.content.BookResponse;
 import likelion.team1.mindscape.content.dto.response.content.MusicDto;
 import likelion.team1.mindscape.content.dto.response.content.MusicResponse;
-import likelion.team1.mindscape.content.entity.Book;
 import likelion.team1.mindscape.content.entity.Music;
 import likelion.team1.mindscape.content.entity.RecomContent;
 import likelion.team1.mindscape.content.repository.MusicRepository;
@@ -13,6 +11,7 @@ import lombok.RequiredArgsConstructor;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
 import java.io.BufferedReader;
@@ -23,6 +22,7 @@ import java.net.URL;
 import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 @Service
 @RequiredArgsConstructor
@@ -32,6 +32,8 @@ public class MusicService {
 
     private final MusicRepository musicRepository;
     private final RecomConentRepository recomContentRepository;
+    private final RedisTemplate<String, Object> redisTemplate;
+    private final RedisService redisService;
 
     public List<MusicResponse> getMusicDetails(List<String> artists, List<String> titles) throws IOException {
         List<MusicResponse> musicList = new ArrayList<>();
@@ -113,5 +115,22 @@ public class MusicService {
                     });
         }
         return musicRepository.saveAll(toPersist);
+    }
+
+    public void saveMusicToRedis(List<MusicDto> musicList){
+        if(musicList == null || musicList.isEmpty()){
+            throw new IllegalArgumentException("music list is empty(Redis)");
+        }
+        for (MusicDto dto : musicList) {
+            String searchPattern = "music:*:title:"+dto.getTitle();
+            Set<String> keys = redisTemplate.keys(searchPattern);
+            if (keys != null && !keys.isEmpty()) {
+                System.out.println(dto.getTitle() + ": redis에 이미 존재");
+                continue;
+            }
+            // redis 저장
+            String id = redisService.MusicToRedis(dto);
+            System.out.println(dto.getTitle() + ": redis에 저장 완료 (id=" + id + ")");
+        }
     }
 }

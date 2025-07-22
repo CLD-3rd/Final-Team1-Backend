@@ -1,11 +1,12 @@
 package likelion.team1.mindscape.content.entity;
 
 import jakarta.persistence.*;
+import lombok.Data;
 import lombok.Setter;
 
 @Entity
 @Table(name = "book")
-@Setter
+@Data
 public class Book {
 
     @Id
