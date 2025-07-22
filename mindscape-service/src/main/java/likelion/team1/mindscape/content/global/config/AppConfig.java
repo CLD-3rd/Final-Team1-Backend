@@ -10,8 +10,4 @@ public class AppConfig {
     public RestTemplate restTemplate(){
         return new RestTemplate();
     }
-<<<<<<< HEAD
 }
-=======
-}
->>>>>>> origin/feat/gpt
