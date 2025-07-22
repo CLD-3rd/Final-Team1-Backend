@@ -51,7 +51,7 @@ public class JwtAuthorizationFilter extends BasicAuthenticationFilter {
         try {
 
             // JWT 검증 및 사용자 정보 추출
-            String username = JWT.require(Algorithm.HMAC256(JwtProperties.SECRET))
+            String username = JWT.require(Algorithm.HMAC512(JwtProperties.SECRET))
                     .build()
                     .verify(token)
                     .getClaim("uname").asString();
