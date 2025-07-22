@@ -19,9 +19,9 @@ public class TestService {
     private final TestRepository testRepository;
     private final UserRepository userRepository;
 
-    public void saveTest(TestRequestDto dto) {
+    public Long saveTest(TestRequestDto dto) {
         User user = userRepository.findById(dto.getUserId())
-                .orElseThrow(() -> new IllegalArgumentException("User not found"));
+                .orElseThrow(() -> new IllegalArgumentException("유저 없음"));
 
         Test test = Test.builder()
                 .user(user)
@@ -29,8 +29,10 @@ public class TestService {
                 .typeDescription(dto.getTypeDescription())
                 .build();
 
-        testRepository.save(test);
+        Test saved = testRepository.save(test);
+        return saved.getTestId();
     }
+
     public List<TestResponseDto> getTestHistory(Long userId) {
         List<Test> testList = testRepository.findByUser_UserIdOrderByCreatedAtDesc(userId);
         return testList.stream()
