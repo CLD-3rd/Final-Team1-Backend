@@ -225,6 +225,10 @@ buildNumber.properties
 # JDT-specific (Eclipse Java Development Tools)
 .classpath
 
+<<<<<<< HEAD
 # End of https://www.toptal.com/developers/gitignore/api/eclipse,intellij,maven,java
 
 application-env.properties
+=======
+# End of https://www.toptal.com/developers/gitignore/api/eclipse,intellij,maven,java
+>>>>>>> user-test
