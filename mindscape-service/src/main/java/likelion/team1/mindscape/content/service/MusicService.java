@@ -122,14 +122,14 @@ public class MusicService {
             throw new IllegalArgumentException("music list is empty(Redis)");
         }
         for (MusicDto dto : musicList) {
-            String searchPattern = "music:*:title:"+dto.getTitle();
+            String searchPattern = "music:*"+dto.getTitle();
             Set<String> keys = redisTemplate.keys(searchPattern);
             if (keys != null && !keys.isEmpty()) {
                 System.out.println(dto.getTitle() + ": redis에 이미 존재");
                 continue;
             }
             // redis 저장
-            String id = redisService.MusicToRedis(dto);
+            Long id = redisService.MusicToRedis(dto);
             System.out.println(dto.getTitle() + ": redis에 저장 완료 (id=" + id + ")");
         }
     }

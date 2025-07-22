@@ -53,7 +53,7 @@ public class ContentController {
 
             // 3. save
             List<Book> saved = bookService.saveBook(dtos, userId);
-
+            bookService.saveBookToRedis(dtos);
             // 4. return
             return ResponseEntity.ok(saved);
         } catch (IOException e) {

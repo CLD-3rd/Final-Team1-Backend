@@ -1,8 +1,8 @@
 package likelion.team1.mindscape.content.service;
+import likelion.team1.mindscape.content.dto.response.content.BookDto;
 import likelion.team1.mindscape.content.dto.response.content.MovieDto;
 import likelion.team1.mindscape.content.dto.response.content.MusicDto;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
@@ -17,7 +17,7 @@ public class RedisService {
 
     public Long MovieToRedis(MovieDto dto) {
         Long newId = redisTemplate.opsForValue().increment("movie:id");
-        String key = "movie:" + newId+":title:"+dto.getTitle();
+        String key = "movie:" +dto.getTitle();
         // date format
         SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
         String releaseDateStr = formatter.format(dto.getReleaseDate());
@@ -32,23 +32,7 @@ public class RedisService {
         return newId;
     }
 
-    public String MusicToRedis(MusicDto dto) {
-//        String title = "music:title:"+dto.getTitle();
-//
-//        // existed -> get that ID
-//        Object id = redisTemplate.opsForValue().get(title);
-//        if (id != null) {
-//            return Long.parseLong(id.toString());
-//        } else {
-//            id = redisTemplate.opsForValue().increment("music:id");
-//        }
-//
-////        // !existed -> create new one
-////        Long newId = redisTemplate.opsForValue().increment("music:id");
-//
-//        // title -> id mapping
-//        redisTemplate.opsForValue().set(title, id);
-
+    public Long MusicToRedis(MusicDto dto) {
         Long newId = redisTemplate.opsForValue().increment("music:id");
         // saved as hash
         String key = "music:" + dto.getTitle();
@@ -65,11 +49,24 @@ public class RedisService {
         if (isDifferent) {
             redisTemplate.opsForHash().putAll(key, musicMap);
         }
-        return key;
+        return newId;
     }
 
+    public Long BookToRedis(BookDto dto){
+        Long newId = redisTemplate.opsForValue().increment("book:id");
+        String key = "book:" + dto.getTitle();
+
+        Map<String, String> bookMap = new HashMap<>();
+        bookMap.put("title", dto.getTitle());
+        bookMap.put("author", dto.getAuthor());
+        bookMap.put("description", dto.getDescription());
+        bookMap.put("image", dto.getImage());
+
+        redisTemplate.opsForHash().putAll(key, bookMap);
+        return newId;
+    }
     public Map<Object, Object> getMovieByIdAndTitle(Long id, String title) {
-        String key = "movie:" + id + ":title:" + title;
+        String key = "movie:" + title;
         return redisTemplate.opsForHash().entries(key);
     }
     private String buildKey(String title, String contentType){
