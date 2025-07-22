@@ -5,7 +5,7 @@ import likelion.team1.mindscape.content.dto.response.content.MovieResponse;
 import likelion.team1.mindscape.content.entity.Movie;
 import likelion.team1.mindscape.content.entity.RecomContent;
 import likelion.team1.mindscape.content.repository.MovieRepository;
-import likelion.team1.mindscape.content.repository.RecomConentRepository;
+import likelion.team1.mindscape.content.repository.RecomContentRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -29,7 +29,7 @@ public class MovieService {
     private final RestTemplate restTemplate;
     private final RedisTemplate<String, Object> redisTemplate;
     private final MovieRepository movieRepository;
-    private final RecomConentRepository recomContentRepository;
+    private final RecomContentRepository recomContentRepository;
 
     public List<MovieDto> getMovieInfo(String query){
         String url = "https://api.themoviedb.org/3/search/movie"

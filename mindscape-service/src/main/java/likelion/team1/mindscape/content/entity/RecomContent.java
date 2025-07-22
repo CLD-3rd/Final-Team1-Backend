@@ -2,8 +2,6 @@ package likelion.team1.mindscape.content.entity;
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
-import lombok.NoArgsConstructor;
-import lombok.Getter;
 
 @Entity
 @Table(name="recommended_content")

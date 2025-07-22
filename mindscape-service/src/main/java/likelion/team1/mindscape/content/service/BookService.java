@@ -3,11 +3,10 @@ package likelion.team1.mindscape.content.service;
 import jakarta.transaction.Transactional;
 import likelion.team1.mindscape.content.dto.response.content.BookDto;
 import likelion.team1.mindscape.content.dto.response.content.BookResponse;
-import likelion.team1.mindscape.content.dto.response.content.MovieDto;
 import likelion.team1.mindscape.content.entity.Book;
 import likelion.team1.mindscape.content.entity.RecomContent;
 import likelion.team1.mindscape.content.repository.BookRepository;
-import likelion.team1.mindscape.content.repository.RecomConentRepository;
+import likelion.team1.mindscape.content.repository.RecomContentRepository;
 import lombok.RequiredArgsConstructor;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -21,7 +20,6 @@ import java.io.InputStreamReader;
 import java.net.*;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 import java.util.Set;
 
 @Service
@@ -33,7 +31,7 @@ public class BookService {
     private final BookRepository bookRepository;
     private final RedisService redisService;
     private final RedisTemplate<String, Object> redisTemplate;
-    private final RecomConentRepository recomContentRepository;
+    private final RecomContentRepository recomContentRepository;
 
     public List<BookResponse> getBooksDetails(List<String> titles) throws IOException {
         List<BookResponse> books = new ArrayList<>();

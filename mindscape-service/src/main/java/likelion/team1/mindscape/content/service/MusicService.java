@@ -6,7 +6,7 @@ import likelion.team1.mindscape.content.dto.response.content.MusicResponse;
 import likelion.team1.mindscape.content.entity.Music;
 import likelion.team1.mindscape.content.entity.RecomContent;
 import likelion.team1.mindscape.content.repository.MusicRepository;
-import likelion.team1.mindscape.content.repository.RecomConentRepository;
+import likelion.team1.mindscape.content.repository.RecomContentRepository;
 import lombok.RequiredArgsConstructor;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -31,7 +31,7 @@ public class MusicService {
     private String lastfmApi;
 
     private final MusicRepository musicRepository;
-    private final RecomConentRepository recomContentRepository;
+    private final RecomContentRepository recomContentRepository;
     private final RedisTemplate<String, Object> redisTemplate;
     private final RedisService redisService;
 
