@@ -1,4 +1,5 @@
 package likelion.team1.mindscape.content.controller;
+
 import likelion.team1.mindscape.content.dto.response.content.*;
 import likelion.team1.mindscape.content.entity.Book;
 import likelion.team1.mindscape.content.entity.Movie;
@@ -22,6 +23,7 @@ public class ContentController {
     private final MovieService movieService;
     private final BookService bookService;
     private final MusicService musicService;
+    private static final String ARTIST_TITLE_DELIMITER_REGEX = "[–-]"; // en dash or hyphen
 
     @GetMapping("/movie")
     public ResponseEntity<Map<String, Object>> getContents(@RequestParam("userId") Long userId, @RequestParam("recomId") Long recomId) {
@@ -31,79 +33,21 @@ public class ContentController {
         return ResponseEntity.ok(result);
     }
 
-    @GetMapping("/book/{bookTitles:.+}")
-    public ResponseEntity getBookDetail(@PathVariable("bookTitles") String bookTitles) {
-        List<String> titleList = Arrays.stream(bookTitles.split(",")).map(String::trim).filter(s -> !s.isEmpty()).collect(Collectors.toList());
-        //temporary
-        Long userId = 1L;
-
-        try {
-            // 1. call Kakao api
-            List<BookResponse> responses = (titleList.size() == 1) ?
-                    // one book
-                    List.of(bookService.getBookDetail(titleList.get(0))) :
-                    // multiple books
-                    bookService.getBooksDetails(titleList);
-
-            // 2. bookresponse -> dto
-            List<BookDto> dtos = responses.stream().map(BookDto::from).collect(Collectors.toList());
-
-            // 3. save
-            List<Book> saved = bookService.saveBook(dtos, userId);
-            bookService.saveBookToRedis(dtos);
-            // 4. return
-            return ResponseEntity.ok(saved);
-        } catch (IOException e) {
-            return ResponseEntity.internalServerError().body("Internal server error: " + e.getMessage());
-        }
+    @GetMapping(value = "/book", params = "book")
+    public ResponseEntity getBookDetail(@RequestParam("book") String book) {
+        List<String> bookList = splitter(book);
+        Long userId = 1L; // TODO: temporary
+        return handleBooks(bookList, userId);
     }
 
-    @GetMapping("/music/{music:.+}")
-    public ResponseEntity getMusicDetail(@PathVariable("music") String music) {
-        List<String> musicList = Arrays.stream(music.split(",")).map(String::trim).filter(s -> !s.isEmpty()).collect(Collectors.toList());
-        //temporary
-        Long userId = 1L;
-
-        List<String> artistList = new ArrayList<>();
-        List<String> titleList = new ArrayList<>();
-
-        for (String m : musicList) {
-            String[] tmp = m.split("[–-]", 2);   // allow en‑dash(–) or hyphen(-)
-            if (tmp.length == 2) {
-                artistList.add(tmp[0].trim());
-                titleList.add(tmp[1].trim());
-            }
-        }
-
-        if (artistList.isEmpty() || artistList.size() != titleList.size()) {
-            return ResponseEntity.badRequest().body("Invalid format. Use 'artist-title'");
-        }
-
-        try {
-            // 1. call lastfm api
-            List<MusicResponse> responses = (titleList.size() == 1) ?
-                    // one music
-                    List.of(musicService.getMusicDetail(artistList.get(0), titleList.get(0))) :
-                    // multiple music
-                    musicService.getMusicDetails(artistList, titleList);
-
-            // 2. bookresponse -> dto
-            List<MusicDto> dtos = responses.stream().map(MusicDto::from).collect(Collectors.toList());
-
-            // 3. save
-            List<Music> saved = musicService.saveMusic(dtos, userId);
-
-            //4. save to redis
-            musicService.saveMusicToRedis(dtos);
-
-            //5. return
-            return ResponseEntity.ok(saved);
-        } catch (IOException e) {
-            return ResponseEntity.internalServerError().body("Internal server error: " + e.getMessage());
-        }
+    @GetMapping(value = "/music", params = "music")
+    public ResponseEntity getMusicDetail(@RequestParam("music") String music) {
+        List<String> musicList = splitter(music);
+        Long userId = 1L; // TODO: temp.
+        return handleMusic(musicList, userId);
     }
 
-    @GetMapping("/music")
+    @GetMapping(value = "/music", params = "testId")
     public ResponseEntity getMusicByTestId(@RequestParam("testId") String testId) {
         try {
             return ResponseEntity.ok(musicService.getMusicWithTestId(Long.valueOf(testId)));
@@ -112,7 +56,7 @@ public class ContentController {
         }
     }
 
-    @GetMapping("/book")
+    @GetMapping(value = "/book", params = "testId")
     public ResponseEntity getBooksByTestId(@RequestParam("testId") String testId) {
         try {
             return ResponseEntity.ok(bookService.getBooksWithTestId(Long.valueOf(testId)));
@@ -133,7 +77,7 @@ public class ContentController {
         List<BookDto> bookDtos = new ArrayList<>();
 
         // get details
-        try{
+        try {
             for (int i = 0; i < moviesList.size(); i++) {
                 movieDtos.add(movieService.getMovieInfo(moviesList.get(i)).get(0));
                 bookDtos.add(BookDto.from(bookService.getBookDetail(booksList.get(i))));
@@ -150,5 +94,55 @@ public class ContentController {
         }
         musicService.saveMusicToRedis(musicDtos);
         bookService.saveBookToRedis(bookDtos);
+    }
+
+
+    private List<String> splitter(String joined) {
+        return Arrays.stream(joined.split(","))
+                .map(String::trim)
+                .filter(s -> !s.isEmpty())
+                .collect(Collectors.toList());
+    }
+
+    private ResponseEntity handleBooks(List<String> bookList, Long userId) {
+        try {
+            List<BookResponse> responses = (bookList.size() == 1)
+                    ? List.of(bookService.getBookDetail(bookList.get(0)))
+                    : bookService.getBooksDetails(bookList);
+
+            List<BookDto> dtos = responses.stream().map(BookDto::from).collect(Collectors.toList());
+
+            return ResponseEntity.ok(dtos);
+        } catch (IOException e) {
+            return ResponseEntity.internalServerError().body("Internal server error: " + e.getMessage());
+        }
+    }
+
+    private ResponseEntity handleMusic(List<String> musicList, Long userId) {
+        List<String> artistList = new ArrayList<>();
+        List<String> titleList = new ArrayList<>();
+
+        for (String m : musicList) {
+            String[] tmp = m.split(ARTIST_TITLE_DELIMITER_REGEX, 2);
+            if (tmp.length == 2) {
+                artistList.add(tmp[0].trim());
+                titleList.add(tmp[1].trim());
+            }
+        }
+        if (artistList.isEmpty() || artistList.size() != titleList.size()) {
+            return ResponseEntity.badRequest().body("Invalid format. Use 'artist-title'");
+        }
+
+        try {
+            List<MusicResponse> responses = (titleList.size() == 1)
+                    ? List.of(musicService.getMusicDetail(artistList.get(0), titleList.get(0)))
+                    : musicService.getMusicDetails(artistList, titleList);
+
+            List<MusicDto> dtos = responses.stream().map(MusicDto::from).collect(Collectors.toList());
+
+            return ResponseEntity.ok(dtos);
+        } catch (IOException e) {
+            return ResponseEntity.internalServerError().body("Internal server error: " + e.getMessage());
+        }
     }
 }
