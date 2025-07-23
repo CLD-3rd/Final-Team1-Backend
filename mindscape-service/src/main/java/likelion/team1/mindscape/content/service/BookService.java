@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -39,7 +40,12 @@ public class BookService {
     public List<BookResponse> getBooksDetails(List<String> titles) throws IOException {
         List<BookResponse> books = new ArrayList<>();
         for (String title : titles) {
-            books.add(getBookDetail(title));
+            BookResponse detail = getBookDetail(title);
+            if (detail != null) {
+                books.add(detail);
+            } else {
+                log.warn("Skip book '{}' - no result from Kakao API", title);
+            }
         }
         return books;
     }
@@ -59,32 +65,39 @@ public class BookService {
 
         // 200 = get inputstream, else = get errorstream
         int responseCode = connection.getResponseCode();
-        BufferedReader br = new BufferedReader(
-                new InputStreamReader(
-                        responseCode == 200 ? connection.getInputStream() : connection.getErrorStream()
-                )
-        );
+        StringBuilder sb = new StringBuilder();
+        try (BufferedReader br = new BufferedReader(new InputStreamReader(
+                responseCode == 200 ? connection.getInputStream() : connection.getErrorStream()
+        ))) {
+            String line;
+            while ((line = br.readLine()) != null) {
+                sb.append(line);
+            }
+        }
 
-        // read response line -> parse into jsonobject
-        JSONObject bookJson = new JSONObject(br.readLine());
-        // extract "documents" array (incl. all books w/ same title)
-        JSONArray bookInfo = bookJson.getJSONArray("documents");
-        // get first book from bookInfo
+        JSONObject bookJson = new JSONObject(sb.toString());
+        JSONArray bookInfo = bookJson.optJSONArray("documents");
+        // if no result from kakao API?
+        if (bookInfo == null || bookInfo.length() == 0) {
+            log.warn("Kakao API returned no results for title='{}'", title);
+            return null;
+        }
+
         JSONObject book = bookInfo.getJSONObject(0);
 
-        // author = jsonarray type => extract authors and make it into string type
-        JSONArray authorsArray = book.getJSONArray("authors");
-        String authors = String.join(", ", authorsArray.toList().stream()
+        JSONArray authorsArray = book.optJSONArray("authors");
+        String authors = (authorsArray == null || authorsArray.length() == 0)
+                ? ""
+                : String.join(", ", authorsArray.toList().stream()
                 .map(Object::toString)
                 .toArray(String[]::new));
 
-        // make result into bookresponse
         BookResponse bookResponse = new BookResponse(
-                (String) book.get("title"),
+                book.optString("title", title),
                 authors,
-                (String) book.get("contents"),
-                (String) book.get("thumbnail"));
-
+                book.optString("contents", ""),
+                book.optString("thumbnail", "")
+        );
         return bookResponse;
     }
 
@@ -127,12 +140,12 @@ public class BookService {
             String searchPattern = "book:*" + dto.getTitle();
             Set<String> keys = redisTemplate.keys(searchPattern);
             if (keys != null && !keys.isEmpty()) {
-                System.out.println(dto.getTitle() + ": redis에 이미 존재");
+                log.info(dto.getTitle() + ": redis에 이미 존재");
                 continue;
             }
             // redis 저장
             Long id = redisService.BookToRedis(dto);
-            System.out.println(dto.getTitle() + ": redis에 저장 완료 (id=" + id + ")");
+            log.info(dto.getTitle() + ": redis에 저장 완료 (id=" + id + ")");
         }
     }
 
@@ -144,6 +157,9 @@ public class BookService {
         List<Book> bookList = bookRepository.findAllByRecommendedContent_RecomId(recomId);
         List<Book> toSave = new ArrayList<>();
 
+        List<String> bookTitles = bookList.stream().map(Book::getTitle).collect(Collectors.toList());
+
+
         for (Book book : bookList) {
             String title = book.getTitle();
             String key = "book:" + title;
@@ -154,9 +170,25 @@ public class BookService {
             // not existed
             if (cached == null || cached.isEmpty()) {
                 info = getBookDetail(title);
-                // save to redis
-                BookDto dto = new BookDto(info.getTitle(), info.getAuthor(), info.getDescription(), info.getImage());
-                redisService.BookToRedis(dto);
+                if (info == null) {
+                    // get alternative from redis
+                    info = redisService.getAlternativeBook(bookTitles);
+                    if (info == null) {
+                        log.warn("'{}' - Kakao api returned nothing and no alternative found in redis", title);
+                        continue;
+                    }
+                    bookTitles.add(info.getTitle());
+                } else {
+                    // get info from Kakao api & save to redis
+                    BookDto dto = new BookDto(
+                            info.getTitle(),
+                            info.getAuthor(),
+                            info.getDescription(),
+                            info.getImage()
+                    );
+                    redisService.BookToRedis(dto);
+                    bookTitles.add(info.getTitle());
+                }
             } else {
                 // existed
                 info = new BookResponse(

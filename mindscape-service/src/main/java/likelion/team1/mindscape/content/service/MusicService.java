@@ -3,6 +3,7 @@ package likelion.team1.mindscape.content.service;
 import jakarta.transaction.Transactional;
 import likelion.team1.mindscape.content.dto.response.content.MusicDto;
 import likelion.team1.mindscape.content.dto.response.content.MusicResponse;
+import likelion.team1.mindscape.content.entity.Book;
 import likelion.team1.mindscape.content.entity.Music;
 import likelion.team1.mindscape.content.entity.RecomContent;
 import likelion.team1.mindscape.content.repository.MusicRepository;
@@ -25,6 +26,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -41,7 +43,12 @@ public class MusicService {
     public List<MusicResponse> getMusicDetails(List<String> artists, List<String> titles) throws IOException {
         List<MusicResponse> musicList = new ArrayList<>();
         for (int i = 0; i < titles.size(); i++) {
-            musicList.add(getMusicDetail(artists.get(i), titles.get(i)));
+            MusicResponse detail = getMusicDetail(artists.get(i), titles.get(i));
+            if (detail != null) {
+                musicList.add(detail);
+            } else {
+                log.warn("Skip music '{}' - no result from Lastfm API", titles.get(i));
+            }
         }
         return musicList;
     }
@@ -60,34 +67,52 @@ public class MusicService {
 
         // 200 = get inputstream, else = get errorstream
         int responseCode = connection.getResponseCode();
-        BufferedReader br = new BufferedReader(
-                new InputStreamReader(
-                        responseCode == 200 ? connection.getInputStream() : connection.getErrorStream()
-                )
-        );
+        StringBuilder sb = new StringBuilder();
+        try (BufferedReader br = new BufferedReader(new InputStreamReader(
+                responseCode == 200 ? connection.getInputStream() : connection.getErrorStream()
+        ))) {
+            String line;
+            while ((line = br.readLine()) != null) {
+                sb.append(line);
+            }
+        }
 
         // read response line -> parse into jsonobject
-        JSONObject musicJson = new JSONObject(br.readLine());
-        // extract "track" array
-        JSONObject musicInfo = musicJson.getJSONObject("track");
+        JSONObject musicJson = new JSONObject(sb.toString());
+        JSONObject musicInfo = musicJson.optJSONObject("track");
+        // if no result from Lastfm API?
+        if (musicInfo == null || musicInfo.length() == 0) {
+            log.warn("Lastfm API returned no results for artist='{}', title='{}'", artist, title);
+            return null;
+        }
 
-        // album image -> get lagrest one
+        // album image -> get largest one
         String imageUrl = null;
-        if (musicInfo.has("album") && musicInfo.getJSONObject("album").has("image")) {
-            JSONArray images = musicInfo.getJSONObject("album").getJSONArray("image");
-            for (int i = images.length() - 1; i >= 0; i--) {
-                String img = images.getJSONObject(i).getString("#text");
-                if (!img.isEmpty()) {
-                    imageUrl = img;
-                    break;
+        JSONObject albumObj = musicInfo.optJSONObject("album");
+        if (albumObj != null) {
+            JSONArray images = albumObj.optJSONArray("image");
+            if (images != null) {
+                for (int i = images.length() - 1; i >= 0; i--) {
+                    JSONObject imgObj = images.optJSONObject(i);
+                    if (imgObj != null) {
+                        String img = imgObj.optString("#text", "");
+                        if (!img.isEmpty()) {
+                            imageUrl = img;
+                            break;
+                        }
+                    }
                 }
             }
         }
 
         // make result into musicresponse
+        String trackName = musicInfo.optString("name", title);
+        JSONObject artistObj = musicInfo.optJSONObject("artist");
+        String artistName = artistObj != null ? artistObj.optString("name", artist) : artist;
+
         MusicResponse musicResponse = new MusicResponse(
-                musicInfo.getString("name"),
-                musicInfo.getJSONObject("artist").getString("name"),
+                trackName,
+                artistName,
                 imageUrl
         );
 
@@ -131,12 +156,12 @@ public class MusicService {
             String searchPattern = "music:*" + dto.getTitle();
             Set<String> keys = redisTemplate.keys(searchPattern);
             if (keys != null && !keys.isEmpty()) {
-                System.out.println(dto.getTitle() + ": redis에 이미 존재");
+                log.info(dto.getTitle() + ": redis에 이미 존재");
                 continue;
             }
             // redis 저장
             Long id = redisService.MusicToRedis(dto);
-            System.out.println(dto.getTitle() + ": redis에 저장 완료 (id=" + id + ")");
+            log.info(dto.getTitle() + ": redis에 저장 완료 (id=" + id + ")");
         }
     }
 
@@ -147,6 +172,8 @@ public class MusicService {
         // 2. get pre-saved books with recom ID
         List<Music> musicList = musicRepository.findAllByRecommendedContent_RecomId(recomId);
         List<Music> toSave = new ArrayList<>();
+
+        List<String> musicTitles = musicList.stream().map(Music::getTitle).collect(Collectors.toList());
 
         for (Music music : musicList) {
             String artist = music.getArtist();
@@ -159,9 +186,23 @@ public class MusicService {
             // not existed
             if (cached == null || cached.isEmpty()) {
                 info = getMusicDetail(artist, title);
-                // save to redis
-                MusicDto dto = new MusicDto(info.getTitle(), info.getArtist(), info.getAlbum());
-                redisService.MusicToRedis(dto);
+                if (info == null) {
+                    //get alternative from redis
+                    info = redisService.getAlternativeMusic(musicTitles);
+                    if (info == null) {
+                        log.warn("'{}' - Lastfm api returned nothing and no alternative found in redis", title);
+                        continue;
+                    }
+                    musicTitles.add(info.getTitle());
+                } else {
+                    MusicDto dto = new MusicDto(
+                            info.getTitle(),
+                            info.getArtist(),
+                            info.getAlbum()
+                    );
+                    redisService.MusicToRedis(dto);
+                    musicTitles.add(info.getTitle());
+                }
             } else {
                 // existed
                 info = new MusicResponse(
@@ -175,8 +216,6 @@ public class MusicService {
             music.setTitle(info.getTitle());
             music.setArtist(info.getArtist());
             music.setElbum(info.getAlbum());
-            System.out.println("music = " + music);
-
             toSave.add(music);
         }
 
