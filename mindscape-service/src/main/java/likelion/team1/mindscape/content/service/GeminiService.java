@@ -31,7 +31,10 @@ public class GeminiService {
     	// 1. TestServiceClient를 통해 실제 또는 임시 데이터 받기
     	//나중에 변경
         TestInfoResponse testInfo = testServiceClient.getTestInfo(testId);
-        
+     // ** 로그 추가: testId와 testInfo 확인 **
+        System.out.println("[GEMINI서비스임!! Our Server] 프론트에서 받은 testId: " + testId);
+        System.out.println("[GEMINI 서비스임!! Our Server] test서버에서 받은 TestInfoResponse: " + testInfo);
+
         String userType = testInfo.getUserType();
 
         String prompt = String.format(

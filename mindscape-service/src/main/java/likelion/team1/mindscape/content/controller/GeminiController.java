@@ -18,6 +18,7 @@ public class GeminiController {
 	//front에서 testid를 받아오는 것
 	@PostMapping("/api/gemini/recommend")
 	public ResponseEntity<GeminiResponse> recommend(@RequestParam Long testId) {
+		System.out.println("Our Server received testId: " + testId);
 		GeminiResponse response = geminiService.recommend(testId);
 		return ResponseEntity.ok(response);  // recomId 없이 응답만 OK 처리
 	}
