@@ -37,9 +37,14 @@ public class MovieService {
     private final RedisTemplate<String, Object> redisTemplate;
     private final MovieRepository movieRepository;
     private final RecomContentRepository recomContentRepository;
+    private final ContentService contentService;
+    private final TestServiceClient testServiceClient;
 
 
     public List<Movie> updateMovieFromTitle(Long testId) {
+
+        TestInfoResponse testInfo = testServiceClient.getTestInfo(testId);
+        Long userId = testInfo.getUserId();
         // 1. movie 검색
         List<Movie> targetMovies = movieRepository.findByRecommendedContent_RecomId(testId);
         List<Movie> updatedList = new ArrayList<>();
@@ -63,6 +68,10 @@ public class MovieService {
                 }
             }
         }
+        List<String> titles = updatedList.stream()
+                .map(Movie::getTitle)
+                .collect(Collectors.toList());
+        contentService.saveRecomContent(userId, testId, "movie", titles);
         return updatedList;
     }
 
