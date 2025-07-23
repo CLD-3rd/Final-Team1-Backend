@@ -1,0 +1,38 @@
+*2
+$6
+SELECT
+$1
+0
+*5
+$5
+RPUSH
+$19
+user:1:test:1:movie
+$14
+"라라랜드"
+$15
+"맘마미아!"
+$12
+"빅 피쉬"
+*5
+$5
+RPUSH
+$18
+user:1:test:1:book
+$18
+"달팽이 식당"
+$18
+"언어의 온도"
+$17
+"오체불만족"
+*5
+$5
+RPUSH
+$19
+user:1:test:1:music
+$27
+"Queen - Don't Stop Me Now"
+$22
+"ABBA - Dancing Queen"
+$27
+"BTS - Permission to Dance"

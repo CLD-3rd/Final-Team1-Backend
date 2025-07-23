@@ -1,5 +1,0 @@
-# AOF (redis saved permanently)
-appendonly yes
-appendfsync everysec
-save 300 10
-dir /data
