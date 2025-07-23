@@ -1,5 +1,4 @@
 package likelion.team1.mindscape.content.controller;
-
 import likelion.team1.mindscape.content.dto.response.content.*;
 import likelion.team1.mindscape.content.entity.Book;
 import likelion.team1.mindscape.content.entity.Movie;
@@ -12,9 +11,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 
@@ -27,11 +24,11 @@ public class ContentController {
     private final MusicService musicService;
 
     @GetMapping("/movie")
-    public ResponseEntity<Movie> getContents(@RequestParam String query, @RequestParam("userId") Long userId) {
-        List<MovieDto> dto = movieService.getMovieInfo(query);
-        Movie saved = movieService.saveMovieToDB(dto, userId);
-        movieService.saveMovieToRedis(dto);
-        return ResponseEntity.ok(saved);
+    public ResponseEntity<Map<String, Object>> getContents(@RequestParam("userId") Long userId, @RequestParam("recomId") Long recomId) {
+        List<Movie> updatedList = movieService.updateMovieFromTitle(userId, recomId);
+        Map<String, Object> result = new LinkedHashMap<>();
+        result.put("updatedList", updatedList);  // 기존 DB 기반 업데이트된 전체
+        return ResponseEntity.ok(result);
     }
 
     @GetMapping("/book/{bookTitles:.+}")
