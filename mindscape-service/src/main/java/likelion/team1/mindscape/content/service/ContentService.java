@@ -1,5 +1,7 @@
 package likelion.team1.mindscape.content.service;
+import likelion.team1.mindscape.content.client.TestServiceClient;
 import likelion.team1.mindscape.content.dto.response.GeminiResponse;
+import likelion.team1.mindscape.content.dto.response.TestInfoResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;

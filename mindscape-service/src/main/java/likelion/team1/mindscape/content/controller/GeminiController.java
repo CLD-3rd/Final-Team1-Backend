@@ -21,7 +21,7 @@ public class GeminiController {
 	@PostMapping("/api/gemini/recommend")
 	public ResponseEntity<GeminiResponse> recommend(@RequestParam Long testId) {
 		GeminiResponse response = geminiService.recommend(testId);
-		contentService.saveAllRecomContent(userId, testId, response);
+		contentService.saveAllRecomContent(testId, response);
 		return ResponseEntity.ok(response);  // recomId 없이 응답만 OK 처리
 	}
 
