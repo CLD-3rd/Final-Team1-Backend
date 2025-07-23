@@ -18,9 +18,9 @@ public interface RecomContentRepository extends JpaRepository<RecomContent, Long
             "ORDER BY t.created_at DESC LIMIT 1", nativeQuery = true)
     Optional<RecomContent> findLatestByUserId(@Param("userId") Long userId);
 
-    @Query(value = "SELECT rc.* FROM recommended_content rc " +
-            "JOIN mj_test t ON rc.test_id = t.testId " +
-            "WHERE t.user_id = :userId " +
-            "ORDER BY t.created_at DESC", nativeQuery = true)
-    List<RecomContent> findByUserIdOrderByCreatedAtDesc(@Param("userId") Long userId);
+
+    @Query(value = "SELECT * " +
+            "FROM recommended_content " +
+            "WHERE test_id = :testId", nativeQuery = true)
+    List<RecomContent> findByTestIdNative(@Param("testId") Long testId);
 }

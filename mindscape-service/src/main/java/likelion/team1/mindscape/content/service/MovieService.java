@@ -1,6 +1,8 @@
 package likelion.team1.mindscape.content.service;
 
 import jakarta.transaction.Transactional;
+import likelion.team1.mindscape.content.client.TestServiceClient;
+import likelion.team1.mindscape.content.dto.response.TestInfoResponse;
 import likelion.team1.mindscape.content.dto.response.content.MovieDto;
 import likelion.team1.mindscape.content.dto.response.content.MovieResponse;
 import likelion.team1.mindscape.content.entity.Movie;
@@ -14,11 +16,15 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriUtils;
 
+import javax.swing.text.html.Option;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.*;
+import java.util.logging.SimpleFormatter;
+import java.util.stream.Collectors;
+
+import static likelion.team1.mindscape.content.dto.response.content.MovieDto.fromRedisHash;
 
 @Service
 @RequiredArgsConstructor
@@ -32,22 +38,48 @@ public class MovieService {
     private final MovieRepository movieRepository;
     private final RecomContentRepository recomContentRepository;
 
-    public List<Movie> updateMovieFromTitle(Long userId, Long recomId) {
+
+    public List<Movie> updateMovieFromTitle(Long testId) {
         // 1. movie 검색
-        List<Movie> targetMovies = movieRepository.findByRecommendedContent_RecomId(recomId);
+        List<Movie> targetMovies = movieRepository.findByRecommendedContent_RecomId(testId);
         List<Movie> updatedList = new ArrayList<>();
         for (Movie movie : targetMovies) {
-            if (hasCompleteInfo(movie)) {
-                updateRecomOnly(movie, userId);
+            if (hasCompleteInfo(movie)) { // 영화 title에 따른 내용 넣기
+                updateRecomOnly(movie, testId);
                 updatedList.add(movieRepository.save(movie));
             } else {
                 List<MovieDto> movieInfo = getMovieInfo(movie.getTitle());
-                Movie updated = createNewMovie(movie, movieInfo.get(0), userId);
+                MovieDto dto = movieInfo.isEmpty()
+                        ? fillMovieInfo(Collections.singletonList(movie)).orElse(null)
+                        : movieInfo.get(0);
+                if (dto == null) {
+                    System.out.println("TMDB & Redis 모두 실패: " + movie.getTitle());
+                    continue;
+                }
+                Movie updated = createNewMovie(movie, dto, testId);
                 updatedList.add(updated);
-                saveMovieToRedis(movieInfo);
+                if (!movieInfo.isEmpty()) {
+                    saveMovieToRedis(movieInfo);
+                }
             }
         }
         return updatedList;
+    }
+
+    /**
+     * tmdb api에 없는 영화: redis에서 rndm하게 아무 영화 넣기
+     * @param movieList
+     * @return
+     */
+    public Optional<MovieDto> fillMovieInfo(List<Movie> movieList){
+        for(Movie movie: movieList){
+            if(!hasCompleteInfo(movie)){
+                MovieDto tempDto = new MovieDto(movie.getTitle());
+                Optional<MovieDto> fallback = getRandomMovie(Collections.singletonList(tempDto));
+                return fallback;
+            }
+        }
+        return Optional.empty();
     }
 
     public List<MovieDto> getMovieInfo(String query){
@@ -67,19 +99,20 @@ public class MovieService {
     private boolean hasCompleteInfo(Movie movie) {
         return movie.getDescription() != null && movie.getReleaseDate() != null && movie.getPoster() != null;
     }
-    private void updateRecomOnly(Movie movie, Long userId) {
-        RecomContent recom = getLatestRecom(userId);
+    private void updateRecomOnly(Movie movie, Long testId) {
+        RecomContent recom = getLatestRecom(testId);
         movie.setRecommendedContent(recom);
     }
-    private RecomContent getLatestRecom(Long userId) {
+    private RecomContent getLatestRecom(Long testId) {
         return recomContentRepository
-                .findByUserIdOrderByCreatedAtDesc(userId)
+                .findByTestIdNative(testId)
                 .stream()
                 .findFirst()
                 .orElseThrow(() -> new IllegalArgumentException("추천 결과가 없습니다."));
     }
 
     private Movie createNewMovie(Movie movie, MovieDto dto, Long userId){
+        movie.setTitle(dto.getTitle());
         movie.setDescription(dto.getDescription());
         movie.setReleaseDate(dto.getReleaseDate());
         movie.setPoster("http://image.tmdb.org/t/p/w500"+dto.getPoster());
@@ -103,6 +136,27 @@ public class MovieService {
         // redis 저장
         Long id = redisService.MovieToRedis(dto);
         System.out.println(dto.getTitle() + ": redis에 저장 완료 (id=" + id + ")");
+    }
+    public Optional<MovieDto> getRandomMovie (List<MovieDto> movieInfo){
+        // 기존 영화 제목
+        Set<String> existingTitles = movieInfo.stream()
+                .map(MovieDto::getTitle)
+                .collect(Collectors.toSet());
+        // redis 영화제목
+        Set<String> keys = redisTemplate.keys("movie:*");
+        if(keys == null || keys.isEmpty()) return Optional.empty();
+
+        List<String> shuffledKeys = new ArrayList<>(keys);
+        Collections.shuffle(shuffledKeys);
+
+        for(String key: shuffledKeys){
+            String title = key.replace("movie:","");
+            if(existingTitles.contains(title)) continue;
+            Map<Object, Object> hash = redisTemplate.opsForHash().entries(key);
+            MovieDto dto = fromRedisHash(hash); // Dto로 변환
+            return Optional.of(dto);
+        }
+        return Optional.empty();
     }
 }
 

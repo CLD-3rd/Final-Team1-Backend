@@ -26,8 +26,8 @@ public class ContentController {
     private static final String ARTIST_TITLE_DELIMITER_REGEX = "[–-]"; // en dash or hyphen
 
     @GetMapping("/movie")
-    public ResponseEntity<Map<String, Object>> getContents(@RequestParam("userId") Long userId, @RequestParam("recomId") Long recomId) {
-        List<Movie> updatedList = movieService.updateMovieFromTitle(userId, recomId);
+    public ResponseEntity<Map<String, Object>> getContents(@RequestParam("testId") Long testId) {
+        List<Movie> updatedList = movieService.updateMovieFromTitle(testId);
         Map<String, Object> result = new LinkedHashMap<>();
         result.put("updatedList", updatedList);  // 기존 DB 기반 업데이트된 전체
         return ResponseEntity.ok(result);

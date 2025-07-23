@@ -112,4 +112,6 @@ public class RedisService {
     public String makeRecomKey(Long userId, Long testId, String contentType) {
         return String.format("user:%d:test:%d:%s", userId, testId, contentType);
     }
+
+
 }
