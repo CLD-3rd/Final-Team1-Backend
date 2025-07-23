@@ -1,5 +1,6 @@
 package likelion.team1.mindscape.content.controller;
 
+import likelion.team1.mindscape.content.service.ContentService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -14,11 +15,13 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class GeminiController {
 	private final GeminiService geminiService;
+	private final ContentService contentService;
 	
 	//front에서 testid를 받아오는 것
 	@PostMapping("/api/gemini/recommend")
-	public ResponseEntity<GeminiResponse> recommend(@RequestParam Long testId) {
+	public ResponseEntity<GeminiResponse> recommend(@RequestParam Long userId, @RequestParam Long testId) {
 		GeminiResponse response = geminiService.recommend(testId);
+		contentService.saveAllRecomContent(userId, testId, response);
 		return ResponseEntity.ok(response);  // recomId 없이 응답만 OK 처리
 	}
 

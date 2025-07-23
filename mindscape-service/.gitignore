@@ -35,3 +35,6 @@ build/
 ### properties ###
 *.properties
 
+# Redis AOF & RDB logs
+redis/conf/appendonlydir/
+redis/conf/dump.rdb
