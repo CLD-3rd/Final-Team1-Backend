@@ -8,6 +8,7 @@ import likelion.team1.mindscape.content.entity.RecomContent;
 import likelion.team1.mindscape.content.repository.BookRepository;
 import likelion.team1.mindscape.content.repository.RecomContentRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Value;
@@ -20,10 +21,12 @@ import java.io.InputStreamReader;
 import java.net.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class BookService {
     @Value("${service.api.kakaobooks}")
     private String kakaoApi;
@@ -42,6 +45,7 @@ public class BookService {
     }
 
     public BookResponse getBookDetail(String title) throws IOException {
+        log.info("KAKAO API USED");
         String apiURL = "https://dapi.kakao.com/v3/search/book?query=";
         // set query and request url -> create url object
         String query = URLEncoder.encode(title, "UTF-8");
@@ -115,19 +119,64 @@ public class BookService {
         return bookRepository.saveAll(toPersist);
     }
 
-    public void saveBookToRedis(List<BookDto> bookList){
-        if(bookList == null || bookList.isEmpty()){
+    public void saveBookToRedis(List<BookDto> bookList) {
+        if (bookList == null || bookList.isEmpty()) {
             throw new IllegalArgumentException("movie list is empty(Redis)");
         }
-        BookDto dto = bookList.get(0);
-        String searchPattern = "book:*"+dto.getTitle();
-        Set<String> keys = redisTemplate.keys(searchPattern);
-        if (keys != null && !keys.isEmpty()) {
-            System.out.println(dto.getTitle() + ": redis에 이미 존재");
-            return;
+        for (BookDto dto : bookList) {
+            String searchPattern = "book:*" + dto.getTitle();
+            Set<String> keys = redisTemplate.keys(searchPattern);
+            if (keys != null && !keys.isEmpty()) {
+                System.out.println(dto.getTitle() + ": redis에 이미 존재");
+                continue;
+            }
+            // redis 저장
+            Long id = redisService.BookToRedis(dto);
+            System.out.println(dto.getTitle() + ": redis에 저장 완료 (id=" + id + ")");
         }
-        // redis 저장
-        Long id = redisService.BookToRedis(dto);
-        System.out.println(dto.getTitle() + ": redis에 저장 완료 (id=" + id + ")");
+    }
+
+    public List<Book> getBooksWithTestId(Long testId) throws IOException {
+        // 1. get recomm ID
+        Long recomId = testId; // testId = recomId
+
+        // 2. get pre-saved books with recom ID
+        List<Book> bookList = bookRepository.findAllByRecommendedContent_RecomId(recomId);
+        List<Book> toSave = new ArrayList<>();
+
+        for (Book book : bookList) {
+            String title = book.getTitle();
+            String key = "book:" + title;
+
+            // 3. check redis
+            Map<Object, Object> cached = redisTemplate.opsForHash().entries(key);
+            BookResponse info;
+            // not existed
+            if (cached == null || cached.isEmpty()) {
+                info = getBookDetail(title);
+                // save to redis
+                BookDto dto = new BookDto(info.getTitle(), info.getAuthor(), info.getDescription(), info.getImage());
+                redisService.BookToRedis(dto);
+            } else {
+                // existed
+                info = new BookResponse(
+                        (String) cached.get("title"),
+                        (String) cached.get("author"),
+                        (String) cached.get("description"),
+                        (String) cached.get("image")
+                );
+            }
+
+            // 4. update
+            book.setTitle(info.getTitle());
+            book.setAuthor(info.getAuthor());
+            book.setDescription(info.getDescription());
+            book.setImage(info.getImage());
+
+            toSave.add(book);
+        }
+
+        // 5. save to sql
+        return bookRepository.saveAll(toSave);
     }
 }

@@ -3,7 +3,6 @@ package likelion.team1.mindscape.content.entity;
 import jakarta.persistence.*;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 
 @Entity
 @Table(name = "book")
@@ -30,10 +29,8 @@ public class Book {
     @ManyToOne
     @JoinColumn(name = "recomId", nullable = false)
     private RecomContent recommendedContent;
-    
-    
-    
-    
+
+
     public Book(String title, String author, String description, String image, RecomContent recommendedContent) {
         this.title = title;
         this.author = author;
