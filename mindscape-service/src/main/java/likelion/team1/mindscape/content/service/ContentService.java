@@ -12,9 +12,14 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class ContentService {
     private final RedisTemplate<String, Object> redisTemplate;
+    private final TestServiceClient testServiceClient;
     private final RedisService redisService;
+
     // 1) 콘텐츠 저장
-    public void saveAllRecomContent(Long userId, Long testId, GeminiResponse response) {
+    public void saveAllRecomContent(Long testId, GeminiResponse response) {
+
+        TestInfoResponse testInfo = testServiceClient.getTestInfo(testId);
+        Long userId = testInfo.getUserId();
         saveRecomContent(userId, testId, "movie", response.getMovie());
         saveRecomContent(userId, testId, "book", response.getBook());
         saveRecomContent(userId, testId, "music", response.getMusic());
@@ -23,18 +28,6 @@ public class ContentService {
         String redisKey = redisService.makeRecomKey(userId, testId, contentType);
         redisTemplate.delete(redisKey); // 기존 데이터 제거 (덮어쓰기)
         redisTemplate.opsForList().rightPushAll(redisKey, titles.toArray());
-    }
-    // 2) 콘텐츠 조회
-    public List<String> getRecomContent(Long userId, Long testId, String contentType) {
-        String redisKey = redisService.makeRecomKey(userId, testId, contentType);
-        Long size = redisTemplate.opsForList().size(redisKey);
-        if (size == null || size == 0) {
-            return Collections.emptyList();
-        }
-        return redisTemplate.opsForList().range(redisKey, 0, size - 1)
-                .stream()
-                .map(Object::toString)
-                .collect(Collectors.toList());
     }
 }
 
