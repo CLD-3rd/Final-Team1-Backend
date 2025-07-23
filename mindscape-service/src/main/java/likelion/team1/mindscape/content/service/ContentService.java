@@ -18,14 +18,13 @@ public class ContentService {
     private final RedisService redisService;
 
     // 1) 콘텐츠 저장
-    public void saveAllRecomContent(Long testId, GeminiResponse response) {
-
-        TestInfoResponse testInfo = testServiceClient.getTestInfo(testId);
-        Long userId = testInfo.getUserId();
-        saveRecomContent(userId, testId, "movie", response.getMovie());
-        saveRecomContent(userId, testId, "book", response.getBook());
-        saveRecomContent(userId, testId, "music", response.getMusic());
-    }
+//    public void saveAllRecomContent(Long testId, GeminiResponse response) {
+//        TestInfoResponse testInfo = testServiceClient.getTestInfo(testId);
+//        Long userId = testInfo.getUserId();
+//        saveRecomContent(userId, testId, "movie", response.getMovie());
+//        saveRecomContent(userId, testId, "book", response.getBook());
+//        saveRecomContent(userId, testId, "music", response.getMusic());
+//    }
     public void saveRecomContent(Long userId, Long testId, String contentType, List<String> titles) {
         String redisKey = redisService.makeRecomKey(userId, testId, contentType);
         redisTemplate.delete(redisKey); // 기존 데이터 제거 (덮어쓰기)

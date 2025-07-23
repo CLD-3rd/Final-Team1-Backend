@@ -1,6 +1,8 @@
 package likelion.team1.mindscape.content.service;
 
 import jakarta.transaction.Transactional;
+import likelion.team1.mindscape.content.client.TestServiceClient;
+import likelion.team1.mindscape.content.dto.response.TestInfoResponse;
 import likelion.team1.mindscape.content.dto.response.content.BookDto;
 import likelion.team1.mindscape.content.dto.response.content.BookResponse;
 import likelion.team1.mindscape.content.entity.Book;
@@ -38,6 +40,8 @@ public class BookService {
     private final RedisService redisService;
     private final RedisTemplate<String, Object> redisTemplate;
     private final RecomContentRepository recomContentRepository;
+    private final ContentService contentService;
+    private final TestServiceClient testServiceClient;
 
     public List<BookResponse> getBooksDetails(List<String> titles) throws IOException {
         List<BookResponse> books = new ArrayList<>();
@@ -105,6 +109,9 @@ public class BookService {
     }
 
     public List<Book> getBooksWithTestId(Long testId) throws IOException {
+
+        TestInfoResponse testInfo = testServiceClient.getTestInfo(testId);
+        Long userId = testInfo.getUserId();
         // 1. get recomm ID
         Long recomId = testId; // testId = recomId
 
@@ -122,7 +129,11 @@ public class BookService {
             applyBookInfo(book, info);
             toSave.add(book);
         }
-        return bookRepository.saveAll(toSave);
+        List<Book> saved = bookRepository.saveAll(toSave);
+        List<String> finalTitles = saved.stream().map(Book::getTitle).toList();
+        contentService.saveRecomContent(userId, testId, "book", finalTitles);
+
+        return saved;
     }
     private BookResponse resolveBookInfo(String title, List<String> bookTitles) throws IOException {
         String key = REDIS_BOOK_KEY_PREFIX + title;
