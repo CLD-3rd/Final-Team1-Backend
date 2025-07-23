@@ -29,6 +29,8 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 @Slf4j
 public class BookService {
+    private static final String KAKAO_BOOK_API_BASE = "https://dapi.kakao.com/v3/search/book?query=";
+    private static final String REDIS_BOOK_KEY_PREFIX = "book:";
     @Value("${service.api.kakaobooks}")
     private String kakaoApi;
 
@@ -51,54 +53,7 @@ public class BookService {
     }
 
     public BookResponse getBookDetail(String title) throws IOException {
-        log.info("KAKAO API USED");
-        String apiURL = "https://dapi.kakao.com/v3/search/book?query=";
-        // set query and request url -> create url object
-        String query = URLEncoder.encode(title, "UTF-8");
-        String reqUrl = apiURL + query;
-        URL url = new URL(reqUrl);
-
-        // open http connection
-        HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-        connection.setRequestMethod("GET");
-        connection.setRequestProperty("Authorization", "KakaoAK " + kakaoApi);
-
-        // 200 = get inputstream, else = get errorstream
-        int responseCode = connection.getResponseCode();
-        StringBuilder sb = new StringBuilder();
-        try (BufferedReader br = new BufferedReader(new InputStreamReader(
-                responseCode == 200 ? connection.getInputStream() : connection.getErrorStream()
-        ))) {
-            String line;
-            while ((line = br.readLine()) != null) {
-                sb.append(line);
-            }
-        }
-
-        JSONObject bookJson = new JSONObject(sb.toString());
-        JSONArray bookInfo = bookJson.optJSONArray("documents");
-        // if no result from kakao API?
-        if (bookInfo == null || bookInfo.length() == 0) {
-            log.warn("Kakao API returned no results for title='{}'", title);
-            return null;
-        }
-
-        JSONObject book = bookInfo.getJSONObject(0);
-
-        JSONArray authorsArray = book.optJSONArray("authors");
-        String authors = (authorsArray == null || authorsArray.length() == 0)
-                ? ""
-                : String.join(", ", authorsArray.toList().stream()
-                .map(Object::toString)
-                .toArray(String[]::new));
-
-        BookResponse bookResponse = new BookResponse(
-                book.optString("title", title),
-                authors,
-                book.optString("contents", ""),
-                book.optString("thumbnail", "")
-        );
-        return bookResponse;
+        return fetchFromKakao(title);
     }
 
     @Transactional
@@ -134,10 +89,10 @@ public class BookService {
 
     public void saveBookToRedis(List<BookDto> bookList) {
         if (bookList == null || bookList.isEmpty()) {
-            throw new IllegalArgumentException("movie list is empty(Redis)");
+            throw new IllegalArgumentException("book list is empty(Redis)");
         }
         for (BookDto dto : bookList) {
-            String searchPattern = "book:*" + dto.getTitle();
+            String searchPattern = REDIS_BOOK_KEY_PREFIX + "*" + dto.getTitle();
             Set<String> keys = redisTemplate.keys(searchPattern);
             if (keys != null && !keys.isEmpty()) {
                 log.info(dto.getTitle() + ": redis에 이미 존재");
@@ -153,62 +108,110 @@ public class BookService {
         // 1. get recomm ID
         Long recomId = testId; // testId = recomId
 
-        // 2. get pre-saved books with recom ID
         List<Book> bookList = bookRepository.findAllByRecommendedContent_RecomId(recomId);
         List<Book> toSave = new ArrayList<>();
-
         List<String> bookTitles = bookList.stream().map(Book::getTitle).collect(Collectors.toList());
 
 
         for (Book book : bookList) {
-            String title = book.getTitle();
-            String key = "book:" + title;
-
-            // 3. check redis
-            Map<Object, Object> cached = redisTemplate.opsForHash().entries(key);
-            BookResponse info;
-            // not existed
-            if (cached == null || cached.isEmpty()) {
-                info = getBookDetail(title);
-                if (info == null) {
-                    // get alternative from redis
-                    info = redisService.getAlternativeBook(bookTitles);
-                    if (info == null) {
-                        log.warn("'{}' - Kakao api returned nothing and no alternative found in redis", title);
-                        continue;
-                    }
-                    bookTitles.add(info.getTitle());
-                } else {
-                    // get info from Kakao api & save to redis
-                    BookDto dto = new BookDto(
-                            info.getTitle(),
-                            info.getAuthor(),
-                            info.getDescription(),
-                            info.getImage()
-                    );
-                    redisService.BookToRedis(dto);
-                    bookTitles.add(info.getTitle());
-                }
-            } else {
-                // existed
-                info = new BookResponse(
-                        (String) cached.get("title"),
-                        (String) cached.get("author"),
-                        (String) cached.get("description"),
-                        (String) cached.get("image")
-                );
+            BookResponse info = resolveBookInfo(book.getTitle(), bookTitles);
+            if (info == null) {
+                log.warn("'{}' - Kakao api returned nothing and no alternative found in redis", book.getTitle());
+                continue;
             }
-
-            // 4. update
-            book.setTitle(info.getTitle());
-            book.setAuthor(info.getAuthor());
-            book.setDescription(info.getDescription());
-            book.setImage(info.getImage());
-
+            applyBookInfo(book, info);
             toSave.add(book);
         }
-
-        // 5. save to sql
         return bookRepository.saveAll(toSave);
+    }
+    private BookResponse resolveBookInfo(String title, List<String> bookTitles) throws IOException {
+        String key = REDIS_BOOK_KEY_PREFIX + title;
+
+        // check redis
+        Map<Object, Object> cached = redisTemplate.opsForHash().entries(key);
+
+        if (cached != null && !cached.isEmpty()) {
+            return fromRedis(cached);
+        }
+
+        // get from kakao api
+        BookResponse info = fetchFromKakao(title);
+
+        // if no result from kakao api?
+        if (info == null) {
+            // get alternative from redis
+            info = redisService.getAlternativeBook(bookTitles);
+            if (info == null) {
+                return null;
+            }
+        } else {
+            // save to redis
+            redisService.BookToRedis(new BookDto(info.getTitle(), info.getAuthor(), info.getDescription(), info.getImage()));
+        }
+        bookTitles.add(info.getTitle());
+        return info;
+    }
+
+    private BookResponse fetchFromKakao(String title) throws IOException {
+        log.info("KAKAO API USED for title='{}'", title);
+        String query = URLEncoder.encode(title, "UTF-8");
+        URL url = new URL(KAKAO_BOOK_API_BASE + query);
+
+        HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+        connection.setRequestMethod("GET");
+        connection.setRequestProperty("Authorization", "KakaoAK " + kakaoApi);
+
+        int responseCode = connection.getResponseCode();
+        StringBuilder sb = new StringBuilder();
+        try (BufferedReader br = new BufferedReader(new InputStreamReader(
+                responseCode == 200 ? connection.getInputStream() : connection.getErrorStream()
+        ))) {
+            String line;
+            while ((line = br.readLine()) != null) {
+                sb.append(line);
+            }
+        }
+
+        JSONObject bookJson = new JSONObject(sb.toString());
+        JSONArray bookInfo = bookJson.optJSONArray("documents");
+        if (bookInfo == null || bookInfo.length() == 0) {
+            log.warn("Kakao API returned no results for title='{}'", title);
+            return null;
+        }
+
+        JSONObject book = bookInfo.getJSONObject(0);
+        String authors = joinAuthors(book.optJSONArray("authors"));
+
+        return new BookResponse(
+                book.optString("title", title),
+                authors,
+                book.optString("contents", ""),
+                book.optString("thumbnail", "")
+        );
+    }
+
+    private String joinAuthors(JSONArray authorsArray) {
+        if (authorsArray == null || authorsArray.length() == 0) {
+            return "";
+        }
+        return String.join(", ", authorsArray.toList().stream()
+                .map(Object::toString)
+                .toArray(String[]::new));
+    }
+
+    private BookResponse fromRedis(Map<Object, Object> cached) {
+        return new BookResponse(
+                (String) cached.getOrDefault("title", ""),
+                (String) cached.getOrDefault("author", ""),
+                (String) cached.getOrDefault("description", ""),
+                (String) cached.getOrDefault("image", "")
+        );
+    }
+
+    private void applyBookInfo(Book book, BookResponse info) {
+        book.setTitle(info.getTitle());
+        book.setAuthor(info.getAuthor());
+        book.setDescription(info.getDescription());
+        book.setImage(info.getImage());
     }
 }
