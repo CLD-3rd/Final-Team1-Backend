@@ -8,6 +8,7 @@ import likelion.team1.mindscape.content.entity.RecomContent;
 import likelion.team1.mindscape.content.repository.MusicRepository;
 import likelion.team1.mindscape.content.repository.RecomContentRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Value;
@@ -27,6 +28,7 @@ import java.util.Set;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class MusicService {
     @Value("${service.api.lastfm}")
     private String lastfmApi;
@@ -46,6 +48,7 @@ public class MusicService {
 
     public MusicResponse getMusicDetail(String artist, String title) throws IOException {
         // set query and request url -> create url object
+        log.info("LASTFM API USED");
         String artist_query = URLEncoder.encode(artist, "UTF-8");
         String title_query = URLEncoder.encode(title, "UTF-8");
         String apiURL = "http://ws.audioscrobbler.com/2.0/?method=track.getInfo&format=json&api_key=" + lastfmApi + "&artist=" + artist_query + "&track=" + title_query;
@@ -146,7 +149,6 @@ public class MusicService {
         List<Music> toSave = new ArrayList<>();
 
         for (Music music : musicList) {
-            System.out.println("music = " + music);
             String artist = music.getArtist();
             String title = music.getTitle();
             String key = "music:" + title;
