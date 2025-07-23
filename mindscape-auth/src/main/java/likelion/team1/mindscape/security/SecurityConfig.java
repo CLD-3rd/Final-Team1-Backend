@@ -4,6 +4,7 @@ package likelion.team1.mindscape.security;
 import likelion.team1.mindscape.repository.UserRepository;
 import likelion.team1.mindscape.security.jwt.JwtAuthenticationFilter;
 import likelion.team1.mindscape.security.jwt.JwtAuthorizationFilter;
+import likelion.team1.mindscape.security.jwt.JwtProperties;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -24,7 +25,7 @@ public class SecurityConfig {
 
     private final UserRepository userRepository;
     private final CorsConfig corsConfig;
-
+    private final JwtProperties jwtProperties;
 
     //AuthenticationManager 빈을 생성하는 메소드
     //스프링 시큐리티의 인증을 담당하는 매니저를 설정
@@ -45,10 +46,10 @@ public class SecurityConfig {
         http
                 .addFilter(corsConfig.corsFilter())
                 // JWT 인증 필터 추가
-                .addFilter(new JwtAuthenticationFilter(authenticationManager))
+                .addFilter(new JwtAuthenticationFilter(authenticationManager, userRepository, jwtProperties))
 
                 // JWT 인가 필터 추가
-                .addFilter(new JwtAuthorizationFilter(authenticationManager, userRepository))
+                .addFilter(new JwtAuthorizationFilter(authenticationManager, userRepository, jwtProperties))
 
                 // CSRF 보호 비활성화 (JWT 사용으로 불필요) 왜지?
                 // JWT를 사용하는 REST API에서는 CSRF 공격 방지가 불필요
@@ -70,7 +71,7 @@ public class SecurityConfig {
                 // 기본 인증은 보안에 취약하고 JWT를 사용하므로 불필요
                 // 매 요청마다 인증 정보를 보내는 방식이라 보안에 취약
                 .httpBasic(AbstractHttpConfigurer::disable)
-                // CORS 설정 추가
+
                 .authorizeHttpRequests(authorize -> authorize
 //                        .requestMatchers("/api/**").authenticated() //모든 API 호출 유저 인증 필요.
                         .anyRequest().permitAll()); // 이 외 요청은 권한 필요 X
