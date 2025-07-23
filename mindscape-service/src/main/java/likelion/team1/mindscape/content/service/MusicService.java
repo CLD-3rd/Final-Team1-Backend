@@ -1,6 +1,8 @@
 package likelion.team1.mindscape.content.service;
 
 import jakarta.transaction.Transactional;
+import likelion.team1.mindscape.content.client.TestServiceClient;
+import likelion.team1.mindscape.content.dto.response.TestInfoResponse;
 import likelion.team1.mindscape.content.dto.response.content.MusicDto;
 import likelion.team1.mindscape.content.dto.response.content.MusicResponse;
 import likelion.team1.mindscape.content.entity.Book;
@@ -41,6 +43,8 @@ public class MusicService {
     private final RecomContentRepository recomContentRepository;
     private final RedisTemplate<String, Object> redisTemplate;
     private final RedisService redisService;
+    private final ContentService contentService;
+    private final TestServiceClient testServiceClient;
 
     public List<MusicResponse> getMusicDetails(List<String> artists, List<String> titles) throws IOException {
         List<MusicResponse> musicList = new ArrayList<>();
@@ -106,6 +110,9 @@ public class MusicService {
     }
 
     public List<Music> getMusicWithTestId(Long testId) throws IOException {
+
+        TestInfoResponse testInfo = testServiceClient.getTestInfo(testId);
+        Long userId = testInfo.getUserId();
         // 1. get recomm ID
         Long recomId = testId; // testId = recomId
 
@@ -122,7 +129,10 @@ public class MusicService {
             applyMusicInfo(music, info);
             toSave.add(music);
         }
-        return musicRepository.saveAll(toSave);
+        List<Music> saved = musicRepository.saveAll(toSave);
+        List<String> titles = saved.stream().map(Music::getTitle).toList();
+        contentService.saveRecomContent(userId, testId, "music", titles);
+        return saved;
     }
 
     private MusicResponse resolveMusicInfo(String artist, String title, List<String> musicTitles) throws IOException {
