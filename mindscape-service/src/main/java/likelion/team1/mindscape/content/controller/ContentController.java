@@ -66,7 +66,7 @@ public class ContentController {
     }
 
     @GetMapping("/redis-init")
-    public void redisInit() {
+    public ResponseEntity redisInit() {
         //Dummy data set
         List<String> moviesList = List.of("쇼생크 탈출", "인셉션", "매트릭스");
         List<String> booksList = List.of("앵무새 죽이기", "1984", "연금술사");
@@ -88,12 +88,15 @@ public class ContentController {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
+
         for (MovieDto movieDto : movieDtos) {
             List<MovieDto> tmp = List.of(movieDto);
             movieService.saveMovieToRedis(tmp);
         }
         musicService.saveMusicToRedis(musicDtos);
         bookService.saveBookToRedis(bookDtos);
+
+        return ResponseEntity.ok("dummy data saved");
     }
 
 
