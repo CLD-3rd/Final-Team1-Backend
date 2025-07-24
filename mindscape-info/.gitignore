@@ -31,3 +31,9 @@ build/
 
 ### VS Code ###
 .vscode/
+<<<<<<< HEAD
+=======
+
+### properties ###
+application-env.properties
+>>>>>>> user-test
