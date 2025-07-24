@@ -80,6 +80,7 @@ public class MovieService {
      * @param movieList
      * @return
      */
+    //TODO: Redis에서 가져올 때 추천받은 title과 중복되는지 확인하는 작업 필요
     public Optional<MovieDto> fillMovieInfo(List<Movie> movieList){
         for(Movie movie: movieList){
             if(!hasCompleteInfo(movie)){

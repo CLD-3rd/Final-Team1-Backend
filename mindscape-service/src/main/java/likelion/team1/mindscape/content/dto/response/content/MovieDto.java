@@ -1,4 +1,5 @@
 package likelion.team1.mindscape.content.dto.response.content;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
 import lombok.Getter;
@@ -15,6 +16,7 @@ public class MovieDto {
     private String title;
 
     @JsonProperty("release_date")
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
     private Date releaseDate;
 
     @JsonProperty("overview")

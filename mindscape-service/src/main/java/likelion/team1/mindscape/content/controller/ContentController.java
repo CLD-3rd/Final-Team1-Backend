@@ -36,30 +36,28 @@ public class ContentController {
     @GetMapping(value = "/book", params = "book")
     public ResponseEntity getBookDetail(@RequestParam("book") String book) {
         List<String> bookList = splitter(book);
-        Long userId = 1L; // TODO: temporary
-        return handleBooks(bookList, userId);
+        return handleBooks(bookList);
     }
 
     @GetMapping(value = "/music", params = "music")
     public ResponseEntity getMusicDetail(@RequestParam("music") String music) {
         List<String> musicList = splitter(music);
-        Long userId = 1L; // TODO: temp.
-        return handleMusic(musicList, userId);
+        return handleMusic(musicList);
     }
 
     @GetMapping(value = "/music", params = "testId")
-    public ResponseEntity getMusicByTestId(@RequestParam("testId") String testId) {
+    public ResponseEntity getMusicByTestId(@RequestParam("testId") Long testId) {
         try {
-            return ResponseEntity.ok(musicService.getMusicWithTestId(Long.valueOf(testId)));
+            return ResponseEntity.ok(musicService.getMusicWithTestId(testId));
         } catch (IOException e) {
             return ResponseEntity.internalServerError().body("Internal server error: " + e.getMessage());
         }
     }
 
     @GetMapping(value = "/book", params = "testId")
-    public ResponseEntity getBooksByTestId(@RequestParam("testId") String testId) {
+    public ResponseEntity getBooksByTestId(@RequestParam("testId") Long testId) {
         try {
-            return ResponseEntity.ok(bookService.getBooksWithTestId(Long.valueOf(testId)));
+            return ResponseEntity.ok(bookService.getBooksWithTestId(testId));
         } catch (IOException e) {
             return ResponseEntity.internalServerError().body("Internal server error: " + e.getMessage());
         }
@@ -107,11 +105,12 @@ public class ContentController {
                 .collect(Collectors.toList());
     }
 
-    private ResponseEntity handleBooks(List<String> bookList, Long userId) {
+    private ResponseEntity handleBooks(List<String> bookList) {
         try {
-            List<BookResponse> responses = (bookList.size() == 1)
-                    ? List.of(bookService.getBookDetail(bookList.get(0)))
-                    : bookService.getBooksDetails(bookList);
+            List<BookResponse> responses = new ArrayList<>();
+            for (String book : bookList) {
+                responses.add(bookService.getBookDetail(book));
+            }
 
             List<BookDto> dtos = responses.stream().map(BookDto::from).collect(Collectors.toList());
 
@@ -121,7 +120,7 @@ public class ContentController {
         }
     }
 
-    private ResponseEntity handleMusic(List<String> musicList, Long userId) {
+    private ResponseEntity handleMusic(List<String> musicList) {
         List<String> artistList = new ArrayList<>();
         List<String> titleList = new ArrayList<>();
 
@@ -137,9 +136,10 @@ public class ContentController {
         }
 
         try {
-            List<MusicResponse> responses = (titleList.size() == 1)
-                    ? List.of(musicService.getMusicDetail(artistList.get(0), titleList.get(0)))
-                    : musicService.getMusicDetails(artistList, titleList);
+            List<MusicResponse> responses = new ArrayList<>();
+            for (int i = 0; i < artistList.size(); i++) {
+                responses.add(musicService.getMusicDetail(artistList.get(i), titleList.get(i)));
+            }
 
             List<MusicDto> dtos = responses.stream().map(MusicDto::from).collect(Collectors.toList());
 

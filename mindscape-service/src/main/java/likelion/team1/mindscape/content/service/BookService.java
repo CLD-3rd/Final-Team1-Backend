@@ -21,10 +21,8 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.*;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.nio.charset.StandardCharsets;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -39,89 +37,65 @@ public class BookService {
     private final BookRepository bookRepository;
     private final RedisService redisService;
     private final RedisTemplate<String, Object> redisTemplate;
-    private final RecomContentRepository recomContentRepository;
     private final ContentService contentService;
     private final TestServiceClient testServiceClient;
 
-    public List<BookResponse> getBooksDetails(List<String> titles) throws IOException {
-        List<BookResponse> books = new ArrayList<>();
-        for (String title : titles) {
-            BookResponse detail = getBookDetail(title);
-            if (detail != null) {
-                books.add(detail);
-            } else {
-                log.warn("Skip book '{}' - no result from Kakao API", title);
-            }
-        }
-        return books;
-    }
-
+    /**
+     * 단건 상세 조회 (외부 API 직접 호출)
+     *
+     * @param title
+     * @return
+     * @throws IOException
+     */
     public BookResponse getBookDetail(String title) throws IOException {
         return fetchFromKakao(title);
     }
 
-    @Transactional
-    public List<Book> saveBook(List<BookDto> bookList, Long userId) {
-        // book 조회
-        if (bookList == null || bookList.isEmpty()) {
-            throw new IllegalArgumentException("book list is empty");
-        }
-        RecomContent recom = recomContentRepository.findLatestByUserId(userId)
-                .orElseThrow(() -> new IllegalArgumentException("추천 결과가 없습니다."));
-
-        List<Book> toPersist = new ArrayList<>();
-
-        for (BookDto dto : bookList) {
-            bookRepository.findByTitle(dto.getTitle())
-                    .ifPresentOrElse(book -> {
-                        // existed -> refresh recom info
-                        book.setRecommendedContent(recom);
-                        toPersist.add(book);
-                    }, () -> {
-                        // new book
-                        Book book = new Book();
-                        book.setTitle(dto.getTitle());
-                        book.setAuthor(dto.getAuthor());
-                        book.setDescription(dto.getDescription());
-                        book.setImage(dto.getImage());
-                        book.setRecommendedContent(recom);
-                        toPersist.add(book);
-                    });
-        }
-        return bookRepository.saveAll(toPersist);
-    }
-
+    /**
+     * 입력된 BookDto 리스트를 Redis에 저장 (이미 있으면 스킵)
+     *
+     * @param bookList
+     */
     public void saveBookToRedis(List<BookDto> bookList) {
         if (bookList == null || bookList.isEmpty()) {
             throw new IllegalArgumentException("book list is empty(Redis)");
         }
-        for (BookDto dto : bookList) {
-            String searchPattern = REDIS_BOOK_KEY_PREFIX + "*" + dto.getTitle();
-            Set<String> keys = redisTemplate.keys(searchPattern);
-            if (keys != null && !keys.isEmpty()) {
-                log.info(dto.getTitle() + ": redis에 이미 존재");
-                continue;
-            }
-            // redis 저장
-            Long id = redisService.BookToRedis(dto);
-            log.info(dto.getTitle() + ": redis에 저장 완료 (id=" + id + ")");
-        }
+
+        bookList.stream()
+                .filter(dto -> !hasRedisHash(normalizeKey(dto.getTitle())))
+                .forEach(dto -> {
+                    Long id = redisService.BookToRedis(dto);
+                    log.info("'{}' : redis에 저장 완료 (id={})", dto.getTitle(), id);
+                });
     }
 
+    /**
+     * testId(recomId)로 저장된 책 목록을 가져온 뒤,
+     * 각각의 책에 대해 Redis -> Kakao API -> Redis 대체 순으로 정보를 보강
+     *
+     * @param testId
+     * @return
+     * @throws IOException
+     */
+    @Transactional
     public List<Book> getBooksWithTestId(Long testId) throws IOException {
-
         TestInfoResponse testInfo = testServiceClient.getTestInfo(testId);
         Long userId = testInfo.getUserId();
-        // 1. get recomm ID
         Long recomId = testId; // testId = recomId
 
-        List<Book> bookList = bookRepository.findAllByRecommendedContent_RecomId(recomId);
+        List<Book> books = bookRepository.findAllByRecommendedContent_RecomId(recomId);
+        if (books.isEmpty()) {
+            return books;
+        }
+
+        // 중복 방지를 위한 이미 사용된 타이틀 모음
+        Set<String> usedTitles = books.stream()
+                .map(Book::getTitle)
+                .collect(Collectors.toCollection(HashSet::new));
+
         List<Book> toSave = new ArrayList<>();
-        List<String> bookTitles = bookList.stream().map(Book::getTitle).collect(Collectors.toList());
-
-
-        for (Book book : bookList) {
-            BookResponse info = resolveBookInfo(book.getTitle(), bookTitles);
+        for (Book book : books) {
+            BookResponse info = resolveBookInfo(book.getTitle(), usedTitles);
             if (info == null) {
                 log.warn("'{}' - Kakao api returned nothing and no alternative found in redis", book.getTitle());
                 continue;
@@ -129,43 +103,59 @@ public class BookService {
             applyBookInfo(book, info);
             toSave.add(book);
         }
+
         List<Book> saved = bookRepository.saveAll(toSave);
         List<String> finalTitles = saved.stream().map(Book::getTitle).toList();
         contentService.saveRecomContent(userId, testId, "book", finalTitles);
 
         return saved;
     }
-    private BookResponse resolveBookInfo(String title, List<String> bookTitles) throws IOException {
-        String key = REDIS_BOOK_KEY_PREFIX + title;
 
-        // check redis
-        Map<Object, Object> cached = redisTemplate.opsForHash().entries(key);
-
-        if (cached != null && !cached.isEmpty()) {
-            return fromRedis(cached);
+    /**
+     * Helper
+     * Redis -> Kakao API -> Redis 대체 순으로 BookResponse를 획득
+     *
+     * @param title
+     * @param usedTitles
+     * @return
+     * @throws IOException
+     */
+    private BookResponse resolveBookInfo(String title, Set<String> usedTitles) throws IOException {
+        // 1. Redis 조회
+        Optional<BookResponse> cached = getFromRedis(title);
+        if (cached.isPresent()) {
+            return cached.get();
         }
 
-        // get from kakao api
+        // 2. Kakao API 조회
         BookResponse info = fetchFromKakao(title);
 
-        // if no result from kakao api?
+        // 3. Kakao 실패 시 Redis에서 대체 찾기
         if (info == null) {
-            // get alternative from redis
-            info = redisService.getAlternativeBook(bookTitles);
+            info = redisService.getAlternativeBook(new ArrayList<>(usedTitles));
             if (info == null) {
                 return null;
             }
         } else {
-            // save to redis
-            redisService.BookToRedis(new BookDto(info.getTitle(), info.getAuthor(), info.getDescription(), info.getImage()));
+            cacheToRedis(info);
         }
-        bookTitles.add(info.getTitle());
+
+        usedTitles.add(info.getTitle());
         return info;
     }
 
+    /**
+     * Helper
+     * Kakao API 호출
+     *
+     * @param title
+     * @return
+     * @throws IOException
+     */
     private BookResponse fetchFromKakao(String title) throws IOException {
         log.info("KAKAO API USED for title='{}'", title);
-        String query = URLEncoder.encode(title, "UTF-8");
+
+        String query = URLEncoder.encode(title, StandardCharsets.UTF_8);
         URL url = new URL(KAKAO_BOOK_API_BASE + query);
 
         HttpURLConnection connection = (HttpURLConnection) url.openConnection();
@@ -173,56 +163,137 @@ public class BookService {
         connection.setRequestProperty("Authorization", "KakaoAK " + kakaoApi);
 
         int responseCode = connection.getResponseCode();
+        String body = readBody(connection, responseCode == 200);
+        connection.disconnect();
+
+        JSONObject bookJson = new JSONObject(body);
+        JSONArray docs = bookJson.optJSONArray("documents");
+        if (docs == null || docs.length() == 0) {
+            log.warn("Kakao API returned no results for title='{}'", title);
+            return null;
+        }
+
+        JSONObject first = docs.getJSONObject(0);
+        return parseBookResponse(first, title);
+    }
+
+    /**
+     * Helper
+     * JSONArrary로 이루어진 Authors를 String으로 변환
+     *
+     * @param authorsArray
+     * @return
+     */
+    private String joinAuthors(JSONArray authorsArray) {
+        if (authorsArray == null || authorsArray.length() == 0) {
+            return "";
+        }
+        return authorsArray.toList()
+                .stream()
+                .map(Object::toString)
+                .collect(Collectors.joining(", "));
+    }
+
+    /**
+     * Helper
+     * 기존 Book 객체를 새로운 BookResponse정보로 교체
+     *
+     * @param book
+     * @param info
+     */
+    private void applyBookInfo(Book book, BookResponse info) {
+        book.setTitle(info.getTitle());
+        book.setAuthor(info.getAuthor());
+        book.setDescription(info.getDescription());
+        book.setImage(info.getImage());
+    }
+
+    /**
+     * Helper
+     * Redis에 key 있는지 조회, 있으면 True
+     *
+     * @param key
+     * @return
+     */
+    private boolean hasRedisHash(String key) {
+        Long size = redisTemplate.opsForHash().size(key);
+        return size != null && size > 0;
+    }
+
+    /**
+     * Helper
+     * Title 한국어 대응
+     *
+     * @param rawTitle
+     * @return
+     */
+    private String normalizeKey(String rawTitle) {
+        return REDIS_BOOK_KEY_PREFIX + Base64.getUrlEncoder()
+                .encodeToString(rawTitle.getBytes(StandardCharsets.UTF_8));
+    }
+
+    /**
+     * Helper
+     * Redis에서 title로 정보 가져오기
+     *
+     * @param title
+     * @return
+     */
+    private Optional<BookResponse> getFromRedis(String title) {
+        String key = normalizeKey(title);
+        Map<Object, Object> map = redisTemplate.opsForHash().entries(key);
+        if (map == null || map.isEmpty()) {
+            return Optional.empty();
+        }
+        return Optional.of(BookResponse.fromRedis(map));
+    }
+
+    /**
+     * Helper
+     * Redis에 새로운 정보 저장
+     *
+     * @param info
+     */
+    private void cacheToRedis(BookResponse info) {
+        redisService.BookToRedis(new BookDto(info.getTitle(), info.getAuthor(), info.getDescription(), info.getImage()));
+    }
+
+    /**
+     * HttpURLConnection 응답 본문 읽기
+     *
+     * @param connection
+     * @param successStream
+     * @return
+     * @throws IOException
+     */
+    private String readBody(HttpURLConnection connection, boolean successStream) throws IOException {
         StringBuilder sb = new StringBuilder();
         try (BufferedReader br = new BufferedReader(new InputStreamReader(
-                responseCode == 200 ? connection.getInputStream() : connection.getErrorStream()
+                successStream ? connection.getInputStream() : connection.getErrorStream(),
+                StandardCharsets.UTF_8
         ))) {
             String line;
             while ((line = br.readLine()) != null) {
                 sb.append(line);
             }
         }
+        return sb.toString();
+    }
 
-        JSONObject bookJson = new JSONObject(sb.toString());
-        JSONArray bookInfo = bookJson.optJSONArray("documents");
-        if (bookInfo == null || bookInfo.length() == 0) {
-            log.warn("Kakao API returned no results for title='{}'", title);
-            return null;
-        }
-
-        JSONObject book = bookInfo.getJSONObject(0);
+    /**
+     * Kakao 응답 JSON을 BookResponse로 변환
+     *
+     * @param book
+     * @param fallbackTitle
+     * @return
+     */
+    private BookResponse parseBookResponse(JSONObject book, String fallbackTitle) {
         String authors = joinAuthors(book.optJSONArray("authors"));
-
         return new BookResponse(
-                book.optString("title", title),
+                book.optString("title", fallbackTitle),
                 authors,
                 book.optString("contents", ""),
                 book.optString("thumbnail", "")
         );
-    }
-
-    private String joinAuthors(JSONArray authorsArray) {
-        if (authorsArray == null || authorsArray.length() == 0) {
-            return "";
-        }
-        return String.join(", ", authorsArray.toList().stream()
-                .map(Object::toString)
-                .toArray(String[]::new));
-    }
-
-    private BookResponse fromRedis(Map<Object, Object> cached) {
-        return new BookResponse(
-                (String) cached.getOrDefault("title", ""),
-                (String) cached.getOrDefault("author", ""),
-                (String) cached.getOrDefault("description", ""),
-                (String) cached.getOrDefault("image", "")
-        );
-    }
-
-    private void applyBookInfo(Book book, BookResponse info) {
-        book.setTitle(info.getTitle());
-        book.setAuthor(info.getAuthor());
-        book.setDescription(info.getDescription());
-        book.setImage(info.getImage());
     }
 }
