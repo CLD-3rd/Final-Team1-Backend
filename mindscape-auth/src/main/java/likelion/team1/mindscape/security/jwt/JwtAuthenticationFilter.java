@@ -13,6 +13,7 @@ import likelion.team1.mindscape.dto.LoginRequestDTO;
 import likelion.team1.mindscape.entity.User;
 import likelion.team1.mindscape.repository.UserRepository;
 import likelion.team1.mindscape.service.PrincipalDetails;
+import likelion.team1.mindscape.service.RedisRefreshTokenService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -30,6 +31,7 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
     private final AuthenticationManager authenticationManager;
     private final UserRepository userRepository;
     private final JwtProperties jwtProperties;
+    private final RedisRefreshTokenService redisRefreshTokenService;
 
 
 //    // 생성자에서 로그인 URL 설정
@@ -86,14 +88,18 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
                 .withExpiresAt(new Date(System.currentTimeMillis() + jwtProperties.getACCESS_TOKEN_EXPIRATION()))
                 .sign(Algorithm.HMAC512(jwtProperties.getSECRET()));
 
-        // refreshToken 생성
+
         String refreshToken = JWT.create()
                 .withSubject(principalDetails.getAccountId())
                 .withExpiresAt(new Date(System.currentTimeMillis() + jwtProperties.getREFRESH_TOKEN_EXPIRATION()))
                 .sign(Algorithm.HMAC512(jwtProperties.getSECRET()));
 
-        user.updateRefreshToken(refreshToken);
-        userRepository.save(user);
+
+//        user.updateRefreshToken(refreshToken);
+//        userRepository.save(user);
+
+        redisRefreshTokenService.saveRefreshToken(principalDetails.getAccountId(), refreshToken,
+                                                    jwtProperties.getREFRESH_TOKEN_EXPIRATION());
 
 
         //JWT 토큰 httponly 쿠키에 저장
