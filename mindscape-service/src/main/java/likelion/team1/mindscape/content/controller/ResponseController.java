@@ -4,6 +4,7 @@ import likelion.team1.mindscape.content.dto.response.HistoryResponse;
 import likelion.team1.mindscape.content.dto.response.content.BookDto;
 import likelion.team1.mindscape.content.dto.response.content.MovieDto;
 import likelion.team1.mindscape.content.dto.response.content.MusicDto;
+import likelion.team1.mindscape.content.service.ResponseService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -18,20 +19,16 @@ import java.util.Map;
 @RestController
 @RequestMapping("/api/test")
 @RequiredArgsConstructor
-//TODO: REDIS에서 가져오는지 SQL에서 가져오는지 확인 필요
 public class ResponseController {
-    private final ContentController controller;
+    private final ResponseService responseService;
 
     @GetMapping(value = "/history", params = "testId")
     public ResponseEntity<HistoryResponse> getHistoryByTestId(@RequestParam Long testId) {
-        @SuppressWarnings("unchecked")
-        List<BookDto> bookList = (List<BookDto>) controller.getBooksByTestId(testId).getBody();
+        List<BookDto> bookList = responseService.getBookDtoByTestId(testId);
 
-        @SuppressWarnings("unchecked")
-        List<MusicDto> musicList = (List<MusicDto>) controller.getMusicByTestId(testId).getBody();
+        List<MusicDto> musicList = responseService.getMusicDtoByTestId(testId);
 
-        @SuppressWarnings("unchecked")
-        List<MovieDto> movieList = (List<MovieDto>) controller.getContents(testId).getBody().get("updatedList");
+        List<MovieDto> movieList = responseService.getMovieDtoByTestId(testId);
 
         HistoryResponse.Recommend recommend = new HistoryResponse.Recommend(bookList, musicList, movieList);
         HistoryResponse response = new HistoryResponse(testId, recommend);
@@ -41,7 +38,7 @@ public class ResponseController {
     @GetMapping(value = "/history", params = "userId")
     public ResponseEntity<List<HistoryResponse>> getHistoryByUserId(@RequestParam Long userId) {
         //TODO: get test ID with user ID
-        List<Long> testIds = List.of(1L,2L,3L);
+        List<Long> testIds = List.of(1L, 2L, 3L);
         List<HistoryResponse> responses = new ArrayList<>();
 
         for (Long testId : testIds) {

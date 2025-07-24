@@ -1,6 +1,7 @@
 package likelion.team1.mindscape.content.dto.response.content;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
@@ -12,6 +13,7 @@ import java.util.Map;
 
 @Getter
 @Setter
+@AllArgsConstructor
 public class MovieDto {
     private String title;
 
