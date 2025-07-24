@@ -1,13 +1,13 @@
 package likelion.team1.mindscape.content.service;
 
-import jakarta.transaction.Transactional;
+import likelion.team1.mindscape.content.client.TestServiceClient;
+import likelion.team1.mindscape.content.dto.response.TestInfoResponse;
 import likelion.team1.mindscape.content.dto.response.content.MusicDto;
 import likelion.team1.mindscape.content.dto.response.content.MusicResponse;
 import likelion.team1.mindscape.content.entity.Music;
-import likelion.team1.mindscape.content.entity.RecomContent;
 import likelion.team1.mindscape.content.repository.MusicRepository;
-import likelion.team1.mindscape.content.repository.RecomContentRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Value;
@@ -20,117 +20,285 @@ import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLEncoder;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
+import java.nio.charset.StandardCharsets;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class MusicService {
+    private static final String LASTFM_API_BASE = "http://ws.audioscrobbler.com/2.0/?method=track.getInfo&format=json&api_key=%s&artist=%s&track=%s";
+    private static final String REDIS_MUSIC_KEY_PREFIX = "music:";
     @Value("${service.api.lastfm}")
     private String lastfmApi;
 
     private final MusicRepository musicRepository;
-    private final RecomContentRepository recomContentRepository;
     private final RedisTemplate<String, Object> redisTemplate;
     private final RedisService redisService;
+    private final ContentService contentService;
+    private final TestServiceClient testServiceClient;
 
-    public List<MusicResponse> getMusicDetails(List<String> artists, List<String> titles) throws IOException {
-        List<MusicResponse> musicList = new ArrayList<>();
-        for (int i = 0; i < titles.size(); i++) {
-            musicList.add(getMusicDetail(artists.get(i), titles.get(i)));
-        }
-        return musicList;
-    }
 
+    /**
+     * 단건 상세 조회 (외부 API 직접 호출)
+     *
+     * @param artist
+     * @param title
+     * @return
+     * @throws IOException
+     */
     public MusicResponse getMusicDetail(String artist, String title) throws IOException {
-        // set query and request url -> create url object
-        String artist_query = URLEncoder.encode(artist, "UTF-8");
-        String title_query = URLEncoder.encode(title, "UTF-8");
-        String apiURL = "http://ws.audioscrobbler.com/2.0/?method=track.getInfo&format=json&api_key=" + lastfmApi + "&artist=" + artist_query + "&track=" + title_query;
-        URL url = new URL(apiURL);
-
-        // open http connection
-        HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-        connection.setRequestMethod("GET");
-
-        // 200 = get inputstream, else = get errorstream
-        int responseCode = connection.getResponseCode();
-        BufferedReader br = new BufferedReader(
-                new InputStreamReader(
-                        responseCode == 200 ? connection.getInputStream() : connection.getErrorStream()
-                )
-        );
-
-        // read response line -> parse into jsonobject
-        JSONObject musicJson = new JSONObject(br.readLine());
-        // extract "track" array
-        JSONObject musicInfo = musicJson.getJSONObject("track");
-
-        // album image -> get lagrest one
-        JSONArray images = musicInfo.getJSONObject("album").getJSONArray("image");
-        String imageUrl = null;
-        for (int i = images.length() - 1; i >= 0; i--) {
-            JSONObject imageObj = images.getJSONObject(i);
-            if (!imageObj.getString("#text").isEmpty()) {
-                imageUrl = imageObj.getString("#text");
-                break;
-            }
-        }
-
-        // make result into musicresponse
-        MusicResponse musicResponse = new MusicResponse(
-                musicInfo.getString("name"),
-                musicInfo.getJSONObject("artist").getString("name"),
-                imageUrl
-        );
-
-        return musicResponse;
+        return fetchFromLastfm(artist, title);
     }
 
-    @Transactional
-    public List<Music> saveMusic(List<MusicDto> musicList, Long userId) {
+    /**
+     * 입력된 MusicDto 리스트를 Redis에 저장 (이미 있으면 스킵)
+     *
+     * @param musicList
+     */
+    public void saveMusicToRedis(List<MusicDto> musicList) {
         if (musicList == null || musicList.isEmpty()) {
-            throw new IllegalArgumentException("music list is empty");
-        }
-        RecomContent recom = recomContentRepository.findLatestByUserId(userId)
-                .orElseThrow(() -> new IllegalArgumentException("추천 결과가 없습니다."));
-
-        List<Music> toPersist = new ArrayList<>();
-
-        for (MusicDto dto : musicList) {
-            musicRepository.findByTitleAndArtist(dto.getTitle(), dto.getArtist())
-                    .ifPresentOrElse(music -> {
-                        // existed -> refresh recom info
-                        music.setRecommendedContent(recom);
-                        toPersist.add(music);
-                    }, () -> {
-                        // new music
-                        Music music = new Music();
-                        music.setTitle(dto.getTitle());
-                        music.setArtist(dto.getArtist());
-                        music.setElbum(dto.getAlbum());
-                        music.setRecommendedContent(recom);
-                        toPersist.add(music);
-                    });
-        }
-        return musicRepository.saveAll(toPersist);
-    }
-
-    public void saveMusicToRedis(List<MusicDto> musicList){
-        if(musicList == null || musicList.isEmpty()){
             throw new IllegalArgumentException("music list is empty(Redis)");
         }
-        for (MusicDto dto : musicList) {
-            String searchPattern = "music:*"+dto.getTitle();
-            Set<String> keys = redisTemplate.keys(searchPattern);
-            if (keys != null && !keys.isEmpty()) {
-                System.out.println(dto.getTitle() + ": redis에 이미 존재");
+
+        musicList.stream()
+                .filter(dto -> !hasRedisHash(normalizeKey(dto.getTitle())))
+                .forEach(dto -> {
+                    Long id = redisService.MusicToRedis(dto);
+                    log.info("'{}' : redis에 저장 완료 (id={})", dto.getTitle(), id);
+                });
+    }
+
+    /**
+     * testId(recomId)로 저장된 책 목록을 가져온 뒤,
+     * 각각의 책에 대해 Redis -> LastFM API -> Redis 대체 순으로 정보를 보강
+     *
+     * @param testId
+     * @return
+     * @throws IOException
+     */
+    public List<Music> getMusicWithTestId(Long testId) throws IOException {
+        TestInfoResponse testInfo = testServiceClient.getTestInfo(testId);
+        Long userId = testInfo.getUserId();
+        Long recomId = testId; // testId = recomId
+
+        List<Music> musics = musicRepository.findAllByRecommendedContent_RecomId(recomId);
+        if (musics.isEmpty()) {
+            return musics;
+        }
+
+        // 중복 방지를 위해 이미 사용된 타이틀 모음
+        Set<String> usedTitles = musics.stream()
+                .map(Music::getTitle)
+                .collect(Collectors.toCollection(HashSet::new));
+
+        List<Music> toSave = new ArrayList<>();
+        for (Music music : musics) {
+            MusicResponse info = resolveMusicInfo(music.getArtist(), music.getTitle(), usedTitles);
+            if (info == null) {
+                log.warn("'{}' - Lastfm api returned nothing and no alternative found in redis", music.getTitle());
                 continue;
             }
-            // redis 저장
-            Long id = redisService.MusicToRedis(dto);
-            System.out.println(dto.getTitle() + ": redis에 저장 완료 (id=" + id + ")");
+            applyMusicInfo(music, info);
+            toSave.add(music);
         }
+
+        List<Music> saved = musicRepository.saveAll(toSave);
+        List<String> titles = saved.stream().map(Music::getTitle).toList();
+        contentService.saveRecomContent(userId, testId, "music", titles);
+        return saved;
     }
+
+    /**
+     * Helper
+     * Redis -> LastFm API -> Redis 대체 순으로 MusicResponse 획득
+     *
+     * @param artist
+     * @param title
+     * @param usedTitles
+     * @return
+     * @throws IOException
+     */
+    private MusicResponse resolveMusicInfo(String artist, String title, Set<String> usedTitles) throws IOException {
+        // 1) Redis 조회
+        Optional<MusicResponse> cached = getFromRedis(title);
+        if (cached.isPresent()) {
+            return cached.get();
+        }
+
+        // 2) LastFM API 조회
+        MusicResponse info = fetchFromLastfm(artist, title);
+
+        // 3) LastFM 실패 시 Redis에서 대체 찾기
+        if (info == null) {
+            info = redisService.getAlternativeMusic(new ArrayList<>(usedTitles));
+            if (info == null) {
+                return null;
+            }
+        } else {
+            cacheToRedis(info);
+        }
+
+        usedTitles.add(info.getTitle());
+        return info;
+    }
+
+    /**
+     * Helper
+     * LastFM API 호출
+     *
+     * @param artist
+     * @param title
+     * @return
+     * @throws IOException
+     */
+    private MusicResponse fetchFromLastfm(String artist, String title) throws IOException {
+        log.info("LASTFM API USED for artist='{}', title='{}'", artist, title);
+
+        String artistQuery = URLEncoder.encode(artist, StandardCharsets.UTF_8);
+        String titleQuery = URLEncoder.encode(title, StandardCharsets.UTF_8);
+        String apiURL = String.format(LASTFM_API_BASE, lastfmApi, artistQuery, titleQuery);
+
+        HttpURLConnection connection = (HttpURLConnection) new URL(apiURL).openConnection();
+        connection.setRequestMethod("GET");
+
+        int responseCode = connection.getResponseCode();
+        String body = readBody(connection, responseCode == 200);
+        connection.disconnect();
+
+        JSONObject musicJson = new JSONObject(body);
+        JSONObject musicInfo = musicJson.optJSONObject("track");
+        if (musicInfo == null || musicInfo.length() == 0) {
+            log.warn("Lastfm API returned no results for artist='{}', title='{}'", artist, title);
+            return null;
+        }
+
+        return parseMusicResponse(musicInfo, artist, title);
+    }
+
+    /**
+     * Helper
+     * 기존 Music 객체를 새로운 MusicResponse정보로 교체
+     *
+     * @param music
+     * @param info
+     */
+    private void applyMusicInfo(Music music, MusicResponse info) {
+        music.setTitle(info.getTitle());
+        music.setArtist(info.getArtist());
+        music.setElbum(info.getAlbum());
+    }
+
+    /**
+     * Helper
+     * Redis에 key 있는지 조회, 있으면 True
+     *
+     * @param key
+     * @return
+     */
+    private boolean hasRedisHash(String key) {
+        Long size = redisTemplate.opsForHash().size(key);
+        return size != null && size > 0;
+    }
+
+    /**
+     * Helper
+     * Title 한국어 대응
+     *
+     * @param rawTitle
+     * @return
+     */
+    private String normalizeKey(String rawTitle) {
+        return REDIS_MUSIC_KEY_PREFIX + Base64.getUrlEncoder()
+                .encodeToString(rawTitle.getBytes(StandardCharsets.UTF_8));
+    }
+
+    /**
+     * Helper
+     * Redis에서 title로 정보 가져오기
+     *
+     * @param title
+     * @return
+     */
+    private Optional<MusicResponse> getFromRedis(String title) {
+        String key = normalizeKey(title);
+        Map<Object, Object> map = redisTemplate.opsForHash().entries(key);
+        if (map == null || map.isEmpty()) {
+            return Optional.empty();
+        }
+        return Optional.of(new MusicResponse(
+                (String) map.getOrDefault("title", ""),
+                (String) map.getOrDefault("artist", ""),
+                (String) map.getOrDefault("album", "")
+        ));
+    }
+
+    /**
+     * Helper
+     * Redis에 새로운 정보 저장
+     *
+     * @param info
+     */
+    private void cacheToRedis(MusicResponse info) {
+        redisService.MusicToRedis(new MusicDto(info.getTitle(), info.getArtist(), info.getAlbum()));
+    }
+
+    /**
+     * HttpURLConnection 응답 본문 읽기
+     *
+     * @param connection
+     * @param successStream
+     * @return
+     * @throws IOException
+     */
+    private String readBody(HttpURLConnection connection, boolean successStream) throws IOException {
+        StringBuilder sb = new StringBuilder();
+        try (BufferedReader br = new BufferedReader(new InputStreamReader(
+                successStream ? connection.getInputStream() : connection.getErrorStream(),
+                StandardCharsets.UTF_8
+        ))) {
+            String line;
+            while ((line = br.readLine()) != null) {
+                sb.append(line);
+            }
+        }
+        return sb.toString();
+    }
+
+    /**
+     * Lastfm 응답 JSON을 BookResponse로 변환
+     *
+     * @param musicInfo
+     * @param fallbackArtist
+     * @param fallbackTitle
+     * @return
+     */
+    private MusicResponse parseMusicResponse(JSONObject musicInfo, String fallbackArtist, String fallbackTitle) {
+        // album image -> 가장 큰 사이즈 선택
+        String imageUrl = null;
+        JSONObject albumObj = musicInfo.optJSONObject("album");
+        if (albumObj != null) {
+            JSONArray images = albumObj.optJSONArray("image");
+            if (images != null) {
+                for (int i = images.length() - 1; i >= 0; i--) {
+                    JSONObject imgObj = images.optJSONObject(i);
+                    if (imgObj != null) {
+                        String img = imgObj.optString("#text", "");
+                        if (!img.isEmpty()) {
+                            imageUrl = img;
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+
+        String trackName = musicInfo.optString("name", fallbackTitle);
+        JSONObject artistObj = musicInfo.optJSONObject("artist");
+        String artistName = artistObj != null ? artistObj.optString("name", fallbackArtist) : fallbackArtist;
+
+        return new MusicResponse(trackName, artistName, imageUrl);
+    }
+
 }

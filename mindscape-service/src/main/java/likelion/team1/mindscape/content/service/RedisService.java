@@ -1,14 +1,14 @@
 package likelion.team1.mindscape.content.service;
-import likelion.team1.mindscape.content.dto.response.content.BookDto;
-import likelion.team1.mindscape.content.dto.response.content.MovieDto;
-import likelion.team1.mindscape.content.dto.response.content.MusicDto;
+import likelion.team1.mindscape.content.dto.response.content.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
 import java.text.SimpleDateFormat;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 @Service
 @RequiredArgsConstructor
@@ -65,7 +65,53 @@ public class RedisService {
         redisTemplate.opsForHash().putAll(key, bookMap);
         return newId;
     }
+
+    public BookResponse getAlternativeBook(List<String> excludeTitles) {
+        Set<String> keys = redisTemplate.keys("book:*");
+
+        if (keys.isEmpty() || keys == null) {
+            return null;
+        }
+        for (String key : keys) {
+            Map<Object, Object> map = redisTemplate.opsForHash().entries(key);
+            String title = map.get("title").toString();
+            if (title == null || excludeTitles.contains(title)) {
+                continue;
+            }
+            return new BookResponse(
+                    (String) map.get("title"),
+                    (String) map.get("author"),
+                    (String) map.get("description"),
+                    (String) map.get("image")
+            );
+        }
+        return null;
+    }
+
+    public MusicResponse getAlternativeMusic(List<String> excludeTitles) {
+        Set<String> keys = redisTemplate.keys("mjsic:*");
+
+        if (keys.isEmpty() || keys == null) {
+            return null;
+        }
+        for (String key : keys) {
+            Map<Object, Object> map = redisTemplate.opsForHash().entries(key);
+            String title = map.get("title").toString();
+            if (title == null || excludeTitles.contains(title)) {
+                continue;
+            }
+            return new MusicResponse(
+                    (String) map.get("title"),
+                    (String) map.get("artist"),
+                    (String) map.get("album")
+            );
+        }
+        return null;
+    }
+
     public String makeRecomKey(Long userId, Long testId, String contentType) {
         return String.format("user:%d:test:%d:%s", userId, testId, contentType);
     }
+
+
 }

@@ -31,10 +31,10 @@ build/
 
 ### VS Code ###
 .vscode/
-<<<<<<< HEAD
 
 ### properties ###
-application-env.properties
+*.properties
 
-=======
->>>>>>> user-test
+# Redis AOF & RDB logs
+redis/conf/appendonlydir/
+redis/conf/dump.rdb

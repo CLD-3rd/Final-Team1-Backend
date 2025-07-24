@@ -19,7 +19,7 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 @Service
 public class GeminiService {
-	private final TestServiceClient testServiceClient;
+    private final TestServiceClient testServiceClient;
     private final GeminiApiClient geminiApiClient;
     private final BookRepository bookRepository;
     private final MovieRepository movieRepository;
@@ -27,19 +27,16 @@ public class GeminiService {
     private final RecomContentRepository recomContentRepository;
 
     public GeminiResponse recommend(Long testId) {
-    	//---------------------------------------------
-    	// 1. TestServiceClient를 통해 실제 또는 임시 데이터 받기
-    	//나중에 변경
+        //---------------------------------------------
+        // 1. TestServiceClient를 통해 실제 또는 임시 데이터 받기
+        //나중에 변경
         TestInfoResponse testInfo = testServiceClient.getTestInfo(testId);
-     // ** 로그 추가: testId와 testInfo 확인 **
-        System.out.println("[GEMINI서비스임!! Our Server] 프론트에서 받은 testId: " + testId);
-        System.out.println("[GEMINI 서비스임!! Our Server] test서버에서 받은 TestInfoResponse: " + testInfo);
 
         String userType = testInfo.getUserType();
 
         String prompt = String.format(
                 "사용자의 성향은 DISC검사 중 %s 입니다. 이 성향에 맞는 영화 3개, 책 3개, 음악 3개를 추천해줘. 아래 JSON 형식으로 출력해주세요. 답변은 json만 주세요:\n" +
-                		"{\n  \"movie\": [\"제목1\", \"제목2\", \"제목3\"],\n  \"book\": [\"제목1\", \"제목2\", \"제목3\"],\n  \"music\": [\"가수 - 제목1\", \"가수 - 제목2\", \"가수 - 제목3\"]\n}",
+                        "{\n  \"movie\": [\"제목1\", \"제목2\", \"제목3\"],\n  \"book\": [\"제목1\", \"제목2\", \"제목3\"],\n  \"music\": [\"가수 - 제목1\", \"가수 - 제목2\", \"가수 - 제목3\"]\n}",
                 userType
         );
 
@@ -54,9 +51,12 @@ public class GeminiService {
             movieRepository.save(new Movie(title, null, null, null, savedRecom));
         }
         for (String title : geminiResponse.getMusic()) {
-            musicRepository.save(new Music(title, null, null, savedRecom));
+            String[] tmp = title.split("[–-]", 2);
+            if (tmp.length == 2) {
+                musicRepository.save(new Music(tmp[1].trim(), tmp[0].trim(), null, savedRecom));
+            }
         }
-        return geminiResponse; 
+        return geminiResponse;
     }
-    
+
 }
