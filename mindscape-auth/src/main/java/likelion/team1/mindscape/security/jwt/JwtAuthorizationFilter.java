@@ -45,10 +45,10 @@ public class JwtAuthorizationFilter extends BasicAuthenticationFilter {
         if (cookies != null) {
             for (Cookie cookie : cookies) {
                 if (cookie.getName().equals(JwtProperties.ACCESS_TOKEN_STRING)) {
-                    accessToken = cookie.getValue().replace(JwtProperties.TOKEN_PREFIX, "");
+                    accessToken = cookie.getValue();
                 }
                 if (cookie.getName().equals(JwtProperties.REFRESH_TOKEN_STRING)) {
-                    refreshToken = cookie.getValue().replace(JwtProperties.TOKEN_PREFIX, "");
+                    refreshToken = cookie.getValue();
                 }
             }
         } else {

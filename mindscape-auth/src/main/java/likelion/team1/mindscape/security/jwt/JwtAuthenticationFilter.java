@@ -29,7 +29,6 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
 
     //인증(Authentication)을 처리하는 핵심 인터페이스
     private final AuthenticationManager authenticationManager;
-    private final UserRepository userRepository;
     private final JwtProperties jwtProperties;
     private final RedisRefreshTokenService redisRefreshTokenService;
 
@@ -76,7 +75,6 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
     protected void successfulAuthentication(HttpServletRequest request, HttpServletResponse response, FilterChain chain, Authentication authResult) throws IOException, ServletException {
 
         PrincipalDetails principalDetails = (PrincipalDetails) authResult.getPrincipal();
-        User user = principalDetails.getUser();
 
         deleteExistingTokenCookies(response);
 
@@ -95,8 +93,6 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
                 .sign(Algorithm.HMAC512(jwtProperties.getSECRET()));
 
 
-//        user.updateRefreshToken(refreshToken);
-//        userRepository.save(user);
 
         redisRefreshTokenService.saveRefreshToken(principalDetails.getAccountId(), refreshToken,
                                                     jwtProperties.getREFRESH_TOKEN_EXPIRATION());

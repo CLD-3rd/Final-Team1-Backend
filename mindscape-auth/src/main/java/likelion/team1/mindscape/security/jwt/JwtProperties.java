@@ -9,9 +9,6 @@ import org.springframework.stereotype.Component;
 @Component
 public class JwtProperties {
 
-   //public static final String SECRET = "dlrjsJWTxhzmsdmfdkaghghk,alcqhrghkgkfEotkdydgksmszldlqslek!";
-   //public static final int EXPIRATION_TIME = 60 * 60 * 24 * 1000;
-
    @Value("${jwt.secret}")
    private String SECRET;
 
@@ -21,7 +18,6 @@ public class JwtProperties {
    @Value("${jwt.refreshToken.ExpirationTime}")
    private int REFRESH_TOKEN_EXPIRATION;
 
-   public static final String TOKEN_PREFIX = "Bearer ";
    public static final String ACCESS_TOKEN_STRING = "AccessToken";
    public static final String REFRESH_TOKEN_STRING = "RefreshToken";
 }

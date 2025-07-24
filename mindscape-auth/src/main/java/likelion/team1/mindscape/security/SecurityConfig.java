@@ -5,6 +5,7 @@ import likelion.team1.mindscape.repository.UserRepository;
 import likelion.team1.mindscape.security.jwt.JwtAuthenticationFilter;
 import likelion.team1.mindscape.security.jwt.JwtAuthorizationFilter;
 import likelion.team1.mindscape.security.jwt.JwtProperties;
+import likelion.team1.mindscape.service.RedisRefreshTokenService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -26,6 +27,7 @@ public class SecurityConfig {
     private final UserRepository userRepository;
     private final CorsConfig corsConfig;
     private final JwtProperties jwtProperties;
+    private final RedisRefreshTokenService redisRefreshTokenService;
 
     //AuthenticationManager 빈을 생성하는 메소드
     //스프링 시큐리티의 인증을 담당하는 매니저를 설정
@@ -46,7 +48,7 @@ public class SecurityConfig {
         http
                 .addFilter(corsConfig.corsFilter())
                 // JWT 인증 필터 추가
-                .addFilter(new JwtAuthenticationFilter(authenticationManager, userRepository, jwtProperties))
+                .addFilter(new JwtAuthenticationFilter(authenticationManager, jwtProperties, redisRefreshTokenService))
 
                 // JWT 인가 필터 추가
                 .addFilter(new JwtAuthorizationFilter(authenticationManager, userRepository, jwtProperties))
