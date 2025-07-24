@@ -1,10 +1,9 @@
 package likelion.team1.mindscape.user.entity;
 
 import jakarta.persistence.*;
-import likelion.team1.mindscape.test.entity.Test;
 import lombok.*;
 
-import java.util.List;
+import java.time.LocalDateTime;
 
 @Entity
 @Getter
@@ -12,19 +11,48 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-@Table(name = "`user`")
 public class User {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long userId;
+    private long id;
 
-    private String name;
+    @Column(nullable = false, unique = true)
+    private String accountId;
 
-    private String email;
+    @Column(nullable = false)
+    private String username;
 
+    @Column(nullable = false)
     private String password;
 
-    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Test> tests;
+    // 리프레시 토큰 저장 필드
+    @Column(length = 1000)
+    private String refreshToken;
+
+    // 리프레시 토큰 만료기간
+    private LocalDateTime tokenExpiryDate;
+
+    // 리프레시 토큰 만료기간 업데이트
+    public void updateRefreshToken(String refreshToken) {
+        this.refreshToken = refreshToken;
+        this.tokenExpiryDate = LocalDateTime.now().plusDays(14);
+    }
+
+    // 리프레시 토큰 유효성 검사
+    public boolean isRefreshTokenValid() {
+        return refreshToken != null &&      //refreshToken 있어야하고,
+                tokenExpiryDate != null &&  // tokenExpiryDate 있어야하고,
+                LocalDateTime.now().isBefore(tokenExpiryDate);  // 재발급시기가 올바른시점이여야 한다.
+    }
+
+    // 리프레시 토큰 제거 (로그아웃 등)
+    public void clearRefreshToken() {
+        this.refreshToken = null;
+        this.tokenExpiryDate = null;
+    }
+
+    public boolean vailateRefreshToken(String refreshToken) {
+        return this.refreshToken.equals(refreshToken);
+    }
 }

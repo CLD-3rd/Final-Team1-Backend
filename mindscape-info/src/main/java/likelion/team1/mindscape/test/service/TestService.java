@@ -34,7 +34,7 @@ public class TestService {
     }
 
     public List<TestResponseDto> getTestHistory(Long userId) {
-        List<Test> testList = testRepository.findByUser_UserIdOrderByCreatedAtDesc(userId);
+        List<Test> testList = testRepository.findByUser_IdOrderByCreatedAtDesc(userId);
         return testList.stream()
                 .map(test -> TestResponseDto.builder()
                         .testId(test.getTestId())
@@ -50,7 +50,7 @@ public class TestService {
 
         return TestResponseSimpleDto.builder()
                 .testId(test.getTestId())
-                .userId(test.getUser().getUserId())
+                .userId(test.getUser().getId())
                 .userType(test.getUserType())
                 .build();
     }

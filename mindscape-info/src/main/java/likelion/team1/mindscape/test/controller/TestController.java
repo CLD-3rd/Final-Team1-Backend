@@ -26,8 +26,8 @@ public class TestController {
 
 
     @GetMapping("/history")
-    public ResponseEntity<List<TestResponseDto>> getHistory(@RequestParam Long userId) {
-        List<TestResponseDto> history = testService.getTestHistory(userId);
+    public ResponseEntity<List<TestResponseDto>> getHistory(@RequestParam Long id) {
+        List<TestResponseDto> history = testService.getTestHistory(id);
         return ResponseEntity.ok(history);
     }
     
