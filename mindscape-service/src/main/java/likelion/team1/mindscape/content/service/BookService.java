@@ -6,9 +6,7 @@ import likelion.team1.mindscape.content.dto.response.TestInfoResponse;
 import likelion.team1.mindscape.content.dto.response.content.BookDto;
 import likelion.team1.mindscape.content.dto.response.content.BookResponse;
 import likelion.team1.mindscape.content.entity.Book;
-import likelion.team1.mindscape.content.entity.RecomContent;
 import likelion.team1.mindscape.content.repository.BookRepository;
-import likelion.team1.mindscape.content.repository.RecomContentRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.json.JSONArray;
@@ -62,8 +60,9 @@ public class BookService {
         }
 
         bookList.stream()
-                .filter(dto -> !hasRedisHash(normalizeKey(dto.getTitle())))
+                .filter(dto -> !hasRedisHash(makeRedisKey(dto.getTitle())))
                 .forEach(dto -> {
+                    log.info("[REDIS@BookService.saveBookToRedis] Save movie '{}'", dto.getTitle());
                     Long id = redisService.BookToRedis(dto);
                     log.info("'{}' : redis에 저장 완료 (id={})", dto.getTitle(), id);
                 });
@@ -83,6 +82,7 @@ public class BookService {
         Long userId = testInfo.getUserId();
         Long recomId = testId; // testId = recomId
 
+        log.info("[SQL@BookService.getBooksWithTestId] Find books by recomId={}", recomId);
         List<Book> books = bookRepository.findAllByRecommendedContent_RecomId(recomId);
         if (books.isEmpty()) {
             return books;
@@ -97,13 +97,13 @@ public class BookService {
         for (Book book : books) {
             BookResponse info = resolveBookInfo(book.getTitle(), usedTitles);
             if (info == null) {
-                log.warn("'{}' - Kakao api returned nothing and no alternative found in redis", book.getTitle());
+                log.warn("[featch@BookService.getBooksWithTestId] Returned nothing and no alternative found in Redis: {}", book.getTitle());
                 continue;
             }
             applyBookInfo(book, info);
             toSave.add(book);
         }
-
+        log.info("[SQL@BookService.getBooksWithTestId] Save {} books", toSave.size());
         List<Book> saved = bookRepository.saveAll(toSave);
         List<String> finalTitles = saved.stream().map(Book::getTitle).toList();
         contentService.saveRecomContent(userId, testId, "book", finalTitles);
@@ -124,18 +124,30 @@ public class BookService {
         // 1. Redis 조회
         Optional<BookResponse> cached = getFromRedis(title);
         if (cached.isPresent()) {
-            return cached.get();
+            BookResponse cachedInfo = cached.get();
+            if (isComplete(cachedInfo)) {
+                log.info("[REDIS@BookService.resolveBookInfo] Found book '{}'", title);
+                return cachedInfo;
+            } else {
+                log.warn("[REDIS@BookService.resolveBookInfo] Incomplete data '{}'. Refresh via API", title);
+            }
         }
 
-        // 2. Kakao API 조회
         BookResponse info = fetchFromKakao(title);
 
-        // 3. Kakao 실패 시 Redis에서 대체 찾기
-        if (info == null) {
-            info = redisService.getAlternativeBook(new ArrayList<>(usedTitles));
+        // 3. Kakao 실패 또는 불완전 데이터 시 Redis에서 대체 찾기
+        if (!isComplete(info)) {
             if (info == null) {
+                log.warn("[KAKAO API@BookService.resolveBookInfo] Failed for '{}'. Get alternative from Redis", title);
+            } else {
+                log.warn("[KAKAO API@BookService.resolveBookInfo] Incomplete BookResponse '{}'. Get alternative from Redis", title);
+            }
+            info = redisService.getAlternativeBook(new ArrayList<>(usedTitles));
+            if (!isComplete(info)) {
+                log.error("[REDIS@BookService.resolveBookInfo] No alternative found in Redis for '{}'", title);
                 return null;
             }
+            log.info("[REDIS@BookService.resolveBookInfo] Use alternative '{}'", info.getTitle());
         } else {
             cacheToRedis(info);
         }
@@ -153,7 +165,7 @@ public class BookService {
      * @throws IOException
      */
     private BookResponse fetchFromKakao(String title) throws IOException {
-        log.info("KAKAO API USED for title='{}'", title);
+        log.info("[KAKAO API@BookService.fetchFromKakao] Kakao API used for title='{}'", title);
 
         String query = URLEncoder.encode(title, StandardCharsets.UTF_8);
         URL url = new URL(KAKAO_BOOK_API_BASE + query);
@@ -169,7 +181,7 @@ public class BookService {
         JSONObject bookJson = new JSONObject(body);
         JSONArray docs = bookJson.optJSONArray("documents");
         if (docs == null || docs.length() == 0) {
-            log.warn("Kakao API returned no results for title='{}'", title);
+            log.warn("[KAKAO API@BookService.fetchFromKakao] Kakao API returned no results for title='{}'", title);
             return null;
         }
 
@@ -216,20 +228,34 @@ public class BookService {
      * @return
      */
     private boolean hasRedisHash(String key) {
-        Long size = redisTemplate.opsForHash().size(key);
-        return size != null && size > 0;
+        try {
+            log.info("[REDIS@BookService.hasRedisHash] Check key type {}", key);
+            String type = redisTemplate.type(key).code();
+            if (!"hash".equals(type) && !"none".equals(type)) {
+                log.warn("[REDIS@BookService.hasRedisHash] Key {} is not hash type: {}", key, type);
+                return false;
+            }
+            if ("none".equals(type)) {
+                return false;
+            }
+            log.info("[REDIS@BookService.hasRedisHash] Get hash size {}", key);
+            Long size = redisTemplate.opsForHash().size(key);
+            return size != null && size > 0;
+        } catch (Exception e) {
+            log.error("[REDIS@BookService.hasRedisHash] Error checking key {}: {}", key, e.getMessage());
+            return false;
+        }
     }
 
     /**
      * Helper
-     * Title 한국어 대응
+     * Redis 키 생성
      *
-     * @param rawTitle
+     * @param title
      * @return
      */
-    private String normalizeKey(String rawTitle) {
-        return REDIS_BOOK_KEY_PREFIX + Base64.getUrlEncoder()
-                .encodeToString(rawTitle.getBytes(StandardCharsets.UTF_8));
+    private String makeRedisKey(String title) {
+        return REDIS_BOOK_KEY_PREFIX + title;
     }
 
     /**
@@ -240,12 +266,25 @@ public class BookService {
      * @return
      */
     private Optional<BookResponse> getFromRedis(String title) {
-        String key = normalizeKey(title);
-        Map<Object, Object> map = redisTemplate.opsForHash().entries(key);
-        if (map == null || map.isEmpty()) {
+        String key = makeRedisKey(title);
+        try {
+            log.info("[REDIS@BookService.getFromRedis] Check key type {}", key);
+            // 키 타입 확인
+            String type = redisTemplate.type(key).code();
+            if (!"hash".equals(type)) {
+                log.debug("[REDIS@BookService.getFromRedis] Key {} is not hash type: {}", key, type);
+                return Optional.empty();
+            }
+            log.info("[REDIS@BookService.getFromRedis] Load hash {}", key);
+            Map<Object, Object> map = redisTemplate.opsForHash().entries(key);
+            if (map == null || map.isEmpty()) {
+                return Optional.empty();
+            }
+            return Optional.of(BookResponse.fromRedis(map));
+        } catch (Exception e) {
+            log.error("[REDIS@BookService.getFromRedis] Error getting book with key {}: {}", key, e.getMessage());
             return Optional.empty();
         }
-        return Optional.of(BookResponse.fromRedis(map));
     }
 
     /**
@@ -255,7 +294,26 @@ public class BookService {
      * @param info
      */
     private void cacheToRedis(BookResponse info) {
+        log.info("[REDIS@BookService.cacheToRedis] Save book to Redis title='{}'", info.getTitle());
         redisService.BookToRedis(new BookDto(info.getTitle(), info.getAuthor(), info.getDescription(), info.getImage()));
+    }
+
+    /**
+     * Helper
+     * Kakao/Redis에서 얻은 BookResponse가 모든 필드를 채웠는지 검증
+     *
+     * @param info
+     * @return
+     */
+    private boolean isComplete(BookResponse info) {
+        return info != null
+                && notNullOrBlank(info.getTitle())
+                && notNullOrBlank(info.getAuthor())
+                && notNullOrBlank(info.getDescription())
+                && notNullOrBlank(info.getImage());
+    }
+    private boolean notNullOrBlank(String s) {
+        return s != null && !s.trim().isEmpty();
     }
 
     /**

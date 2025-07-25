@@ -34,7 +34,7 @@ public class RedisInitializer implements ApplicationRunner {
     private final RedisTemplate<String, Object> redisTemplate;
 
     private final List<String> MOVIESLIST = List.of("쇼생크 탈출", "인셉션", "매트릭스");
-    private final List<String> BOOKSLIST = List.of("앵무새 죽이기", "1984", "연금술사");
+    private final List<String> BOOKSLIST = List.of("앵무새 죽이기(리커버판)", "1984", "연금술사");
     private final List<String> MUSICLIST = List.of(
             "Queen - Bohemian Rhapsody",
             "The Beatles - Let It Be",
@@ -62,18 +62,28 @@ public class RedisInitializer implements ApplicationRunner {
     }
 
     private boolean isRedisDataExists() {
-        Set<String> movieKeys = redisTemplate.keys("movie:*");
-        Set<String> bookKeys = redisTemplate.keys("book:*");
-        Set<String> musicKeys = redisTemplate.keys("music:*");
+        long movieCount = countContentKeys("movie:");
+        long bookCount = countContentKeys("book:");
+        long musicCount = countContentKeys("music:");
 
-        boolean hasMovies = isCategoryDataValid(movieKeys, "movie:id");
-        boolean hasBooks = isCategoryDataValid(bookKeys, "book:id");
-        boolean hasMusic = isCategoryDataValid(musicKeys, "music:id");
+        boolean hasMovies = movieCount >= NUMBER_OF_CONTENTS;
+        boolean hasBooks = bookCount >= NUMBER_OF_CONTENTS;
+        boolean hasMusic = musicCount >= NUMBER_OF_CONTENTS;
 
-        log.info("Redis 데이터 존재 여부 - Movies: {}, Books: {}, Music: {}",
-                hasMovies, hasBooks, hasMusic);
+        log.info("Redis 데이터 존재 여부 - Movies: {} ({}개), Books: {} ({}개), Music: {} ({}개)", hasMovies, movieCount, hasBooks, bookCount, hasMusic, musicCount);
 
         return hasMovies && hasBooks && hasMusic;
+    }
+
+    private long countContentKeys(String prefix) {
+        Set<String> keys = redisTemplate.keys(prefix + "*");
+        if (keys == null || keys.isEmpty()) {
+            return 0;
+        }
+        String idKey = prefix + "id";
+        return keys.stream()
+                .filter(k -> !k.equals(idKey))
+                .count();
     }
 
 
@@ -171,42 +181,4 @@ public class RedisInitializer implements ApplicationRunner {
                 movieDtos.size(), musicDtos.size(), bookDtos.size());
     }
 
-    /**
-     * 카테고리 데이터가 유효한지 검증
-     * 1) idKey(예: movie:id)를 제외한 컨텐츠 키가 NUMBER_OF_CONTENTS 이상 존재
-     * 2) 각 해시 값에 null 또는 빈 문자열이 하나도 없어야 함
-     */
-    private boolean isCategoryDataValid(Set<String> keys, String idKey) {
-        if (keys == null || keys.isEmpty()) {
-            return false;
-        }
-        String prefix = idKey.substring(0, idKey.indexOf(':') + 1); // e.g. "movie:"
-        List<String> contentKeys = new ArrayList<>();
-        for (String key : keys) {
-            if (!key.equals(idKey) && key.startsWith(prefix)) {
-                contentKeys.add(key);
-            }
-        }
-        if (contentKeys.size() < NUMBER_OF_CONTENTS) {
-            return false;
-        }
-
-        // 각 키의 해시 데이터 검증
-        for (String key : contentKeys) {
-            Map<Object, Object> map = redisTemplate.opsForHash().entries(key);
-            if (map == null || map.isEmpty()) {
-                return false;
-            }
-            for (Map.Entry<Object, Object> entry : map.entrySet()) {
-                Object value = entry.getValue();
-                if (value == null) {
-                    return false;
-                }
-                if (value instanceof String && ((String) value).trim().isEmpty()) {
-                    return false;
-                }
-            }
-        }
-        return true;
-    }
 }
