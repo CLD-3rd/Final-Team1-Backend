@@ -1,40 +1,37 @@
 package likelion.team1.mindscape.test.service;
 
+import jakarta.transaction.Transactional;
 import likelion.team1.mindscape.test.dto.TestRequestDto;
-import likelion.team1.mindscape.test.entity.Test;
-import likelion.team1.mindscape.test.repository.TestRepository;
-import likelion.team1.mindscape.user.entity.User;
-import likelion.team1.mindscape.user.repository.UserRepository;
-import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Service;
-import java.util.List;
-import java.util.stream.Collectors;
 import likelion.team1.mindscape.test.dto.TestResponseDto;
 import likelion.team1.mindscape.test.dto.TestResponseSimpleDto;
+import likelion.team1.mindscape.test.entity.Test;
+import likelion.team1.mindscape.test.repository.TestRepository;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
 public class TestService {
 
     private final TestRepository testRepository;
-    private final UserRepository userRepository;
 
+    @Transactional
     public Long saveTest(TestRequestDto dto) {
-        User user = userRepository.findById(dto.getUserId())
-                .orElseThrow(() -> new IllegalArgumentException("유저 없음"));
-
         Test test = Test.builder()
-                .user(user)
+                .userId(dto.getUserId())
                 .userType(dto.getUserType())
                 .typeDescription(dto.getTypeDescription())
                 .build();
 
-        Test saved = testRepository.save(test);
-        return saved.getTestId();
+        return testRepository.save(test).getTestId();
     }
 
     public List<TestResponseDto> getTestHistory(Long userId) {
-        List<Test> testList = testRepository.findByUser_UserIdOrderByCreatedAtDesc(userId);
+        List<Test> testList = testRepository.findByUserIdOrderByCreatedAtDesc(userId);
+
         return testList.stream()
                 .map(test -> TestResponseDto.builder()
                         .testId(test.getTestId())
@@ -44,14 +41,19 @@ public class TestService {
                         .build())
                 .collect(Collectors.toList());
     }
+
     public TestResponseSimpleDto getTestInfoById(Long testId) {
         Test test = testRepository.findById(testId)
                 .orElseThrow(() -> new IllegalArgumentException("테스트 결과를 찾을 수 없습니다."));
 
         return TestResponseSimpleDto.builder()
                 .testId(test.getTestId())
-                .userId(test.getUser().getUserId())
+                .userId(test.getUserId())  // ✅ 객체 대신 userId 직접 반환
                 .userType(test.getUserType())
                 .build();
     }
+    public List<Long> getTestIdsByUserId(Long userId) {
+        return testRepository.findTestIdsByUserId(userId);
+    }
+
 }
