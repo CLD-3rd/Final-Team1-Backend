@@ -32,25 +32,24 @@ public class RedisInitializer implements ApplicationRunner {
     private final MusicService musicService;
     private final RedisTemplate<String, Object> redisTemplate;
 
-    @Value("${app.redis.auto-init.force-reinit:false}")
-    private boolean forceReinit;
+    private final List<String> MOVIESLIST = List.of("쇼생크 탈출", "인셉션", "매트릭스");
+    private final List<String> BOOKSLIST = List.of("앵무새 죽이기", "1984", "연금술사");
+    private final List<String> MUSICLIST = List.of(
+            "Queen - Bohemian Rhapsody",
+            "The Beatles - Let It Be",
+            "Bob Dylan - Like A Rolling Stone"
+    );
 
-    @Value("${app.redis.auto-init.skip-if-exists:true}")
-    private boolean skipIfExists;
+    private final int NUMBER_OF_CONTENTS = 3;
+
 
     @Override
     public void run(ApplicationArguments args) throws Exception {
-        log.info("Redis 자동 초기화 시작... (force-reinit: {}, skip-if-exists: {})",
-                forceReinit, skipIfExists);
+        log.info("Redis 자동 초기화 시작");
 
-        if (skipIfExists && !forceReinit && isRedisDataExists()) {
-            log.info("Redis에 이미 데이터가 존재하고 skip-if-exists가 true이므로 초기화를 건너뜁니다.");
+        if (isRedisDataExists()) {
+            log.info("Redis에 이미 데이터가 존재하므로 초기화를 건너뜁니다.");
             return;
-        }
-
-        if (forceReinit) {
-            log.info("강제 재초기화 모드로 기존 더미 데이터를 삭제합니다.");
-            clearExistingDummyData();
         }
 
         try {
@@ -58,60 +57,28 @@ public class RedisInitializer implements ApplicationRunner {
             log.info("Redis 자동 초기화 완료!");
         } catch (Exception e) {
             log.error("Redis 자동 초기화 중 오류 발생: {}", e.getMessage(), e);
-            // 개발 환경에서는 예외를 던져서 문제를 빨리 파악하도록 하고,
-            // 운영 환경에서는 계속 진행하도록 할 수 있습니다.
-            // throw e; // 초기화 실패 시 애플리케이션 중단하려면 주석 해제
         }
     }
 
-    /**
-     * 수동 호출용 메서드 (Controller에서 사용)
-     */
-    public void manualInit() throws Exception {
-        log.info("Redis 수동 초기화 시작...");
-        initializeRedisData();
-        log.info("Redis 수동 초기화 완료!");
-    }
-
-    /**
-     * Redis에 데이터가 이미 존재하는지 확인
-     */
     private boolean isRedisDataExists() {
         Set<String> movieKeys = redisTemplate.keys("movie:*");
         Set<String> bookKeys = redisTemplate.keys("book:*");
         Set<String> musicKeys = redisTemplate.keys("music:*");
 
-        boolean hasMovies = movieKeys != null && !movieKeys.isEmpty();
-        boolean hasBooks = bookKeys != null && !bookKeys.isEmpty();
-        boolean hasMusic = musicKeys != null && !musicKeys.isEmpty();
+        long movieCount = countContentItems(movieKeys, "movie:id");
+        long bookCount = countContentItems(bookKeys, "book:id");
+        long musicCount = countContentItems(musicKeys, "music:id");
 
-        log.info("Redis 데이터 존재 여부 - Movies: {}, Books: {}, Music: {}",
-                hasMovies, hasBooks, hasMusic);
+        boolean hasMovies = movieCount >= NUMBER_OF_CONTENTS;
+        boolean hasBooks = bookCount >= NUMBER_OF_CONTENTS;
+        boolean hasMusic = musicCount >= NUMBER_OF_CONTENTS;
 
-        // 모든 타입의 데이터가 하나라도 있으면 데이터가 존재한다고 판단
-        return hasMovies || hasBooks || hasMusic;
+        log.info("Redis 데이터 존재 여부 - Movies: {} ({}개), Books: {} ({}개), Music: {} ({}개)",
+                hasMovies, movieCount, hasBooks, bookCount, hasMusic, musicCount);
+
+        return hasMovies && hasBooks && hasMusic;
     }
 
-    /**
-     * 기존 더미 데이터 삭제 (강제 재초기화용)
-     */
-    private void clearExistingDummyData() {
-        List<String> dummyTitles = List.of("쇼생크 탈출", "인셉션", "매트릭스",
-                "앵무새 죽이기", "1984", "연금술사",
-                "Bohemian Rhapsody", "Let It Be", "Like A Rolling Stone");
-
-        for (String title : dummyTitles) {
-            try {
-                Set<String> keys = redisTemplate.keys("*" + title + "*");
-                if (keys != null && !keys.isEmpty()) {
-                    redisTemplate.delete(keys);
-                    log.info("기존 더미 데이터 삭제: {}", title);
-                }
-            } catch (Exception e) {
-                log.warn("더미 데이터 삭제 실패: {} - {}", title, e.getMessage());
-            }
-        }
-    }
 
     /**
      * Redis에 초기 더미 데이터 저장
@@ -119,54 +86,45 @@ public class RedisInitializer implements ApplicationRunner {
     private void initializeRedisData() throws IOException {
         log.info("Redis 더미 데이터 생성 중...");
 
-        // 더미 데이터 정의
-        List<String> moviesList = List.of("쇼생크 탈출", "인셉션", "매트릭스");
-        List<String> booksList = List.of("앵무새 죽이기", "1984", "연금술사");
-        List<String> musicList = List.of(
-                "Queen - Bohemian Rhapsody",
-                "The Beatles - Let It Be",
-                "Bob Dylan - Like A Rolling Stone"
-        );
-
         List<MovieDto> movieDtos = new ArrayList<>();
         List<MusicDto> musicDtos = new ArrayList<>();
         List<BookDto> bookDtos = new ArrayList<>();
 
         // 외부 API에서 상세 정보 가져오기
         try {
-            for (int i = 0; i < moviesList.size(); i++) {
+            for (int i = 0; i < MOVIESLIST.size(); i++) {
                 // 영화 정보 가져오기
-                List<MovieDto> movieInfo = movieService.getMovieInfo(moviesList.get(i));
+                List<MovieDto> movieInfo = movieService.getMovieInfo(MOVIESLIST.get(i));
                 if (!movieInfo.isEmpty()) {
                     movieDtos.add(movieInfo.get(0));
-                    log.info("영화 정보 가져옴: {}", moviesList.get(i));
+                    log.info("영화 정보 가져옴: {}", MOVIESLIST.get(i));
                 } else {
-                    log.warn("영화 정보를 찾을 수 없음: {}", moviesList.get(i));
+                    log.warn("영화 정보를 찾을 수 없음: {}", MOVIESLIST.get(i));
                 }
 
                 // 책 정보 가져오기
                 try {
-                    BookDto bookDto = BookDto.from(bookService.getBookDetail(booksList.get(i)));
+                    BookDto bookDto = BookDto.from(bookService.getBookDetail(BOOKSLIST.get(i)));
                     bookDtos.add(bookDto);
-                    log.info("책 정보 가져옴: {}", booksList.get(i));
+                    log.info("책 정보 가져옴: {}", BOOKSLIST.get(i));
                 } catch (Exception e) {
-                    log.warn("책 정보를 가져오는데 실패: {} - {}", booksList.get(i), e.getMessage());
+                    log.warn("책 정보를 가져오는데 실패: {} - {}", BOOKSLIST.get(i), e.getMessage());
                 }
 
                 // 음악 정보 가져오기
-                String[] tmp = musicList.get(i).split("[–-]", 2);
+                String[] tmp = MUSICLIST.get(i).split("[–-]", 2);
                 if (tmp.length == 2) {
                     try {
                         MusicDto musicDto = MusicDto.from(
                                 musicService.getMusicDetail(tmp[0].trim(), tmp[1].trim())
                         );
                         musicDtos.add(musicDto);
-                        log.info("음악 정보 가져옴: {}", musicList.get(i));
+                        log.info("음악 정보 가져옴: {}", MUSICLIST.get(i));
                     } catch (Exception e) {
-                        log.warn("음악 정보를 가져오는데 실패: {} - {}", musicList.get(i), e.getMessage());
+                        log.warn("음악 정보를 가져오는데 실패: {} - {}", MUSICLIST.get(i), e.getMessage());
                     }
                 } else {
-                    log.warn("잘못된 음악 형식: {}", musicList.get(i));
+                    log.warn("잘못된 음악 형식: {}", MUSICLIST.get(i));
                 }
             }
         } catch (Exception e) {
@@ -214,5 +172,23 @@ public class RedisInitializer implements ApplicationRunner {
 
         log.info("Redis 데이터 저장 완료 - 영화: {}, 음악: {}, 책: {}",
                 movieDtos.size(), musicDtos.size(), bookDtos.size());
+    }
+
+    private long countContentItems(Set<String> keys, String idKey) {
+        if (keys == null || keys.isEmpty()) {
+            return 0;
+        }
+        String prefix = idKey.substring(0, idKey.indexOf(':') + 1);
+
+        long count = 0;
+        for (String key : keys) {
+            if (key.equals(idKey)) {
+                continue;
+            }
+            if (key.startsWith(prefix)) {
+                count++;
+            }
+        }
+        return count;
     }
 }
