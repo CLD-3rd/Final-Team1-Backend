@@ -3,6 +3,7 @@ import likelion.team1.mindscape.content.dto.response.content.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
+import org.springframework.data.redis.connection.DataType;
 
 import java.text.SimpleDateFormat;
 import java.util.HashMap;
@@ -68,18 +69,31 @@ public class RedisService {
 
     public BookResponse getAlternativeBook(List<String> excludeTitles) {
         Set<String> keys = redisTemplate.keys("book:*");
-
-        if (keys.isEmpty() || keys == null) {
+        if (keys == null || keys.isEmpty()) {
             return null;
         }
         for (String key : keys) {
+            if ("book:id".equals(key)) {
+                continue;
+            }
+            DataType type = redisTemplate.type(key);
+            if (!DataType.HASH.equals(type)) {
+                continue;
+            }
             Map<Object, Object> map = redisTemplate.opsForHash().entries(key);
-            String title = map.get("title").toString();
-            if (title == null || excludeTitles.contains(title)) {
+            if (map == null || map.isEmpty()) {
+                continue;
+            }
+            Object titleObj = map.get("title");
+            if (titleObj == null) {
+                continue;
+            }
+            String title = titleObj.toString();
+            if (title.isBlank() || excludeTitles.contains(title)) {
                 continue;
             }
             return new BookResponse(
-                    (String) map.get("title"),
+                    title,
                     (String) map.get("author"),
                     (String) map.get("description"),
                     (String) map.get("image")
@@ -90,14 +104,27 @@ public class RedisService {
 
     public MusicResponse getAlternativeMusic(List<String> excludeTitles) {
         Set<String> keys = redisTemplate.keys("music:*");
-
-        if (keys.isEmpty() || keys == null) {
+        if (keys == null || keys.isEmpty()) {
             return null;
         }
         for (String key : keys) {
+            if ("music:id".equals(key)) {
+                continue;
+            }
+            DataType type = redisTemplate.type(key);
+            if (!DataType.HASH.equals(type)) {
+                continue;
+            }
             Map<Object, Object> map = redisTemplate.opsForHash().entries(key);
-            String title = map.get("title").toString();
-            if (title == null || excludeTitles.contains(title)) {
+            if (map == null || map.isEmpty()) {
+                continue;
+            }
+            Object titleObj = map.get("title");
+            if (titleObj == null) {
+                continue;
+            }
+            String title = titleObj.toString();
+            if (title.isBlank() || excludeTitles.contains(title)) {
                 continue;
             }
             return new MusicResponse(
