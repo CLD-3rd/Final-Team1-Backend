@@ -63,8 +63,9 @@ public class MusicService {
         }
 
         musicList.stream()
-                .filter(dto -> !hasRedisHash(normalizeKey(dto.getTitle())))
+                .filter(dto -> !hasRedisHash(makeRedisKey(dto.getTitle())))
                 .forEach(dto -> {
+                    log.info("[REDIS@MusicService.saveMusicToRedis] Save music '{}'", dto.getTitle());
                     Long id = redisService.MusicToRedis(dto);
                     log.info("'{}' : redis에 저장 완료 (id={})", dto.getTitle(), id);
                 });
@@ -83,6 +84,7 @@ public class MusicService {
         Long userId = testInfo.getUserId();
         Long recomId = testId; // testId = recomId
 
+        log.info("[SQL@MusicService.getMusicWithTestId] Find music by recomId={}", recomId);
         List<Music> musics = musicRepository.findAllByRecommendedContent_RecomId(recomId);
         if (musics.isEmpty()) {
             return musics;
@@ -97,13 +99,13 @@ public class MusicService {
         for (Music music : musics) {
             MusicResponse info = resolveMusicInfo(music.getArtist(), music.getTitle(), usedTitles);
             if (info == null) {
-                log.warn("'{}' - Lastfm api returned nothing and no alternative found in redis", music.getTitle());
+                log.warn("[fetch@MusicService.getMusicWithTestId] Returned nothing and no alternative found in Redis: {}", music.getTitle());
                 continue;
             }
             applyMusicInfo(music, info);
             toSave.add(music);
         }
-
+        log.info("[SQL@MusicService.getMusicWithTestId] Save {} music", toSave.size());
         List<Music> saved = musicRepository.saveAll(toSave);
         List<String> titles = saved.stream().map(Music::getTitle).toList();
         contentService.saveRecomContent(userId, testId, "music", titles);
@@ -124,18 +126,31 @@ public class MusicService {
         // 1) Redis 조회
         Optional<MusicResponse> cached = getFromRedis(title);
         if (cached.isPresent()) {
-            return cached.get();
+            MusicResponse cachedInfo = cached.get();
+            if (isComplete(cachedInfo)) {
+                log.info("[REDIS@MusicService.resolveMusicInfo] Found music '{}'", title);
+                return cachedInfo;
+            } else {
+                log.warn("[REDIS@MusicService.resolveMusicInfo] Incomplete data '{}', Refresh via API", title);
+            }
         }
 
         // 2) LastFM API 조회
         MusicResponse info = fetchFromLastfm(artist, title);
 
         // 3) LastFM 실패 시 Redis에서 대체 찾기
-        if (info == null) {
-            info = redisService.getAlternativeMusic(new ArrayList<>(usedTitles));
+        if (!isComplete(info)) {
             if (info == null) {
+                log.warn("[LASTFM API@MusicService.resolveMusicInfo] Failed for '{}'. Get alternative from Redis", title);
+            } else {
+                log.warn("[LASTFM API@MusicService.resolveMusicInfo] Incomplete MusicResponse '{}'. Get alternative from Redis", title);
+            }
+            info = redisService.getAlternativeMusic(new ArrayList<>(usedTitles));
+            if (!isComplete(info)) {
+                log.error("[REDIS@MusicService.resolveMusicInfo] No alternative found in Redis for '{}'", title);
                 return null;
             }
+            log.info("[REDIS@MusicService.resolveMusicInfo] Use alternative '{}'", info.getTitle());
         } else {
             cacheToRedis(info);
         }
@@ -154,7 +169,7 @@ public class MusicService {
      * @throws IOException
      */
     private MusicResponse fetchFromLastfm(String artist, String title) throws IOException {
-        log.info("LASTFM API USED for artist='{}', title='{}'", artist, title);
+        log.info("[LASTFM API@MusicService.fetchFromLastfm] LastFM API used for artist = '{}', title='{}'", artist, title);
 
         String artistQuery = URLEncoder.encode(artist, StandardCharsets.UTF_8);
         String titleQuery = URLEncoder.encode(title, StandardCharsets.UTF_8);
@@ -170,7 +185,7 @@ public class MusicService {
         JSONObject musicJson = new JSONObject(body);
         JSONObject musicInfo = musicJson.optJSONObject("track");
         if (musicInfo == null || musicInfo.length() == 0) {
-            log.warn("Lastfm API returned no results for artist='{}', title='{}'", artist, title);
+            log.warn("[LASTFM API@MusicService.fetchFromLastfm] LastFM API returned no results for artist = '{}', title='{}'", artist, title);
             return null;
         }
 
@@ -198,20 +213,34 @@ public class MusicService {
      * @return
      */
     private boolean hasRedisHash(String key) {
-        Long size = redisTemplate.opsForHash().size(key);
-        return size != null && size > 0;
+        try {
+            log.info("[REDIS@MusicService.hasRedisHash] Check key type {}", key);
+            String type = redisTemplate.type(key).code();
+            if (!"hash".equals(type) && !"none".equals(type)) {
+                log.warn("[REDIS@MusicService.hasRedisHash] Key {} is not hash type: {}", key, type);
+                return false;
+            }
+            if ("none".equals(type)) {
+                return false;
+            }
+            log.info("[REDIS@MusicService.hasRedisHash] Get hash size {}", key);
+            Long size = redisTemplate.opsForHash().size(key);
+            return size != null && size > 0;
+        } catch (Exception e) {
+            log.error("[REDIS@MusicService.hasRedisHash] Error checking key {}: {}", key, e.getMessage());
+            return false;
+        }
     }
 
     /**
      * Helper
-     * Title 한국어 대응
+     * Redis 키 생성
      *
-     * @param rawTitle
+     * @param title
      * @return
      */
-    private String normalizeKey(String rawTitle) {
-        return REDIS_MUSIC_KEY_PREFIX + Base64.getUrlEncoder()
-                .encodeToString(rawTitle.getBytes(StandardCharsets.UTF_8));
+    private String makeRedisKey(String title) {
+        return REDIS_MUSIC_KEY_PREFIX + title;
     }
 
     /**
@@ -222,16 +251,25 @@ public class MusicService {
      * @return
      */
     private Optional<MusicResponse> getFromRedis(String title) {
-        String key = normalizeKey(title);
-        Map<Object, Object> map = redisTemplate.opsForHash().entries(key);
-        if (map == null || map.isEmpty()) {
+        String key = makeRedisKey(title);
+        try {
+            log.info("[REDIS@MusicService.getFromRedis] Check key type {}", key);
+            // 키 타입 확인
+            String type = redisTemplate.type(key).code();
+            if (!"hash".equals(type)) {
+                log.debug("[REDIS@MusicService.getFromRedis] Key {} is not hash type: {}", key, type);
+                return Optional.empty();
+            }
+            log.info("[REDIS@MusicService.getFromRedis] Load hash {}", key);
+            Map<Object, Object> map = redisTemplate.opsForHash().entries(key);
+            if (map == null || map.isEmpty()) {
+                return Optional.empty();
+            }
+            return Optional.of(MusicResponse.fromRedis(map));
+        } catch (Exception e) {
+            log.error("[REDIS@MusicService.getFromRedis] Error getting music with key {}: {}", key, e.getMessage());
             return Optional.empty();
         }
-        return Optional.of(new MusicResponse(
-                (String) map.getOrDefault("title", ""),
-                (String) map.getOrDefault("artist", ""),
-                (String) map.getOrDefault("album", "")
-        ));
     }
 
     /**
@@ -241,7 +279,26 @@ public class MusicService {
      * @param info
      */
     private void cacheToRedis(MusicResponse info) {
+        log.info("[REDIS@BookService.cacheToRedis] Save music to Redis title='{}'", info.getTitle());
         redisService.MusicToRedis(new MusicDto(info.getTitle(), info.getArtist(), info.getAlbum()));
+    }
+
+    /**
+     * Helper
+     * LastFM/Redis에서 얻은 BookResponse가 모든 필드를 채웠는지 검증
+     *
+     * @param info
+     * @return
+     */
+    private boolean isComplete(MusicResponse info) {
+        return info != null
+                && notNullOrBlank(info.getTitle())
+                && notNullOrBlank(info.getArtist())
+                && notNullOrBlank(info.getAlbum());
+    }
+
+    private boolean notNullOrBlank(String s) {
+        return s != null && !s.trim().isEmpty();
     }
 
     /**
