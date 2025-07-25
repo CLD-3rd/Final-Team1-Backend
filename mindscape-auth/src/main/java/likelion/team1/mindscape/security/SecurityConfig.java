@@ -5,6 +5,9 @@ import likelion.team1.mindscape.repository.UserRepository;
 import likelion.team1.mindscape.security.jwt.JwtAuthenticationFilter;
 import likelion.team1.mindscape.security.jwt.JwtAuthorizationFilter;
 import likelion.team1.mindscape.security.jwt.JwtProperties;
+import likelion.team1.mindscape.security.oauth.OAuth2FailureHandler;
+import likelion.team1.mindscape.security.oauth.OAuth2SuccessHandler;
+import likelion.team1.mindscape.service.OAuth2UserService;
 import likelion.team1.mindscape.service.RedisRefreshTokenService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
@@ -28,6 +31,9 @@ public class SecurityConfig {
     private final CorsConfig corsConfig;
     private final JwtProperties jwtProperties;
     private final RedisRefreshTokenService redisRefreshTokenService;
+    private final OAuth2UserService oAuth2UserService;
+
+
 
     //AuthenticationManager 빈을 생성하는 메소드
     //스프링 시큐리티의 인증을 담당하는 매니저를 설정
@@ -44,7 +50,10 @@ public class SecurityConfig {
 
     //스프링 시큐리티의 필터 체인을 구성하는 메소드
     @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http, AuthenticationManager authenticationManager) throws Exception {
+    public SecurityFilterChain securityFilterChain(HttpSecurity http,
+                                                   OAuth2SuccessHandler oAuth2SuccessHandler,
+                                                   OAuth2FailureHandler oAuth2FailureHandler,
+                                                   AuthenticationManager authenticationManager) throws Exception {
         http
                 .addFilter(corsConfig.corsFilter())
                 // JWT 인증 필터 추가
@@ -52,6 +61,13 @@ public class SecurityConfig {
 
                 // JWT 인가 필터 추가
                 .addFilter(new JwtAuthorizationFilter(authenticationManager, userRepository, jwtProperties))
+
+                // google OAuth 로그인
+                .oauth2Login(oauth2 -> oauth2.userInfoEndpoint(
+                                userInfo -> userInfo.userService(oAuth2UserService))
+                        .successHandler(oAuth2SuccessHandler)
+                        .failureHandler(oAuth2FailureHandler)
+                )
 
                 // CSRF 보호 비활성화 (JWT 사용으로 불필요) 왜지?
                 // JWT를 사용하는 REST API에서는 CSRF 공격 방지가 불필요
@@ -74,8 +90,9 @@ public class SecurityConfig {
                 // 매 요청마다 인증 정보를 보내는 방식이라 보안에 취약
                 .httpBasic(AbstractHttpConfigurer::disable)
 
+
                 .authorizeHttpRequests(authorize -> authorize
-//                        .requestMatchers("/api/**").authenticated() //모든 API 호출 유저 인증 필요.
+                        .requestMatchers("/api/**").authenticated() //모든 API 호출 유저 인증 필요.
                         .anyRequest().permitAll()); // 이 외 요청은 권한 필요 X
 
 

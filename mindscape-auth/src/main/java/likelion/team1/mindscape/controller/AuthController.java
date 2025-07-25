@@ -94,4 +94,8 @@ public class AuthController {
         return ResponseEntity.ok(HttpStatus.OK);
     }
 
+    @GetMapping("/login")
+    public String loginPage(){
+        return "login";
+    }
 }

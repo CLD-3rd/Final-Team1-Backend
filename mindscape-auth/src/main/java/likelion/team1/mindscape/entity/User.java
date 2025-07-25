@@ -25,14 +25,21 @@ public class User {
     @Column(nullable = false)
     private String username;
 
-    @Column(nullable = false)
+    @Column
     private String password;
 
+    @Column
+    private String provider;    // OAuth2 제공자 (google)
+
+    @Column
+    private String providerId;  // OAuth2 제공자가 제공하는 ID
+
     // 리프레시 토큰 저장 필드
-    @Column(length = 1000)
+    @Transient // DB컬럼 생성 제외 - redis로 관리하기 때문에.
     private String refreshToken;
 
     // 리프레시 토큰 만료기간
+    @Transient // DB컬럼 생성 제외 - redis로 관리하기 때문에.
     private LocalDateTime tokenExpiryDate;
 
     // 리프레시 토큰 만료기간 업데이트
