@@ -89,7 +89,7 @@ public class RedisService {
     }
 
     public MusicResponse getAlternativeMusic(List<String> excludeTitles) {
-        Set<String> keys = redisTemplate.keys("mjsic:*");
+        Set<String> keys = redisTemplate.keys("music:*");
 
         if (keys.isEmpty() || keys == null) {
             return null;

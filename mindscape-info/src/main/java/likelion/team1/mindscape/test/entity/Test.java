@@ -27,7 +27,6 @@ public class Test {
 
     private String typeDescription;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "userId")
-    private likelion.team1.mindscape.user.entity.User user;
+    @Column(name = "user_id", nullable = false)
+    private Long userId;
 }

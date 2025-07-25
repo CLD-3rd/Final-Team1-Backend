@@ -249,17 +249,21 @@ public class ResponseService {
      */
     private MovieDto toMovieDto(Map<Object, Object> movieMap) {
         String title = (String) movieMap.get("title");
-        String releaseDateStr = (String) movieMap.get("release_date");
+        Object releaseDateObj = movieMap.get("release_date");
         String description = (String) movieMap.get("description");
         String poster = (String) movieMap.get("poster");
 
         Date releaseDate = null;
-        try {
-            if (releaseDateStr != null) {
-                releaseDate = new SimpleDateFormat("yyyy-MM-dd").parse(releaseDateStr);
+        if (releaseDateObj instanceof String) {
+            try {
+                releaseDate = new SimpleDateFormat("yyyy-MM-dd").parse((String) releaseDateObj);
+            } catch (ParseException e) {
+                log.warn("Invalid date format: {}", releaseDateObj);
             }
-        } catch (ParseException e) {
-            log.warn("Invalid date format: {}", releaseDateStr);
+        } else if (releaseDateObj instanceof java.sql.Timestamp) {
+            releaseDate = new Date(((java.sql.Timestamp) releaseDateObj).getTime());
+        } else if (releaseDateObj instanceof Date) {
+            releaseDate = (Date) releaseDateObj;
         }
 
         return new MovieDto(title, releaseDate, description, poster);

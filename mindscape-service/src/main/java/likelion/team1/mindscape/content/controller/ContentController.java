@@ -7,6 +7,7 @@ import likelion.team1.mindscape.content.entity.Music;
 import likelion.team1.mindscape.content.service.BookService;
 import likelion.team1.mindscape.content.service.MovieService;
 import likelion.team1.mindscape.content.service.MusicService;
+import likelion.team1.mindscape.content.service.RedisInitializer;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -62,41 +63,6 @@ public class ContentController {
             return ResponseEntity.internalServerError().body("Internal server error: " + e.getMessage());
         }
     }
-
-    @GetMapping("/redis-init")
-    public ResponseEntity redisInit() {
-        //Dummy data set
-        List<String> moviesList = List.of("쇼생크 탈출", "인셉션", "매트릭스");
-        List<String> booksList = List.of("앵무새 죽이기", "1984", "연금술사");
-        List<String> musicList = List.of("Queen - Bohemian Rhapsody", "The Beatles - Let It Be", "Bob Dylan - Like A Rolling Stone");
-
-        List<MovieDto> movieDtos = new ArrayList<>();
-        List<MusicDto> musicDtos = new ArrayList<>();
-        List<BookDto> bookDtos = new ArrayList<>();
-
-        // get details
-        try {
-            for (int i = 0; i < moviesList.size(); i++) {
-                movieDtos.add(movieService.getMovieInfo(moviesList.get(i)).get(0));
-                bookDtos.add(BookDto.from(bookService.getBookDetail(booksList.get(i))));
-
-                String[] tmp = musicList.get(i).split("[–-]", 2);
-                musicDtos.add(MusicDto.from(musicService.getMusicDetail(tmp[0].trim(), tmp[1].trim())));
-            }
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-
-        for (MovieDto movieDto : movieDtos) {
-            List<MovieDto> tmp = List.of(movieDto);
-            movieService.saveMovieToRedis(tmp);
-        }
-        musicService.saveMusicToRedis(musicDtos);
-        bookService.saveBookToRedis(bookDtos);
-
-        return ResponseEntity.ok("dummy data saved");
-    }
-
 
     private List<String> splitter(String joined) {
         return Arrays.stream(joined.split(","))

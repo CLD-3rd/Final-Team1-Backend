@@ -1,5 +1,6 @@
 package likelion.team1.mindscape.content.controller;
 
+import likelion.team1.mindscape.content.client.TestServiceClient;
 import likelion.team1.mindscape.content.dto.response.HistoryResponse;
 import likelion.team1.mindscape.content.dto.response.content.BookDto;
 import likelion.team1.mindscape.content.dto.response.content.MovieDto;
@@ -21,6 +22,7 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class ResponseController {
     private final ResponseService responseService;
+    private final TestServiceClient testServiceClient;
 
     @GetMapping(value = "/history", params = "testId")
     public ResponseEntity<HistoryResponse> getHistoryByTestId(@RequestParam Long testId) {
@@ -38,7 +40,7 @@ public class ResponseController {
     @GetMapping(value = "/history", params = "userId")
     public ResponseEntity<List<HistoryResponse>> getHistoryByUserId(@RequestParam Long userId) {
         //TODO: get test ID with user ID
-        List<Long> testIds = List.of(1L, 2L, 3L);
+        List<Long> testIds = testServiceClient.getTestIdsByUserId(userId);
         List<HistoryResponse> responses = new ArrayList<>();
 
         for (Long testId : testIds) {
