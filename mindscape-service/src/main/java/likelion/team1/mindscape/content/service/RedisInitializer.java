@@ -16,6 +16,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
+import java.util.Map;
 
 @Component
 @RequiredArgsConstructor
@@ -65,16 +66,12 @@ public class RedisInitializer implements ApplicationRunner {
         Set<String> bookKeys = redisTemplate.keys("book:*");
         Set<String> musicKeys = redisTemplate.keys("music:*");
 
-        long movieCount = countContentItems(movieKeys, "movie:id");
-        long bookCount = countContentItems(bookKeys, "book:id");
-        long musicCount = countContentItems(musicKeys, "music:id");
+        boolean hasMovies = isCategoryDataValid(movieKeys, "movie:id");
+        boolean hasBooks = isCategoryDataValid(bookKeys, "book:id");
+        boolean hasMusic = isCategoryDataValid(musicKeys, "music:id");
 
-        boolean hasMovies = movieCount >= NUMBER_OF_CONTENTS;
-        boolean hasBooks = bookCount >= NUMBER_OF_CONTENTS;
-        boolean hasMusic = musicCount >= NUMBER_OF_CONTENTS;
-
-        log.info("Redis 데이터 존재 여부 - Movies: {} ({}개), Books: {} ({}개), Music: {} ({}개)",
-                hasMovies, movieCount, hasBooks, bookCount, hasMusic, musicCount);
+        log.info("Redis 데이터 존재 여부 - Movies: {}, Books: {}, Music: {}",
+                hasMovies, hasBooks, hasMusic);
 
         return hasMovies && hasBooks && hasMusic;
     }
@@ -174,21 +171,42 @@ public class RedisInitializer implements ApplicationRunner {
                 movieDtos.size(), musicDtos.size(), bookDtos.size());
     }
 
-    private long countContentItems(Set<String> keys, String idKey) {
+    /**
+     * 카테고리 데이터가 유효한지 검증
+     * 1) idKey(예: movie:id)를 제외한 컨텐츠 키가 NUMBER_OF_CONTENTS 이상 존재
+     * 2) 각 해시 값에 null 또는 빈 문자열이 하나도 없어야 함
+     */
+    private boolean isCategoryDataValid(Set<String> keys, String idKey) {
         if (keys == null || keys.isEmpty()) {
-            return 0;
+            return false;
         }
-        String prefix = idKey.substring(0, idKey.indexOf(':') + 1);
-
-        long count = 0;
+        String prefix = idKey.substring(0, idKey.indexOf(':') + 1); // e.g. "movie:"
+        List<String> contentKeys = new ArrayList<>();
         for (String key : keys) {
-            if (key.equals(idKey)) {
-                continue;
-            }
-            if (key.startsWith(prefix)) {
-                count++;
+            if (!key.equals(idKey) && key.startsWith(prefix)) {
+                contentKeys.add(key);
             }
         }
-        return count;
+        if (contentKeys.size() < NUMBER_OF_CONTENTS) {
+            return false;
+        }
+
+        // 각 키의 해시 데이터 검증
+        for (String key : contentKeys) {
+            Map<Object, Object> map = redisTemplate.opsForHash().entries(key);
+            if (map == null || map.isEmpty()) {
+                return false;
+            }
+            for (Map.Entry<Object, Object> entry : map.entrySet()) {
+                Object value = entry.getValue();
+                if (value == null) {
+                    return false;
+                }
+                if (value instanceof String && ((String) value).trim().isEmpty()) {
+                    return false;
+                }
+            }
+        }
+        return true;
     }
 }
