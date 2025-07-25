@@ -1,5 +1,6 @@
 package likelion.team1.mindscape;
 
+
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
