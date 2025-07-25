@@ -52,4 +52,8 @@ public class TestService {
                 .userType(test.getUserType())
                 .build();
     }
+    public List<Long> getTestIdsByUserId(Long userId) {
+        return testRepository.findTestIdsByUserId(userId);
+    }
+
 }

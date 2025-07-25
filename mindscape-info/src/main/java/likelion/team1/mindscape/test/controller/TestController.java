@@ -4,12 +4,10 @@ import likelion.team1.mindscape.test.dto.TestRequestDto;
 import likelion.team1.mindscape.test.dto.TestResponseDto;
 import likelion.team1.mindscape.test.dto.TestResponseSimpleDto;
 import likelion.team1.mindscape.test.service.TestService;
-import likelion.team1.mindscape.test.util.JwtUtil;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.server.ResponseStatusException;
+
 
 import java.util.List;
 import java.util.Map;
@@ -22,14 +20,6 @@ public class TestController {
     private final TestService testService;
 
     //테스트 저장
-//    @PostMapping("/save")
-//    public ResponseEntity<Map<String, Long>> saveTest(@RequestHeader("Authorization") String token,
-//                                                      @RequestBody TestRequestDto dto) {
-//        Long userId = JwtUtil.extractUserId(token);  // 토큰에서 userId 추출
-//        dto.setUserId(userId);                       // DTO에 주입
-//        Long testId = testService.saveTest(dto);
-//        return ResponseEntity.ok(Map.of("testId", testId));
-//    }
     @PostMapping("/save")
     public ResponseEntity<Map<String, Long>> saveTest(@RequestParam("id") Long userId,
                                                       @RequestBody TestRequestDto dto) {
@@ -38,11 +28,7 @@ public class TestController {
         return ResponseEntity.ok(Map.of("testId", testId));
     }
 
-
-
-
     //  마이페이지: 내 테스트 히스토리
-
     @GetMapping("/history")
     public ResponseEntity<List<TestResponseDto>> getHistory(@RequestParam("id") Long userId) {
         List<TestResponseDto> history = testService.getTestHistory(userId);
@@ -55,4 +41,11 @@ public class TestController {
         TestResponseSimpleDto response = testService.getTestInfoById(testId);
         return ResponseEntity.ok(response);
     }
+
+    @GetMapping("/ids")
+    public ResponseEntity<List<Long>> getTestIdsByUser(@RequestParam("id") Long userId) {
+        List<Long> testIds = testService.getTestIdsByUserId(userId);
+        return ResponseEntity.ok(testIds);
+    }
+
 }
