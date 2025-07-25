@@ -5,6 +5,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import java.util.List;
 
 public interface TestRepository extends JpaRepository<Test, Long> {
-	List<Test> findByUser_UserIdOrderByCreatedAtDesc(Long userId);
+	List<Test> findByUserIdOrderByCreatedAtDesc(Long userId);
 }
 
