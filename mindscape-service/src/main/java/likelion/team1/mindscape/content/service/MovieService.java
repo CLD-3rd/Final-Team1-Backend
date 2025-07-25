@@ -45,18 +45,21 @@ public class MovieService {
 
         TestInfoResponse testInfo = testServiceClient.getTestInfo(testId);
         Long userId = testInfo.getUserId();
-        // 1. movie 검색
         List<Movie> targetMovies = movieRepository.findByRecommendedContent_RecomId(testId);
         List<Movie> updatedList = new ArrayList<>();
+        boolean isFirstRequest = true;
+
+        // 1. movie 검색
         for (Movie movie : targetMovies) {
             if (hasCompleteInfo(movie)) { // 영화 title에 따른 내용 넣기
                 updateRecomOnly(movie, testId);
                 updatedList.add(movieRepository.save(movie));
             } else {
                 List<MovieDto> movieInfo = getMovieInfo(movie.getTitle());
-                MovieDto dto = movieInfo.isEmpty()
-                        ? fillMovieInfo(Collections.singletonList(movie)).orElse(null)
-                        : movieInfo.get(0);
+                MovieDto dto = getMovieDtoFallback(movieInfo, movie, isFirstRequest);
+                if (movieInfo.isEmpty()) {
+                    isFirstRequest = false;  // fallback 시도 후에 false 처리
+                }
                 if (dto == null) {
                     System.out.println("TMDB & Redis 모두 실패: " + movie.getTitle());
                     continue;
@@ -74,6 +77,23 @@ public class MovieService {
         contentService.saveRecomContent(userId, testId, "movie", titles);
         return updatedList;
     }
+
+    private MovieDto getMovieDtoFallback(List<MovieDto> movieInfo, Movie movie, boolean isFirstRequest) {
+        if (movieInfo.isEmpty()) {
+            if (isFirstRequest) {
+                Optional<MovieDto> fallback = getRandomMovie(Collections.singletonList(new MovieDto(movie.getTitle())));
+                fallback.ifPresent(dto ->
+                        System.out.println("Redis 대체 영화 사용: " + dto.getTitle())
+                );
+                return fallback.orElse(null);
+            } else { return null; }
+        } else {
+            saveMovieToRedis(movieInfo);
+            return movieInfo.get(0);
+        }
+    }
+
+
 
     /**
      * tmdb api에 없는 영화: redis에서 rndm하게 아무 영화 넣기
@@ -169,5 +189,7 @@ public class MovieService {
         return Optional.empty();
     }
 }
+
+
 
 
