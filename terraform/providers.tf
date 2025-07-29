@@ -12,6 +12,11 @@ terraform {
       source  = "hashicorp/aws"
       version = ">= 5.0.0"
     }
+
+    #  kubernetes-alpha = {
+    #   source  = "hashicorp/kubernetes-alpha"
+    #   version = "~> 0.5.0"
+    # }
   }
 }
 
@@ -27,5 +32,8 @@ provider "kubernetes" {
     command     = "aws"
     args        = ["eks", "get-token", "--cluster-name", module.eks.cluster_name]
   }
-
 }
+
+# provider "kubernetes-alpha" {
+#   config_path = "~/.kube/config"
+# }
