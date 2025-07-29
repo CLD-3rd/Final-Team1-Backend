@@ -3,7 +3,7 @@
 module "eks" {
   source                = "./modules/eks"
   team_name             = var.team_name
-  subnet_ids            = module.subnet.public_subnet_ids
+  subnet_ids = module.subnet.private_subnet_ids
   cluster_iam_role_arn  = module.iam.eks_cluster_role_arn
   node_iam_role_arn     = module.iam.eks_node_role_arn
 }
