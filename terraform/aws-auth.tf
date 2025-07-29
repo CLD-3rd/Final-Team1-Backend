@@ -1,9 +1,12 @@
 // aws‑auth.tf (루트)
-resource "kubernetes_config_map" "aws_auth" {
-  metadata {
-    name      = "aws-auth"
-    namespace = "kube-system"
-  }
+resource "kubernetes_manifest" "aws_auth" {
+  manifest = {
+    apiVersion = "v1"
+    kind       = "ConfigMap"
+    metadata = {
+      name      = "aws-auth"
+      namespace = "kube-system"
+    }
 
   data = {
     mapRoles = yamlencode([
@@ -27,4 +30,5 @@ resource "kubernetes_config_map" "aws_auth" {
     module.eks,
     module.iam,
   ]
+}
 }
