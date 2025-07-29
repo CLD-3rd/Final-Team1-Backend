@@ -1,11 +1,28 @@
 
+# ArgoCD
+module "argocd" {
+  source     = "./modules/argocd"
+  team_name  = var.team_name
+  namespace  = "argocd"
+  
+  # 개발 환경을 위한 설정
+  server_insecure = true
+  service_type    = "LoadBalancer"
+  
+  # Redis HA는 개발 환경에서는 비활성화
+  redis_ha_enabled = false
+  
+  depends_on = [module.eks]
+}
+
 # eks
 module "eks" {
   source                = "./modules/eks"
   team_name             = var.team_name
-  subnet_ids = module.subnet.private_subnet_ids
+  subnet_ids            = module.subnet.private_subnet_ids
   cluster_iam_role_arn  = module.iam.eks_cluster_role_arn
   node_iam_role_arn     = module.iam.eks_node_role_arn
+  bastion_role_arn      = module.iam.bastion_role_arn
 }
 
 # ec2 bastion
