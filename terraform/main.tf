@@ -18,6 +18,7 @@ module "bastion" {
   security_group_id         = module.sg.bastion_sg_id
   iam_instance_profile_name = module.iam.bastion_instance_profile_name
   cluster_name              = module.eks.cluster_name
+  key_name                  = var.bastion_key_name
 }
 
 

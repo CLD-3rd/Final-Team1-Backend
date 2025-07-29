@@ -6,6 +6,7 @@ resource "aws_instance" "bastion" {
   associate_public_ip_address = true
 
   iam_instance_profile = var.iam_instance_profile_name
+  key_name             = var.key_name
 
   user_data = templatefile("${path.module}/scripts/bastion-setup.sh", {
   cluster_name = var.cluster_name
