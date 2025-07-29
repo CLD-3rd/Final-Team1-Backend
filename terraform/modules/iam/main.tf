@@ -102,3 +102,9 @@ resource "aws_iam_instance_profile" "bastion" {
   name = "${var.team_name}-bastion-profile"
   role = aws_iam_role.bastion.name
 }
+
+# Bastion이 EKS 클러스터 정보를 읽을 수 있도록 허용
+resource "aws_iam_role_policy_attachment" "bastion_eks_readonly" {
+  role       = aws_iam_role.bastion.name
+  policy_arn = "arn:aws:iam::aws:policy/AmazonEKSReadOnlyAccess"
+}
