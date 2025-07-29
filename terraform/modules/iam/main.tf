@@ -14,8 +14,8 @@ resource "aws_iam_role" "eks_cluster" {
   })
 }
 
-resource "aws_iam_role_policy_attachment" "eks_cluster_AmazonEKSClusterPolicy" {
-  role       = aws_iam_role.eks_cluster.name
+resource "aws_iam_role_policy_attachment" "eks_cluster_attach" {
+  role       = aws_iam_role.eks_cluster.name    # eks_cluster 역할에
   policy_arn = "arn:aws:iam::aws:policy/AmazonEKSClusterPolicy"
 }
 
@@ -103,12 +103,13 @@ resource "aws_iam_instance_profile" "bastion" {
   role = aws_iam_role.bastion.name
 }
 
-resource "aws_iam_role_policy_attachment" "bastion_eks_readonly" {
+# 읽기 전용 권한
+resource "aws_iam_role_policy_attachment" "bastion_eks_readOnly" {
   role       = aws_iam_role.bastion.name
   policy_arn = "arn:aws:iam::aws:policy/AmazonEKSReadOnlyAccess"
 }
 
-resource "aws_iam_role_policy_attachment" "bastion_eks_fullaccess" {
-  role       = aws_iam_role.bastion.name
-  policy_arn = "arn:aws:iam::aws:policy/AmazonEKSFullAccess"
+resource "aws_iam_role_policy_attachment" "bastion_eks_attach" {
+  role       = aws_iam_role.bastion.name        # bastion 역할에
+  policy_arn = "arn:aws:iam::aws:policy/AmazonEKSClusterPolicy"
 }
