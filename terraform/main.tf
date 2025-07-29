@@ -1,5 +1,12 @@
 
 
+module "vpc" {
+  source      = "./modules/network/vpc"
+  name_prefix = var.team_name
+  environment = "dev"
+  vpc_cidr    = "192.168.0.0/16"
+}
+
 #subnet
 module "subnet" {
   source              = "./modules/network/subnet"
@@ -10,3 +17,5 @@ module "subnet" {
   team_name           = var.team_name
   #environment         = var.environment
 }
+
+
