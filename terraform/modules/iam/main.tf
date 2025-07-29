@@ -103,13 +103,31 @@ resource "aws_iam_instance_profile" "bastion" {
   role = aws_iam_role.bastion.name
 }
 
-# 읽기 전용 권한
-resource "aws_iam_role_policy_attachment" "bastion_eks_readOnly" {
-  role       = aws_iam_role.bastion.name
-  policy_arn = "arn:aws:iam::aws:policy/AmazonEKSReadOnlyAccess"
-}
-
 resource "aws_iam_role_policy_attachment" "bastion_eks_attach" {
   role       = aws_iam_role.bastion.name        # bastion 역할에
   policy_arn = "arn:aws:iam::aws:policy/AmazonEKSClusterPolicy"
+}
+
+# 1) 커스텀 읽기 전용 EKS 정책 생성
+resource "aws_iam_policy" "bastion_eks_readonly" {
+  name        = "${var.team_name}-eks-bastion-readonly"
+  description = "Allow Bastion to describe and list EKS clusters"
+
+  policy = jsonencode({
+    Version = "2012-10-17",
+    Statement = [{
+      Effect   = "Allow",
+      Action   = [
+        "eks:DescribeCluster",
+        "eks:ListClusters"
+      ],
+      Resource = "*"
+    }]
+  })
+}
+
+# 2) Bastion 역할에 방금 만든 정책 붙이기
+resource "aws_iam_role_policy_attachment" "bastion_eks_readonly_attach" {
+  role       = aws_iam_role.bastion.name
+  policy_arn = aws_iam_policy.bastion_eks_readonly.arn
 }
