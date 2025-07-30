@@ -5,5 +5,5 @@ variable "namespace" {
 
 variable "chart_version" {
   type    = string
-  default     = "5.51.6"
+  default = "5.51.6"
 }
