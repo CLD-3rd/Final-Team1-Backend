@@ -133,12 +133,6 @@ resource "aws_iam_role_policy_attachment" "bastion_eks_readonly_attach" {
 }
 
 
-# # bastion ec2에 ssm 권한 주기 
-# resource "aws_iam_role_policy_attachment" "bastion_ssm" {
-#   role       = aws_iam_role.bastion_role.name
-#   policy_arn = "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore"
-# }
-
 # 정책 커스텀으로 eks클러스터 접근하게 만들어 버리기
 resource "aws_iam_policy" "bastion_eks_admin" {
   name        = "${var.team_name}-eks-bastion-admin"
@@ -162,4 +156,46 @@ resource "aws_iam_policy" "bastion_eks_admin" {
 resource "aws_iam_role_policy_attachment" "bastion_eks_admin_attach" {
   role       = aws_iam_role.bastion.name
   policy_arn = aws_iam_policy.bastion_eks_admin.arn
+}
+
+
+# alb controller irsa role
+# OIDC 공급자 참조 (이미 생성된 Provider)
+data "aws_iam_openid_connect_provider" "oidc" {
+  url = replace(var.oidc_url, "https://", "")
+}
+
+# ALB Controller용 IAM Role
+resource "aws_iam_role" "alb_irsa_role" {
+  name = "${var.team_name}-alb-irsa-role"
+
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17",
+    Statement = [
+      {
+        Effect = "Allow",
+        Principal = {
+          Federated = data.aws_iam_openid_connect_provider.oidc.arn
+        },
+        Action = "sts:AssumeRoleWithWebIdentity",
+        Condition = {
+          StringEquals = {
+            "${replace(var.oidc_url, "https://", "")}:sub" = "system:serviceaccount:argocd:aws-load-balancer-controller"
+          }
+        }
+      }
+    ]
+  })
+}
+
+# ALB Controller에 필요한 정책 연결
+resource "aws_iam_policy" "alb_controller_policy" {
+  name        = "${var.team_name}-alb-controller-policy"
+  description = "Policy for AWS ALB Controller"
+  policy      = file("${path.module}/alb-controller-policy.json")
+}
+
+resource "aws_iam_role_policy_attachment" "alb_controller_attach" {
+  role       = aws_iam_role.alb_irsa_role.name
+  policy_arn = aws_iam_policy.alb_controller_policy.arn
 }
