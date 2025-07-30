@@ -1,8 +1,8 @@
-resource "kubernetes_namespace" "argocd" {
-  metadata {
-    name = var.namespace
-  }
-}
+# resource "kubernetes_namespace" "argocd" {
+#   metadata {
+#     name = var.namespace
+#   }
+# }
 
 resource "helm_release" "argocd" {
   name             = "argocd"
