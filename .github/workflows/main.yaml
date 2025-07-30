@@ -1,14 +1,17 @@
 name: Team1 CI - Build and Push Docker Image
-## dev-terraform 브랜치
+
 on:
   push:
-    branches:
+    branches: ## TODO: dev, main으로 변경
       - dev-terraform
   workflow_dispatch:
 
 jobs:
   build:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        service: [mindscape-info, mindscape-service] ## TODO: mindscape-auth 추가
 
     steps:
       - uses: actions/checkout@v4
@@ -21,33 +24,26 @@ jobs:
 
       - name: Create application.properties
         run: |
-          mkdir -p ./src/main/resources
-          echo "${{ secrets.PROPERTIES }}" > ./src/main/resources/application.properties
+          mkdir -p ./${{ matrix.service }}/src/main/resources
+          echo "${{ secrets.PROPERTIES }}" > ./${{ matrix.service }}/src/main/resources/application.properties
 # TEST: mindscape-info
       - name: Build with Maven
         run: mvn -B -DskipTests package --file pom.xml
-        working-directory: ./mindscape-info
-#      - name: Build auth service
-#        run: mvn -B -DskipTests package --file pom.xml
-#        working-directory: ./mindscape-info
-#
-#      - name: Build info service
-#        run: mvn -B -DskipTests package --file pom.xml
-#        working-directory: ./mindscape-service
+        working-directory: ./${{ matrix.service }}
 
 ## JAR
       - name: Rename jar file
         run: mv ./target/*.jar ./target/app.jar
-        working-directory: ./mindscape-info
+        working-directory: ./${{ matrix.service }}
 
       - name: Check jar file
         run: ls ./target
-        working-directory: ./mindscape-info
+        working-directory: ./${{ matrix.service }}
 
       - uses: actions/upload-artifact@v4
         with:
-          name: app
-          path: ./target/*.jar
+          name: app-${{ matrix.service }}
+          path: ./${{ matrix.service }}/target/*.jar
 ## AWS SETTINGS
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
@@ -71,8 +67,8 @@ jobs:
       - name: Build and push Docker image to ECR
         uses: docker/build-push-action@v6
         with:
-          context: ./mindscape-info
-          file: ./mindscape-info/Dockerfile
+          context: ./${{ matrix.service }}
+          file: ./${{ matrix.service }}/Dockerfile
           push: true
           tags: |
             ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.ap-northeast-2.amazonaws.com/team1-mindscape-info:${{ env.SHORT_SHA }}
