@@ -35,6 +35,8 @@ module "iam" {
   team_name  = var.team_name
   cluster_name = module.eks.cluster_name
   oidc_url     = module.eks.oidc_url
+
+  depends_on = [module.eks]
 }
 
 #security group
