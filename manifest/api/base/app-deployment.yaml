@@ -1,0 +1,21 @@
+# argocd-deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: app-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: mindscape
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: mindscape
+    spec:
+      containers:
+        - name: argocd-container
+          image: nniinjjii/team1:latest
+          envFrom:
+            - configMapRef:
+                name: argocd-env-vars
