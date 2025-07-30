@@ -71,8 +71,8 @@ jobs:
           file: ./${{ matrix.service }}/Dockerfile
           push: true
           tags: |
-            ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.ap-northeast-2.amazonaws.com/team1-mindscape-${{ matrix.service }}:${{ env.SHORT_SHA }}
-            ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.ap-northeast-2.amazonaws.com/team1-mindscape-${{ matrix.service }}:latest
+            ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.ap-northeast-2.amazonaws.com/team1-${{ matrix.service }}:${{ env.SHORT_SHA }}
+            ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.ap-northeast-2.amazonaws.com/team1-${{ matrix.service }}:latest
             
             
             
