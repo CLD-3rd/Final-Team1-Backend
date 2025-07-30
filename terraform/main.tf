@@ -133,10 +133,10 @@ module "argocd_namespace" {
     kubernetes.eks = kubernetes.eks 
   }
 
-    depends_on = [
-    module.eks,
-    module.bastion
-  ]
+  #   depends_on = [
+  #   module.eks,
+  #   module.bastion
+  # ]
 }
 
 module "argocd" {
@@ -167,10 +167,10 @@ module "prometheus_namespace" {
   providers = {
     kubernetes.eks = kubernetes.eks 
   }
-    depends_on = [
-    module.eks,
-    module.bastion
-  ]
+  #   depends_on = [
+  #   module.eks,
+  #   module.bastion
+  # ]
 }
 
 module "prometheus" {
@@ -202,10 +202,10 @@ module "grafana_namespace" {
   providers = {
     kubernetes.eks = kubernetes.eks 
   }
-    depends_on = [
-    module.eks,
-    module.bastion
-  ]
+  #   depends_on = [
+  #   module.eks,
+  #   module.bastion
+  # ]
 }
 
 module "grafana" {
