@@ -108,3 +108,8 @@ module "rds" {
   db_username      = "root"
   db_password      = var.db_password
 }
+
+# ECR
+module "ecr" {
+  source     = "./modules/ecr"
+}
