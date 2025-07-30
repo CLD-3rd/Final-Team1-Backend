@@ -107,11 +107,23 @@ module "internet_gateway" {
 #   }
 # }
 
+# argocd 모듈 및 네임스페이스
 
-# argocd
+module "argocd_namespace" {
+  source  = "./modules/namespace"
+  name    = "argocd"
+  labels = {
+    "managed-by" = "terraform"
+  }
+
+  providers = {
+    kubernetes.eks = kubernetes.eks 
+  }
+}
+
 module "argocd" {
   source        = "./modules/argocd"
-  namespace     = "argocd"
+  namespace     = module.argocd_namespace.name
   chart_version = "5.51.6"
   providers = {
     helm = helm.eks
@@ -119,6 +131,69 @@ module "argocd" {
   }
 
     depends_on = [
-    module.eks
+    module.eks,
+    module.argocd_namespace
   ]
 }
+
+#프로메테오스 모듈 및 네임스페이스
+
+module "prometheus_namespace" {
+  source  = "./modules/namespace"
+  name    = "prometheus"
+  labels = {
+    "managed-by" = "terraform"
+  }
+
+  providers = {
+    kubernetes.eks = kubernetes.eks 
+  }
+}
+
+module "prometheus" {
+  source        = "./modules/monitoring/prometheus"
+  namespace     = module.prometheus_namespace.name
+  chart_version = "25.21.0"
+
+  providers = {
+    helm       = helm.eks
+    kubernetes = kubernetes.eks
+  }
+
+  depends_on = [
+    module.eks,
+    module.prometheus_namespace
+  ]
+
+}
+
+#그라파나 모듈 및 네임스페이스
+module "grafana_namespace" {
+  source  = "./modules/namespace"
+  name    = "grafana"
+  labels = {
+    "managed-by" = "terraform"
+  }
+
+  providers = {
+    kubernetes.eks = kubernetes.eks 
+  }
+}
+
+module "grafana" {
+  source        = "./modules/monitoring/grafana"
+  namespace     = module.grafana_namespace.name
+  chart_version = "7.3.11"
+
+  providers = {
+    helm       = helm.eks
+    kubernetes = kubernetes.eks
+  }
+
+    depends_on = [
+    module.eks,
+    module.grafana_namespace
+  ]
+
+}
+
