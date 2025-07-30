@@ -12,11 +12,6 @@ terraform {
       source  = "hashicorp/aws"
       version = ">= 5.0.0"
     }
-
-    #  kubernetes-alpha = {
-    #   source  = "hashicorp/kubernetes-alpha"
-    #   version = "~> 0.5.0"
-    # }
   }
 }
 
@@ -24,17 +19,15 @@ provider "aws" {
   region = "ap-northeast-2"
 }
 
-# EKS 클러스터 정보 로드
 data "aws_eks_cluster" "eks" {
-  name       = module.eks.cluster_name
+  name = module.eks.cluster_name
   depends_on = [module.eks]
 }
 
 data "aws_eks_cluster_auth" "eks" {
-  name       = module.eks.cluster_name
+  name = module.eks.cluster_name
   depends_on = [module.eks]
 }
-
 
 provider "kubernetes" {
   alias = "eks"
@@ -48,16 +41,12 @@ provider "kubernetes" {
   }
 }
 
-# Helm provider with alias (USE data source to match)
+# Helm Provider
 provider "helm" {
-  alias = "eks"
+    alias = "eks"
   kubernetes = {
-    host                   = data.aws_eks_cluster.eks.endpoint
-    cluster_ca_certificate = base64decode(data.aws_eks_cluster.eks.certificate_authority[0].data)
+    host                   = module.eks.cluster_endpoint
+    cluster_ca_certificate = base64decode(module.eks.cluster_certificate_authority)
     token                  = data.aws_eks_cluster_auth.eks.token
   }
 }
-
-# provider "kubernetes-alpha" {
-#   config_path = "~/.kube/config"
-# }
