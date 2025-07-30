@@ -1,4 +1,7 @@
+
 # // aws‑auth.tf (루트)
+
+
 # resource "kubernetes_manifest" "aws_auth" {
 #   manifest = {
 #     apiVersion = "v1"
@@ -29,7 +32,13 @@
 #   depends_on = [
 #     module.eks,
 #     module.iam,
+
 #     null_resource.wait_for_kubeconfig
 #   ]
 # }
 # }
+
+#   ]
+# }
+# }
+
