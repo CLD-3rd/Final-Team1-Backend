@@ -175,7 +175,7 @@ module "argocd" {
 
 module "prometheus" {
   source        = "./modules/monitoring/prometheus"
-  # namespace     = module.prometheus_namespace.name
+  namespace     = "prometheus"
   chart_version = "25.21.0"
 
   providers = {
@@ -210,7 +210,7 @@ module "prometheus" {
 
 module "grafana" {
   source        = "./modules/monitoring/grafana"
-  # namespace     = module.grafana_namespace.name
+  namespace     = "grafana"
   chart_version = "7.3.11"
 
   providers = {
