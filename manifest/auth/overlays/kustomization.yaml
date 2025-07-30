@@ -3,11 +3,4 @@ resources:
 patches:
   - path: argocd-patch.yaml
 
-namespace: argocd
-namePrefix: argocd-
-
-# configMapGenerator
-configMapGenerator:
-  - name: env-vars        # base에 지정된 configMap의 이름
-    envs:
-      - argocd.env
+namespace: app

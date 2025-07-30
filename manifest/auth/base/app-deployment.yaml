@@ -1,37 +1,23 @@
-# argocd-deployment.yaml
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: app-deployment
+  name: auth-deployment
   namespace: app
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app.kubernetes.io/name: mindscape-auth
+      app: auth
   template:
     metadata:
       labels:
-        app: mindscape-auth
+        app: auth
     spec:
       containers:
-        - name: mindscape-auth
-          image: <AWS_ACCOUNT_ID>.dkr.ecr.ap-northeast-2.amazonaws.com/team1-mindscape-auth:latest
+        - name: auth
+          image: <ECR_REPOSITORY_URL>/team1-mindscape-auth:latest
           ports:
             - containerPort: 8080
-          env:
-            - name: DB_USERNAME
-              valueFrom:
-                secretKeyRef:
-                  name: mindscape-secrets
-                  key: db-username
-            - name: DB_PASSWORD
-              valueFrom:
-                secretKeyRef:
-                  name: mindscape-secrets
-                  key: db-password
-            - name: DB_SOURCE
-              valueFrom:
-                secretKeyRef:
-                  name: mindscape-secrets
-                  key: db-source
+          envFrom:
+            - secretRef:
+                name: auth-secret
