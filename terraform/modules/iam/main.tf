@@ -168,24 +168,24 @@ resource "aws_iam_role_policy_attachment" "bastion_eks_admin_attach" {
 resource "aws_iam_role" "alb_irsa_role" {
   name = "${var.team_name}-alb-irsa-role"
 
-  assume_role_policy = jsonencode({
-    Version = "2012-10-17",
-    Statement = [
-      {
-        Effect = "Allow",
-        Principal = {
-          Federated = data.aws_iam_openid_connect_provider.oidc.arn
-        },
-        Action = "sts:AssumeRoleWithWebIdentity",
-        Condition = {
-          StringEquals = {
-            "${replace(var.oidc_url, "https://", "")}:sub" = "system:serviceaccount:argocd:aws-load-balancer-controller"
-          }
-        }
-      }
-    ]
-  })
-}
+#  assume_role_policy = jsonencode({
+#    Version = "2012-10-17",
+#    Statement = [
+#      {
+#        Effect = "Allow",
+#        Principal = {
+#          Federated = data.aws_iam_openid_connect_provider.oidc.arn
+#        },
+#        Action = "sts:AssumeRoleWithWebIdentity",
+#        Condition = {
+#          StringEquals = {
+#            "${replace(var.oidc_url, "https://", "")}:sub" = "system:serviceaccount:argocd:aws-load-balancer-controller"
+#          }
+#        }
+#      }
+#    ]
+#  })
+#}
 
 # ALB Controller에 필요한 정책 연결
 resource "aws_iam_policy" "alb_controller_policy" {
