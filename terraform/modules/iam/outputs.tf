@@ -16,7 +16,7 @@ output "bastion_instance_profile_name" {
 }
 
 #alb
-output "alb_irsa_role_arn" {
-  description = "ARN of IAM Role for ALB Controller (IRSA)"
-  value       = aws_iam_role.alb_irsa_role.arn
-}
+#output "alb_irsa_role_arn" {
+#  description = "ARN of IAM Role for ALB Controller (IRSA)"
+#  value       = aws_iam_role.alb_irsa_role.arn
+#}
