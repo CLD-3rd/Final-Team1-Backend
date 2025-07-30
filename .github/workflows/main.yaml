@@ -71,7 +71,8 @@ jobs:
       - name: Build and push Docker image to ECR
         uses: docker/build-push-action@v6
         with:
-          context: .
+          context: ./mindscape-auth
+          file: ./mindscape-auth/Dockerfile
           push: true
           tags: |
             ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.ap-northeast-2.amazonaws.com/team1-mindscape-auth:${{ env.SHORT_SHA }}
