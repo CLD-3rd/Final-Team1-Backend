@@ -26,7 +26,7 @@ jobs:
 
       - name: Build with Maven
         run: mvn -B -DskipTests package --file pom.xml
-        working-directory: ./mindscape-auth
+        working-directory: ./mindscape-info
 #      - name: Build auth service
 #        run: mvn -B -DskipTests package --file pom.xml
 #        working-directory: ./mindscape-info
