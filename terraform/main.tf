@@ -122,22 +122,22 @@ module "internet_gateway" {
 
 # argocd 모듈 및 네임스페이스
 
-module "argocd_namespace" {
-  source  = "./modules/namespace"
-  name    = "argocd"
-  labels = {
-    "managed-by" = "terraform"
-  }
+# module "argocd_namespace" {
+#   source  = "./modules/namespace"
+#   name    = "argocd"
+#   labels = {
+#     "managed-by" = "terraform"
+#   }
 
-  providers = {
-    kubernetes.eks = kubernetes.eks 
-  }
+#   providers = {
+#     kubernetes.eks = kubernetes.eks 
+#   }
 
-    depends_on = [
-    module.eks,
-    module.bastion
-  ]
-}
+#     depends_on = [
+#     module.eks,
+#     module.bastion
+#   ]
+# }
 
 module "argocd" {
   source        = "./modules/argocd"
@@ -157,21 +157,21 @@ module "argocd" {
 
 #프로메테오스 모듈 및 네임스페이스
 
-module "prometheus_namespace" {
-  source  = "./modules/namespace"
-  name    = "prometheus"
-  labels = {
-    "managed-by" = "terraform"
-  }
+# module "prometheus_namespace" {
+#   source  = "./modules/namespace"
+#   name    = "prometheus"
+#   labels = {
+#     "managed-by" = "terraform"
+#   }
 
-  providers = {
-    kubernetes.eks = kubernetes.eks 
-  }
-    depends_on = [
-    module.eks,
-    module.bastion
-  ]
-}
+#   providers = {
+#     kubernetes.eks = kubernetes.eks 
+#   }
+#     depends_on = [
+#     module.eks,
+#     module.bastion
+#   ]
+# }
 
 module "prometheus" {
   source        = "./modules/monitoring/prometheus"
@@ -192,21 +192,21 @@ module "prometheus" {
 }
 
 #그라파나 모듈 및 네임스페이스
-module "grafana_namespace" {
-  source  = "./modules/namespace"
-  name    = "grafana"
-  labels = {
-    "managed-by" = "terraform"
-  }
+# module "grafana_namespace" {
+#   source  = "./modules/namespace"
+#   name    = "grafana"
+#   labels = {
+#     "managed-by" = "terraform"
+#   }
 
-  providers = {
-    kubernetes.eks = kubernetes.eks 
-  }
-    depends_on = [
-    module.eks,
-    module.bastion
-  ]
-}
+#   providers = {
+#     kubernetes.eks = kubernetes.eks 
+#   }
+#     depends_on = [
+#     module.eks,
+#     module.bastion
+#   ]
+# }
 
 module "grafana" {
   source        = "./modules/monitoring/grafana"
