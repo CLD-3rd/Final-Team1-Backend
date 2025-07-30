@@ -141,7 +141,7 @@ module "internet_gateway" {
 
 module "argocd" {
   source        = "./modules/argocd"
-  # namespace     = module.argocd_namespace.name
+  namespace     = module.argocd_namespace.name
   chart_version = "5.51.6"
   providers = {
     helm = helm.eks
@@ -175,7 +175,7 @@ module "argocd" {
 
 module "prometheus" {
   source        = "./modules/monitoring/prometheus"
-  namespace     = "prometheus"
+  namespace     = module.prometheus_namespace.name
   chart_version = "25.21.0"
 
   providers = {
@@ -210,7 +210,7 @@ module "prometheus" {
 
 module "grafana" {
   source        = "./modules/monitoring/grafana"
-  namespace     = "grafana"
+  namespace     = module.grafana_namespace.name
   chart_version = "7.3.11"
 
   providers = {
