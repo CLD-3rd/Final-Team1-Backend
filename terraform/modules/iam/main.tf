@@ -134,29 +134,29 @@ resource "aws_iam_role_policy_attachment" "bastion_eks_readonly_attach" {
 
 
 # 정책 커스텀으로 eks클러스터 접근하게 만들어 버리기
-resource "aws_iam_policy" "bastion_eks_admin" {
-  name        = "${var.team_name}-eks-bastion-admin"
-  description = "Full EKS access for bastion"
+#resource "aws_iam_policy" "bastion_eks_admin" {
+#  name        = "${var.team_name}-eks-bastion-admin"
+#  description = "Full EKS access for bastion"
 
-  policy = jsonencode({
-    Version = "2012-10-17",
-    Statement = [
-      {
-        Effect   = "Allow",
-        Action   = [
-          "eks:*",
-          "iam:PassRole"
-        ],
-        Resource = "*"
-      }
-    ]
-  })
-}
+#  policy = jsonencode({
+#    Version = "2012-10-17",
+#    Statement = [
+#      {
+#        Effect   = "Allow",
+#        Action   = [
+#          "eks:*",
+#          "iam:PassRole"
+#        ],
+#        Resource = "*"
+#      }
+#    ]
+#  })
+#}
 
-resource "aws_iam_role_policy_attachment" "bastion_eks_admin_attach" {
-  role       = aws_iam_role.bastion.name
-  policy_arn = aws_iam_policy.bastion_eks_admin.arn
-}
+#resource "aws_iam_role_policy_attachment" "bastion_eks_admin_attach" {
+#  role       = aws_iam_role.bastion.name
+#  policy_arn = aws_iam_policy.bastion_eks_admin.arn
+#}
 
 
 # alb controller irsa role
@@ -165,8 +165,8 @@ resource "aws_iam_role_policy_attachment" "bastion_eks_admin_attach" {
 #  url = var.oidc_url
 #}
 # ALB Controller용 IAM Role
-resource "aws_iam_role" "alb_irsa_role" {
-  name = "${var.team_name}-alb-irsa-role"
+#resource "aws_iam_role" "alb_irsa_role" {
+#  name = "${var.team_name}-alb-irsa-role"
 
 #  assume_role_policy = jsonencode({
 #    Version = "2012-10-17",
