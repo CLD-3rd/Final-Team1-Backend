@@ -18,8 +18,8 @@ module "bastion" {
   security_group_id         = module.sg.bastion_sg_id
   iam_instance_profile_name = module.iam.bastion_instance_profile_name
   cluster_name              = module.eks.cluster_name
-   eks_node_role_arn = module.iam.eks_node_role_arn    
-  bastion_role_arn  = module.iam.bastion_role_arn
+  eks_node_role_arn        = module.iam.eks_node_role_arn
+  bastion_role_arn         = module.iam.bastion_role_arn
   key_name                  = var.bastion_key_name
 
     depends_on = [
@@ -106,3 +106,19 @@ module "internet_gateway" {
 # EOT
 #   }
 # }
+
+
+# argocd
+module "argocd" {
+  source        = "./modules/argocd"
+  namespace     = "argocd"
+  chart_version = "5.51.6"
+  providers = {
+    helm = helm.eks
+    kubernetes = kubernetes.eks
+  }
+
+    depends_on = [
+    module.eks
+  ]
+}
