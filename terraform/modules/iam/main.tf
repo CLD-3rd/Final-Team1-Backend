@@ -131,3 +131,35 @@ resource "aws_iam_role_policy_attachment" "bastion_eks_readonly_attach" {
   role       = aws_iam_role.bastion.name
   policy_arn = aws_iam_policy.bastion_eks_readonly.arn
 }
+
+
+# # bastion ec2에 ssm 권한 주기 
+# resource "aws_iam_role_policy_attachment" "bastion_ssm" {
+#   role       = aws_iam_role.bastion_role.name
+#   policy_arn = "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore"
+# }
+
+# 정책 커스텀으로 eks클러스터 접근하게 만들어 버리기
+resource "aws_iam_policy" "bastion_eks_admin" {
+  name        = "${var.team_name}-eks-bastion-admin"
+  description = "Full EKS access for bastion"
+
+  policy = jsonencode({
+    Version = "2012-10-17",
+    Statement = [
+      {
+        Effect   = "Allow",
+        Action   = [
+          "eks:*",
+          "iam:PassRole"
+        ],
+        Resource = "*"
+      }
+    ]
+  })
+}
+
+resource "aws_iam_role_policy_attachment" "bastion_eks_admin_attach" {
+  role       = aws_iam_role.bastion.name
+  policy_arn = aws_iam_policy.bastion_eks_admin.arn
+}

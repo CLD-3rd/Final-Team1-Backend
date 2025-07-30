@@ -28,8 +28,50 @@ curl -LO "https://dl.k8s.io/release/v1.29.7/bin/linux/amd64/kubectl"
 chmod +x kubectl
 mv kubectl /usr/local/bin/kubectl
 
+# EKS 준비 대기
+for i in {1..30}; do
+  aws eks describe-cluster --region ap-northeast-2 --name "${cluster_name}" >/dev/null 2>&1 && break
+  echo "[INFO] Waiting for EKS API to become available... ($i/30)"
+  sleep 10
+done
+
+
 # 3. kubeconfig 설정
 aws eks --region ap-northeast-2 update-kubeconfig --name "${cluster_name}"
+
+
+cat <<EOF > /root/aws-auth.yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: aws-auth
+  namespace: kube-system
+data:
+  mapRoles: |
+    - rolearn: ${eks_node_role_arn}
+      username: system:node:{{EC2PrivateDNSName}}
+      groups:
+        - system:bootstrappers
+        - system:nodes
+    - rolearn: ${bastion_role_arn}
+      username: bastion-admin
+      groups:
+        - system:masters
+EOF
+
+# 3. aws-auth.yaml 적용 재시도
+for i in {1..10}; do
+  kubectl apply -f /root/aws-auth.yaml && break
+  echo "[WARN] aws-auth apply failed, retrying ($i/10)..."
+  sleep 5
+done
+
+# 4. RBAC 반영 대기 및 검증
+for i in {1..10}; do
+  kubectl get nodes && break
+  echo "[INFO] Waiting for RBAC to take effect ($i/10)..."
+  sleep 5
+done
 
 # helm 설치 (v3.14.0 고정)
 curl -LO https://get.helm.sh/helm-v3.14.0-linux-amd64.tar.gz
@@ -50,3 +92,8 @@ newgrp docker
 ssh-keygen -t rsa -N "" -f /root/.ssh/id_rsa
 
 echo "cloud-init complete."
+
+# # SSM Agent 설치 및 실행 (Ubuntu 기준)
+# sudo snap install amazon-ssm-agent --classic
+# sudo systemctl enable amazon-ssm-agent
+# sudo systemctl start amazon-ssm-agent

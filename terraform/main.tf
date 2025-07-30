@@ -18,6 +18,14 @@ module "bastion" {
   security_group_id         = module.sg.bastion_sg_id
   iam_instance_profile_name = module.iam.bastion_instance_profile_name
   cluster_name              = module.eks.cluster_name
+  eks_node_role_arn        = module.iam.eks_node_role_arn
+  bastion_role_arn         = module.iam.bastion_role_arn
+  key_name                  = var.bastion_key_name
+
+    depends_on = [
+    module.eks,         # 클러스터 먼저 생성
+    module.iam          # IAM 역할도 먼저 있어야 함
+  ]
 }
 
 
@@ -82,6 +90,22 @@ module "internet_gateway" {
   environment = "dev"
   vpc_id      = module.vpc.vpc_id
 }
+
+
+# # config 설정 뒤에 aws-auth 연결되게 설정 
+# resource "null_resource" "wait_for_kubeconfig" {
+#   provisioner "local-exec" {
+#     command = <<EOT
+# aws ssm send-command \
+#   --document-name "AWS-RunShellScript" \
+#   --instance-ids "${module.bastion.instance_id}" \
+#   --region ap-northeast-2 \
+#   --comment "Check for kubeconfig" \
+#   --parameters 'commands=["until [ -f /home/ubuntu/.kube/config ]; do sleep 3; done"]' \
+#   --output text
+# EOT
+#   }
+# }
 
 
 # argocd
