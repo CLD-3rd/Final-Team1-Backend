@@ -11,7 +11,7 @@ variable "db_subnet_ids" {
 variable "allowed_cidrs" {
   description = "CIDR blocks allowed to access RDS"
   type        = list(string)
-  default     = ["10.0.0.0/16"]
+  default     = ["0.0.0.0/0"]
 }
 
 variable "db_name" {
