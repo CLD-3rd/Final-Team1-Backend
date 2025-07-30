@@ -11,7 +11,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        service: [mindscape-info, mindscape-service] ## TODO: mindscape-auth 추가
+        service: [mindscape-auth, mindscape-info, mindscape-service]
 
     steps:
       - uses: actions/checkout@v4
@@ -71,8 +71,8 @@ jobs:
           file: ./${{ matrix.service }}/Dockerfile
           push: true
           tags: |
-            ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.ap-northeast-2.amazonaws.com/team1-mindscape-info:${{ env.SHORT_SHA }}
-            ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.ap-northeast-2.amazonaws.com/team1-mindscape-info:latest
+            ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.ap-northeast-2.amazonaws.com/team1-mindscape-${{ matrix.service }}:${{ env.SHORT_SHA }}
+            ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.ap-northeast-2.amazonaws.com/team1-mindscape-${{ matrix.service }}:latest
             
             
             

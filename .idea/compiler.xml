@@ -8,6 +8,15 @@
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
       </profile>
+      <profile name="Annotation profile for mindscape" enabled="true">
+        <sourceOutputDir name="target/generated-sources/annotations" />
+        <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
+        <outputRelativeToContentRoot value="true" />
+        <processorPath useClasspath="false">
+          <entry name="$MAVEN_REPOSITORY$/org/projectlombok/lombok/1.18.32/lombok-1.18.32.jar" />
+        </processorPath>
+        <module name="mindscape (1)" />
+      </profile>
       <profile name="Annotation profile for mindscape-info" enabled="true">
         <sourceOutputDir name="target/generated-sources/annotations" />
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
@@ -15,8 +24,7 @@
         <processorPath useClasspath="false">
           <entry name="$MAVEN_REPOSITORY$/org/projectlombok/lombok/1.18.30/lombok-1.18.30.jar" />
         </processorPath>
-        <module name="mindscape-info (2)" />
-        <module name="mindscape-info (1)" />
+        <module name="mindscape-info" />
       </profile>
       <profile name="Annotation profile for mindscape-service" enabled="true">
         <sourceOutputDir name="target/generated-sources/annotations" />
@@ -25,14 +33,14 @@
         <processorPath useClasspath="false">
           <entry name="$MAVEN_REPOSITORY$/org/projectlombok/lombok/1.18.34/lombok-1.18.34.jar" />
         </processorPath>
-        <module name="mindscape" />
+        <module name="mindscape (2)" />
       </profile>
     </annotationProcessing>
     <bytecodeTargetLevel>
-      <module name="mindscape (1)" target="17" />
-      <module name="mindscape (2)" target="17" />
+      <module name="mindscape" target="17" />
       <module name="mindscape-auth" target="1.6" />
-      <module name="mindscape-info" target="17" />
+      <module name="mindscape-info (1)" target="17" />
+      <module name="mindscape-info (2)" target="17" />
       <module name="mindscape-service" target="1.5" />
     </bytecodeTargetLevel>
   </component>
