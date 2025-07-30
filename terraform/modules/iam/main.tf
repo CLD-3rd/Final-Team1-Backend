@@ -161,9 +161,9 @@ resource "aws_iam_role_policy_attachment" "bastion_eks_admin_attach" {
 
 # alb controller irsa role
 # OIDC 공급자 참조 (이미 생성된 Provider)
-data "aws_iam_openid_connect_provider" "oidc" {
-  url = var.oidc_url
-}
+#data "aws_iam_openid_connect_provider" "oidc" {
+#  url = var.oidc_url
+#}
 # ALB Controller용 IAM Role
 resource "aws_iam_role" "alb_irsa_role" {
   name = "${var.team_name}-alb-irsa-role"
