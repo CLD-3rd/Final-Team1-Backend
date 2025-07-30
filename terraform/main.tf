@@ -28,13 +28,24 @@ module "bastion" {
   ]
 }
 
-
 #iam
 module "iam" {
   source     = "./modules/iam"
   team_name  = var.team_name
   cluster_name = module.eks.cluster_name
   oidc_url     = module.eks.oidc_url
+}
+
+
+module "alb_irsa" {
+  source               = "./modules/irsa"
+  team_name            = var.team_name
+  oidc_url             = module.eks.oidc_url
+  cluster_name         = module.eks.cluster_name
+  namespace            = "argocd"
+  service_account_name = "aws-load-balancer-controller"
+
+  depends_on = [module.eks]
 }
 
 #security group
