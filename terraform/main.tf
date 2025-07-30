@@ -139,21 +139,21 @@ module "internet_gateway" {
 #   ]
 # }
 
-module "argocd" {
-  source        = "./modules/argocd"
-  namespace     = module.argocd_namespace.name
-  chart_version = "5.51.6"
-  providers = {
-    helm = helm.eks
-    kubernetes = kubernetes.eks
-  }
+# module "argocd" {
+#   source        = "./modules/argocd"
+#   namespace     = module.argocd_namespace.name
+#   chart_version = "5.51.6"
+#   providers = {
+#     helm = helm.eks
+#     kubernetes = kubernetes.eks
+#   }
 
-    depends_on = [
-    module.eks,
-    module.bastion,
-    module.argocd_namespace
-  ]
-}
+#     depends_on = [
+#     module.eks,
+#     module.bastion,
+#     module.argocd_namespace
+#   ]
+# }
 
 #프로메테오스 모듈 및 네임스페이스
 
@@ -173,23 +173,23 @@ module "argocd" {
 #   ]
 # }
 
-module "prometheus" {
-  source        = "./modules/monitoring/prometheus"
-  namespace     = module.prometheus_namespace.name
-  chart_version = "25.21.0"
+# module "prometheus" {
+#   source        = "./modules/monitoring/prometheus"
+#   namespace     = module.prometheus_namespace.name
+#   chart_version = "25.21.0"
 
-  providers = {
-    helm       = helm.eks
-    kubernetes = kubernetes.eks
-  }
+#   providers = {
+#     helm       = helm.eks
+#     kubernetes = kubernetes.eks
+#   }
 
-  depends_on = [
-    module.eks,
-    module.bastion,
-    module.prometheus_namespace
-  ]
+#   depends_on = [
+#     module.eks,
+#     module.bastion,
+#     module.prometheus_namespace
+#   ]
 
-}
+# }
 
 #그라파나 모듈 및 네임스페이스
 # module "grafana_namespace" {
@@ -208,21 +208,21 @@ module "prometheus" {
 #   ]
 # }
 
-module "grafana" {
-  source        = "./modules/monitoring/grafana"
-  namespace     = module.grafana_namespace.name
-  chart_version = "7.3.11"
+# module "grafana" {
+#   source        = "./modules/monitoring/grafana"
+#   namespace     = module.grafana_namespace.name
+#   chart_version = "7.3.11"
 
-  providers = {
-    helm       = helm.eks
-    kubernetes = kubernetes.eks
-  }
+#   providers = {
+#     helm       = helm.eks
+#     kubernetes = kubernetes.eks
+#   }
 
-    depends_on = [
-    module.eks,
-    module.bastion,
-    module.grafana_namespace
-  ]
+#     depends_on = [
+#     module.eks,
+#     module.bastion,
+#     module.grafana_namespace
+#   ]
 
-}
+# }
 
