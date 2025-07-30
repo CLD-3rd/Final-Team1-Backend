@@ -188,13 +188,13 @@ resource "aws_iam_role" "alb_irsa_role" {
 #}
 
 # ALB Controller에 필요한 정책 연결
-resource "aws_iam_policy" "alb_controller_policy" {
-  name        = "${var.team_name}-alb-controller-policy"
-  description = "Policy for AWS ALB Controller"
-  policy      = file("${path.module}/alb-controller-policy.json")
-}
+#resource "aws_iam_policy" "alb_controller_policy" {
+#  name        = "${var.team_name}-alb-controller-policy"
+#  description = "Policy for AWS ALB Controller"
+#  policy      = file("${path.module}/alb-controller-policy.json")
+#}
 
-resource "aws_iam_role_policy_attachment" "alb_controller_attach" {
-  role       = aws_iam_role.alb_irsa_role.name
-  policy_arn = aws_iam_policy.alb_controller_policy.arn
-}
+#resource "aws_iam_role_policy_attachment" "alb_controller_attach" {
+#  role       = aws_iam_role.alb_irsa_role.name
+#  policy_arn = aws_iam_policy.alb_controller_policy.arn
+#}
