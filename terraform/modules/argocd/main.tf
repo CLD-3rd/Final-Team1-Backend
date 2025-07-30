@@ -1,9 +1,10 @@
 resource "kubernetes_namespace" "argocd" {
+  provider = kubernetes.eks
+
   metadata {
     name = var.namespace
   }
 }
-
 resource "helm_release" "argocd" {
   provider = helm.eks
   name             = "argocd"
