@@ -17,3 +17,7 @@ output "cluster_certificate_authority" {
 output "oidc_url" {
   value = aws_eks_cluster.this.identity[0].oidc[0].issuer
 }
+
+output "oidc_provider_arn" {
+  value = aws_iam_openid_connect_provider.this.arn
+}
