@@ -2,7 +2,15 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
+<<<<<<< HEAD
       <module fileurl="file://$PROJECT_DIR$/.idea/Final-Team1-Backend-dev.iml" filepath="$PROJECT_DIR$/.idea/Final-Team1-Backend-dev.iml" />
+=======
+<<<<<<< HEAD
+      <module fileurl="file://$PROJECT_DIR$/.idea/Final-Team1-Backend-main.iml" filepath="$PROJECT_DIR$/.idea/Final-Team1-Backend-main.iml" />
+=======
+      <module fileurl="file://$PROJECT_DIR$/.idea/Final-Team1-Backend.iml" filepath="$PROJECT_DIR$/.idea/Final-Team1-Backend.iml" />
+>>>>>>> user-test
+>>>>>>> f7f8828 ([feat] dev)
     </modules>
   </component>
 </project>

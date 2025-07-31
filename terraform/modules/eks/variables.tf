@@ -17,3 +17,9 @@ variable "node_iam_role_arn" {
   type        = string
   description = "IAM role ARN for EKS node group"
 }
+
+variable "bastion_role_arn" {
+  type        = string
+  description = "IAM role ARN for bastion host"
+  default     = ""
+}

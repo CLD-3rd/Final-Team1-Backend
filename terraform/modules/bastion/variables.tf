@@ -38,3 +38,11 @@ variable "key_name" {
   description = "Name of the EC2 key pair to assign to the Bastion instance"
   type        = string
 }
+
+variable "eks_node_role_arn" {
+  type = string
+}
+
+variable "bastion_role_arn" {
+  type = string
+}

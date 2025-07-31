@@ -13,4 +13,8 @@ output "bastion_role_arn" {
 
 output "bastion_instance_profile_name" {
   value = aws_iam_instance_profile.bastion.name
+<<<<<<< HEAD
 }
+=======
+}
+>>>>>>> f7f8828 ([feat] dev)

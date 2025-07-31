@@ -8,6 +8,7 @@
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
       </profile>
+<<<<<<< HEAD
       <profile name="Annotation profile for mindscape" enabled="true">
         <sourceOutputDir name="target/generated-sources/annotations" />
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
@@ -17,12 +18,18 @@
         </processorPath>
         <module name="mindscape (1)" />
       </profile>
+=======
+>>>>>>> f7f8828 ([feat] dev)
       <profile name="Annotation profile for mindscape-info" enabled="true">
         <sourceOutputDir name="target/generated-sources/annotations" />
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
         <processorPath useClasspath="false">
+<<<<<<< HEAD
           <entry name="$MAVEN_REPOSITORY$/org/projectlombok/lombok/1.18.30/lombok-1.18.30.jar" />
+=======
+          <entry name="$MAVEN_REPOSITORY$/org/projectlombok/lombok/unknown/lombok-unknown.jar" />
+>>>>>>> f7f8828 ([feat] dev)
         </processorPath>
         <module name="mindscape-info" />
       </profile>
@@ -38,9 +45,12 @@
     </annotationProcessing>
     <bytecodeTargetLevel>
       <module name="mindscape" target="17" />
+<<<<<<< HEAD
       <module name="mindscape-auth" target="1.6" />
       <module name="mindscape-info (1)" target="17" />
       <module name="mindscape-info (2)" target="17" />
+=======
+>>>>>>> f7f8828 ([feat] dev)
       <module name="mindscape-service" target="1.5" />
     </bytecodeTargetLevel>
   </component>
@@ -49,10 +59,14 @@
       <module name="mindscape" options="-parameters" />
       <module name="mindscape (1)" options="-parameters" />
       <module name="mindscape (2)" options="-parameters" />
+<<<<<<< HEAD
       <module name="mindscape-auth" options="-parameters" />
       <module name="mindscape-info" options="-parameters" />
       <module name="mindscape-info (1)" options="-parameters" />
       <module name="mindscape-info (2)" options="-parameters" />
+=======
+      <module name="mindscape-info" options="-parameters" />
+>>>>>>> f7f8828 ([feat] dev)
     </option>
   </component>
 </project>

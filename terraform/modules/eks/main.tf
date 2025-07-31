@@ -27,3 +27,19 @@ resource "aws_eks_node_group" "ng" {
     Name = "${var.team_name}-ng"
   }
 }
+
+# EKS 클러스터 생성 후 OIDC 정보 추출
+data "aws_eks_cluster" "cluster_data" {
+  name       = aws_eks_cluster.this.name
+  depends_on = [aws_eks_cluster.this]
+}
+
+data "tls_certificate" "eks" {
+  url = data.aws_eks_cluster.cluster_data.identity[0].oidc[0].issuer
+}
+
+resource "aws_iam_openid_connect_provider" "this" {
+  url = data.aws_eks_cluster.cluster_data.identity[0].oidc[0].issuer
+  client_id_list = ["sts.amazonaws.com"]
+  thumbprint_list = [data.tls_certificate.eks.certificates[0].sha1_fingerprint]
+}
