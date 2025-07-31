@@ -7,7 +7,7 @@ spec:
   project: default
   source:
     repoURL: https://github.com/CLD-3rd/Final-Team1-Backend.git
-    targetRevision: argocd               # ← 브랜치 이름 확인
+    targetRevision: argocd  # 사용 중인 브랜치 이름
     path: argocd/manifests/ingress/alb-controller
     helm:
       valueFiles:
