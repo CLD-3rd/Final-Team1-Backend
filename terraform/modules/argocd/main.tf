@@ -4,16 +4,16 @@
 #   }
 # }
 
-resource "helm_release" "argocd" {
-  name             = "argocd"
-  namespace        = var.namespace
-  repository       = "https://argoproj.github.io/argo-helm"
-  chart            = "argo-cd"
-  version          = var.chart_version
-  create_namespace = false
+#resource "helm_release" "argocd" {
+#  name             = "argocd"
+#  namespace        = var.namespace
+#  repository       = "https://argoproj.github.io/argo-helm"
+#  chart            = "argo-cd"
+#  version          = var.chart_version
+#  create_namespace = false
 
   # values = [file("${path.module}/values.yaml")]
-}
+#}
 
 resource "kubernetes_cluster_role_binding" "argocd_controller_admin" {
   provider = kubernetes
@@ -34,5 +34,5 @@ resource "kubernetes_cluster_role_binding" "argocd_controller_admin" {
     namespace = var.namespace
   }
 
-  depends_on = [helm_release.argocd]
+#  depends_on = [helm_release.argocd]
 }
