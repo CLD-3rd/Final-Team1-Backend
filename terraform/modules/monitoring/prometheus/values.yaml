@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 alertmanager:
   enabled: false
 
@@ -9,3 +10,16 @@ server:
     requests:
       memory: 128Mi
       cpu: 100m
+=======
+server:
+  persistentVolume:
+    enabled: true
+    storageClass: ebs-sc
+    size: 8Gi
+
+alertmanager:
+  persistentVolume:
+    enabled: true
+    storageClass: ebs-sc
+    size: 2Gi
+>>>>>>> e3c5ed7128e1648b009eeff98a66980fa4eeed9f

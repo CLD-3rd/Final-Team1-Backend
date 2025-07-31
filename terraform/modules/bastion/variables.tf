@@ -46,4 +46,7 @@ variable "eks_node_role_arn" {
 variable "bastion_role_arn" {
   type = string
 }
+<<<<<<< HEAD
 
+=======
+>>>>>>> e3c5ed7128e1648b009eeff98a66980fa4eeed9f

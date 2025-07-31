@@ -132,11 +132,17 @@ resource "aws_iam_role_policy_attachment" "bastion_eks_readonly_attach" {
   policy_arn = aws_iam_policy.bastion_eks_readonly.arn
 }
 
+<<<<<<< HEAD
 
+=======
+>>>>>>> e3c5ed7128e1648b009eeff98a66980fa4eeed9f
 # node group iam 권한
 resource "aws_iam_role_policy_attachment" "eks_node_amazon_ebs_csi_driver" {
   role       = aws_iam_role.eks_node.name
   policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonEBSCSIDriverPolicy"
 }
+<<<<<<< HEAD
 
 
+=======
+>>>>>>> e3c5ed7128e1648b009eeff98a66980fa4eeed9f
