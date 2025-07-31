@@ -1,0 +1,18 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: grafana-ingress
+  namespace: argocd   # ArgoCD 자체가 설치된 네임스페이스
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/CLD-3rd/Final-Team1-Backend.git   # ← 실제 Git 리포 주소로 교체
+    targetRevision: argocd                                        # ← 브랜치 이름
+    path: argocd/manifests/ingress/grafana
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: grafana
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
