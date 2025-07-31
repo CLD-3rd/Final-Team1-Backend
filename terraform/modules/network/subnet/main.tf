@@ -11,7 +11,7 @@ resource "aws_subnet" "public" {
     Tier        = "public"
         # ALB Controller용 태그
     "kubernetes.io/role/elb"            = "1"
-    "kubernetes.io/cluster/${var.cluster_name}" = "shared"
+    "kubernetes.io/cluster/Team1-Backend-eks-cluster" = "shared"
   }
 }
 
