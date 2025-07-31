@@ -10,6 +10,7 @@ metadata:
     alb.ingress.kubernetes.io/listen-ports: '[{"HTTP": 80}]'
     alb.ingress.kubernetes.io/group.name: monitoring
 spec:
+  ingressClassName: alb
   rules:
     - http:
         paths:
