@@ -80,16 +80,16 @@ public class AuthController {
             redisRefreshTokenService.deleteRefreshToken(principalDetails.getAccountId());
         }
 
+        // AccessToken 만료 처리
+        String expiredAccessToken = "AccessToken=; Path=/; Max-Age=0; HttpOnly; Secure; SameSite=None";
 
-        Cookie accessTokenCookie = new Cookie("AccessToken", "null");
-        accessTokenCookie.setMaxAge(0);
-        accessTokenCookie.setPath("/");
+        // RefreshToken 만료 처리
+        String expiredRefreshToken = "RefreshToken=; Path=/; Max-Age=0; HttpOnly; Secure; SameSite=None";
 
-        Cookie refreshTokenCookie = new Cookie("refreshToken", "null");
-        refreshTokenCookie.setMaxAge(0);
-        refreshTokenCookie.setPath("/");
+        // 응답 헤더로 만료 쿠키 추가
+        response.addHeader("Set-Cookie", expiredAccessToken);
+        response.addHeader("Set-Cookie", expiredRefreshToken);
 
-        response.addCookie(accessTokenCookie);
 
         return ResponseEntity.ok(HttpStatus.OK);
     }

@@ -95,44 +95,35 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
 
 
         redisRefreshTokenService.saveRefreshToken(principalDetails.getAccountId(), refreshToken,
-                                                    jwtProperties.getREFRESH_TOKEN_EXPIRATION());
+                jwtProperties.getREFRESH_TOKEN_EXPIRATION());
 
 
-        //JWT 토큰 httponly 쿠키에 저장
-        Cookie accessTokenCookie = new Cookie(JwtProperties.ACCESS_TOKEN_STRING, accessToken);
-        accessTokenCookie.setHttpOnly(true);
-        accessTokenCookie.setPath("/");
-        //cookie.setSecure(true);
+
+        String accessCookie = String.format(
+                "AccessToken=%s; Path=/; Max-Age=%d; HttpOnly; Secure; SameSite=None",
+                accessToken,jwtProperties.getACCESS_TOKEN_EXPIRATION());
 
 
-        Cookie refreshTokenCookie = new Cookie(JwtProperties.REFRESH_TOKEN_STRING, refreshToken);
-        refreshTokenCookie.setHttpOnly(true);
-        refreshTokenCookie.setPath("/");
+        String refreshCookie = String.format(
+                "RefreshToken=%s; Path=/; Max-Age=%d; HttpOnly; Secure; SameSite=None",
+                refreshToken, jwtProperties.getREFRESH_TOKEN_EXPIRATION());
 
 
-        response.addCookie(accessTokenCookie);
-        response.addCookie(refreshTokenCookie);
+
+        response.addHeader("Set-Cookie", accessCookie);
+        response.addHeader("Set-Cookie", refreshCookie);
     }
 
     // 기존 토큰 쿠키 삭제 메서드
     private void deleteExistingTokenCookies(HttpServletResponse response) {
-        Cookie deleteAccessToken = new Cookie(JwtProperties.ACCESS_TOKEN_STRING, null);
-        Cookie deleteRefreshToken = new Cookie(JwtProperties.REFRESH_TOKEN_STRING, null);
+        // AccessToken 만료 처리
+        String expiredAccessToken = "AccessToken=; Path=/; Max-Age=0; HttpOnly; Secure; SameSite=None";
 
-        // 쿠키 만료 설정
-        deleteAccessToken.setMaxAge(0);
-        deleteRefreshToken.setMaxAge(0);
+        // RefreshToken 만료 처리
+        String expiredRefreshToken = "RefreshToken=; Path=/; Max-Age=0; HttpOnly; Secure; SameSite=None";
 
-        // 쿠키 경로 설정 (기존 쿠키와 동일한 경로여야 삭제 가능)
-        deleteAccessToken.setPath("/");
-        deleteRefreshToken.setPath("/");
-
-        // 보안 설정
-        deleteAccessToken.setHttpOnly(true);
-        deleteRefreshToken.setHttpOnly(true);
-
-        // 쿠키 추가
-        response.addCookie(deleteAccessToken);
-        response.addCookie(deleteRefreshToken);
+        // 응답 헤더로 만료 쿠키 추가
+        response.addHeader("Set-Cookie", expiredAccessToken);
+        response.addHeader("Set-Cookie", expiredRefreshToken);
     }
 }

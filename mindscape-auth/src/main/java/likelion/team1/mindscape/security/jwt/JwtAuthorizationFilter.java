@@ -63,22 +63,22 @@ public class JwtAuthorizationFilter extends BasicAuthenticationFilter {
                     .verify(accessToken)
                     .getSubject();
 
-           if(accountId != null) {
-               // 추출된 사용자가 현재 DB에 등록된 사용자인지 확인
-               User user = userRepository.findByAccountId(accountId);
+            if(accountId != null) {
+                // 추출된 사용자가 현재 DB에 등록된 사용자인지 확인
+                User user = userRepository.findByAccountId(accountId);
 
-               // 사용자 정보
-               PrincipalDetails principalDetails = new PrincipalDetails(user);
+                // 사용자 정보
+                PrincipalDetails principalDetails = new PrincipalDetails(user);
 
-               Authentication authentication =
-                       new UsernamePasswordAuthenticationToken(
-                               principalDetails, // 사용자 정보
-                               null, // 인증 완료로 비밀번호 불필요
-                               principalDetails.getAuthorities()); // 권한 정보
+                Authentication authentication =
+                        new UsernamePasswordAuthenticationToken(
+                                principalDetails, // 사용자 정보
+                                null, // 인증 완료로 비밀번호 불필요
+                                principalDetails.getAuthorities()); // 권한 정보
 
-               //SecurityContext에 인증 정보 저장
-               SecurityContextHolder.getContext().setAuthentication(authentication);
-           }
+                //SecurityContext에 인증 정보 저장
+                SecurityContextHolder.getContext().setAuthentication(authentication);
+            }
         } catch (TokenExpiredException e){ // 토큰이 만료된 경우
 
             if(refreshToken != null) {
@@ -99,10 +99,10 @@ public class JwtAuthorizationFilter extends BasicAuthenticationFilter {
                             .withExpiresAt(new Date(System.currentTimeMillis() + jwtProperties.getACCESS_TOKEN_EXPIRATION()))
                             .sign(Algorithm.HMAC512(jwtProperties.getSECRET()));
 
-                    Cookie newAccessTokenCookie = new Cookie(JwtProperties.ACCESS_TOKEN_STRING, newAccessToken);
-                    newAccessTokenCookie.setPath("/");
-                    newAccessTokenCookie.setHttpOnly(true);
-                    response.addCookie(newAccessTokenCookie);
+                    String accessCookie = String.format(
+                            "AccessToken=%s; Path=/; Max-Age=%d; HttpOnly; Secure; SameSite=None",
+                            newAccessToken,jwtProperties.getACCESS_TOKEN_EXPIRATION());
+                    response.addHeader("Set-Cookie", accessCookie);
 
                     // 인증 정보 설정
                     PrincipalDetails principalDetails = new PrincipalDetails(user);
