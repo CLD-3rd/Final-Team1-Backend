@@ -2,26 +2,20 @@ apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
   name: alb-controller
-  namespace: argocd   # ArgoCD가 설치된 namespace
+  namespace: argocd
 spec:
   project: default
   source:
-    repoURL: https://aws.github.io/eks-charts
+    repoURL: https://github.com/CLD-3rd/Final-Team1-Backend.git        #  본인 Git
+    targetRevision: argocd                               #  브랜치
+    path: argocd/manifests/ingress/alb-controller                            #  Helm values.yaml 위치
     chart: aws-load-balancer-controller
-    targetRevision: 1.6.2   # 안정적인 버전 (또는 1.7.1 최신도 가능)
     helm:
-      values: |
-        clusterName: Team1-backend-eks-cluster
-        region: ap-northeast-2
-        vpcId: vpc-0bfe4943bb483cfbc  # 실제 VPC ID 다시 확인
-        serviceAccount:
-          create: true
-          name: aws-load-balancer-controller
-          annotations:
-            eks.amazonaws.com/role-arn: arn:aws:iam::727646470302:role/Team1-backend-alb-irsa-role
+      valueFiles:
+        - values.yaml
   destination:
     server: https://kubernetes.default.svc
-    namespace: kube-system  # ALB Controller는 kube-system 설치가 일반적
+    namespace: kube-system
   syncPolicy:
     automated:
       prune: true
