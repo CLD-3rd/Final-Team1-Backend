@@ -1,9 +1,6 @@
 variable "team_name" {
   type        = string
   description = "Prefix for naming"
-<<<<<<< HEAD
-}
-=======
 }
 
 variable "cluster_name" {
@@ -14,4 +11,3 @@ variable "cluster_name" {
 variable "oidc_url" {
   type = string
 }
->>>>>>> f7f8828 ([feat] dev)
