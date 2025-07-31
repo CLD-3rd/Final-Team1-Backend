@@ -1,0 +1,18 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: ingress-apps
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/CLD-3rd/Final-Team1-Backend.git
+    targetRevision: argocd
+    path: argocd/manifests/ingress
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: argocd
+  syncPolicy:
+    automated:
+      selfHeal: true
+      prune: true
