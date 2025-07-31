@@ -48,6 +48,34 @@ module "alb_irsa" {
   depends_on = [module.eks]
 }
 
+module "ebs_csi_irsa" {
+  source               = "./modules/irsa"
+  team_name            = var.team_name
+  oidc_url             = module.eks.oidc_url
+  cluster_name         = module.eks.cluster_name
+  namespace            = "kube-system"
+  service_account_name = "ebs-csi-controller-sa"
+
+  depends_on = [module.eks]
+}
+
+module "ebs_csi_driver" {
+  source              = "./modules/ebs-csi-driver"
+  namespace           = "kube-system"
+  chart_version       = "2.30.0"
+  service_account_name = "ebs-csi-controller-sa"
+  irsa_role_arn       = module.ebs_csi_irsa.ebs_csi_irsa_role_arn
+
+  providers = {
+    helm = helm.eks
+  }
+
+  depends_on = [
+    module.ebs_csi_irsa,
+    module.eks
+  ]
+}
+
 #security group
 module "sg" {
   source     = "./modules/security-group"
@@ -120,6 +148,23 @@ module "internet_gateway" {
 #   }
 # }
 
+#ebs 스토리지 클래스
+module "ebs_storage_class" {
+  source = "./modules/storageclass"
+
+  name          = "ebs-sc"
+  volume_type   = "gp3"
+  fs_type       = "ext4"
+  reclaim_policy = "Delete"
+  binding_mode  = "WaitForFirstConsumer"
+
+    depends_on = [
+    module.ebs_csi_irsa,
+    module.eks,
+    module.ebs_csi_driver
+  ]
+}
+
 # argocd 모듈 및 네임스페이스
 
 module "argocd_namespace" {
@@ -169,7 +214,9 @@ module "prometheus_namespace" {
   }
     depends_on = [
     module.eks,
-    module.bastion
+    module.bastion,
+    module.ebs_csi_driver,
+    module.ebs_storage_class
   ]
 }
 
@@ -186,7 +233,9 @@ module "prometheus" {
   depends_on = [
     module.eks,
     module.bastion,
-    module.prometheus_namespace
+    module.prometheus_namespace,
+    module.ebs_csi_driver,
+    module.ebs_storage_class
   ]
 
 }
