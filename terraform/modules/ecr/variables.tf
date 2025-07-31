@@ -7,5 +7,5 @@ variable "team_name" {
 variable "services" {
   description = "Services to create ECR repositories"
   type        = list(string)
-  default     = ["auth", "info", "api"]
+  default     = ["auth", "info", "service"]
 }
