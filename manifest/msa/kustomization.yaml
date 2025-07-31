@@ -2,4 +2,4 @@ resources:
   - auth/
   - info/
   - service/
-  - secret.yaml
+  - sealed-secret.yaml
