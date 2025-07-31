@@ -1,3 +1,4 @@
+
 server:
   persistentVolume:
     enabled: true
@@ -9,3 +10,4 @@ alertmanager:
     enabled: true
     storageClass: ebs-sc
     size: 2Gi
+

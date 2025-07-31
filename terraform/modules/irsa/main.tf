@@ -36,6 +36,7 @@ resource "aws_iam_role_policy_attachment" "attach" {
 }
 
 
+
 ### ebs-csi-driver irsa role
 resource "aws_iam_role" "ebs_csi_irsa" {
   name = "${var.team_name}-ebs-csi-irsa-role"
@@ -50,7 +51,7 @@ resource "aws_iam_role" "ebs_csi_irsa" {
       Action = "sts:AssumeRoleWithWebIdentity",
       Condition = {
         StringEquals = {
-          "${replace(var.oidc_url, "https://", "")}:sub" = "system:serviceaccount:${var.namespace}:${var.service_account_name}"
+          "${replace(var.oidc_url, "https://", "")}:sub" = "system:serviceaccount:kube-system:${var.service_account_name}"
         }
       }
     }]
@@ -67,3 +68,4 @@ resource "aws_iam_role_policy_attachment" "ebs_csi_attach" {
   role       = aws_iam_role.ebs_csi_irsa.name
   policy_arn = aws_iam_policy.ebs_csi_policy.arn
 }
+

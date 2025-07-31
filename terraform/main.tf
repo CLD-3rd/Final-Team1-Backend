@@ -48,6 +48,7 @@ module "alb_irsa" {
   depends_on = [module.eks]
 }
 
+
 module "ebs_csi_irsa" {
   source               = "./modules/irsa"
   team_name            = var.team_name
@@ -97,10 +98,11 @@ module "subnet" {
   name_prefix          = var.team_name
   environment          = "dev"
   vpc_id               = module.vpc.vpc_id
-  public_subnet_cidrs  = ["192.168.1.0/24", "192.168.4.0/24"]
-  private_subnet_cidrs = ["192.168.2.0/24", "192.168.3.0/24"]
+  public_subnet_cidrs  = ["192.168.1.0/24", "192.168.2.0/24"]
+  private_subnet_cidrs = ["192.168.3.0/24", "192.168.4.0/24"]
   azs                  = ["ap-northeast-2a", "ap-northeast-2c"]
 }
+
   
 # route table
 module "route_table" {
@@ -132,20 +134,8 @@ module "internet_gateway" {
   vpc_id      = module.vpc.vpc_id
 }
 
-# config 설정 뒤에 aws-auth 연결되게 설정 
-# resource "null_resource" "wait_for_kubeconfig" {
-#   provisioner "local-exec" {
-#     command = <<EOT
-# aws ssm send-command \
-#   --document-name "AWS-RunShellScript" \
-#   --instance-ids "${module.bastion.instance_id}" \
-#   --region ap-northeast-2 \
-#   --comment "Check for kubeconfig" \
-#   --parameters 'commands=["until [ -f /home/ubuntu/.kube/config ]; do sleep 3; done"]' \
-#   --output text
-# EOT
-#   }
-# }
+
+
 
 #ebs 스토리지 클래스
 module "ebs_storage_class" {
@@ -163,6 +153,7 @@ module "ebs_storage_class" {
     module.ebs_csi_driver
   ]
 }
+
 
 # argocd 모듈 및 네임스페이스
 
@@ -213,9 +204,12 @@ module "prometheus_namespace" {
   }
     depends_on = [
     module.eks,
+
+
     module.bastion,
     module.ebs_csi_driver,
     module.ebs_storage_class
+
   ]
 }
 
@@ -232,9 +226,12 @@ module "prometheus" {
   depends_on = [
     module.eks,
     module.bastion,
+
+
     module.prometheus_namespace,
     module.ebs_csi_driver,
     module.ebs_storage_class
+
   ]
 
 }
@@ -274,6 +271,7 @@ module "grafana" {
 
 }
 
+
 # Elasticache
 module "elasticache" {
   source              = "./modules/elasticache"
@@ -302,3 +300,4 @@ module "rds" {
 module "ecr" {
   source     = "./modules/ecr"
 }
+

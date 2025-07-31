@@ -74,7 +74,9 @@ output "eks_control_plane_sg_id" {
   description = "Bastion에서 EKS Control Plane 접근 허용 SG ID"
 }
 
+
 # ECR repo
 output "ecr_repositories" {
   value = module.ecr.ecr_repositories
 }
+

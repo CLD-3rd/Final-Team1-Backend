@@ -9,6 +9,9 @@ resource "aws_subnet" "public" {
     Name        = "${var.name_prefix}-public-${count.index}"
     Environment = var.environment
     Tier        = "public"
+        # ALB Controller용 태그
+    "kubernetes.io/role/elb"            = "1"
+    "kubernetes.io/cluster/${var.cluster_name}" = "shared"
   }
 }
 

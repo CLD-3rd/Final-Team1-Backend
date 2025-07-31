@@ -40,11 +40,14 @@ provider "kubernetes" {
     args        = ["eks", "get-token", "--cluster-name", module.eks.cluster_name]
   }
 
+
+
 }
 
 # Helm Provider
 provider "helm" {
-  alias = "eks"
+
+    alias = "eks"
   kubernetes = {
     host                   = module.eks.cluster_endpoint
     cluster_ca_certificate = base64decode(module.eks.cluster_certificate_authority)
