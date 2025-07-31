@@ -105,7 +105,7 @@ module "internet_gateway" {
 }
 
 
-# # config 설정 뒤에 aws-auth 연결되게 설정 
+# config 설정 뒤에 aws-auth 연결되게 설정 
 # resource "null_resource" "wait_for_kubeconfig" {
 #   provisioner "local-exec" {
 #     command = <<EOT
@@ -122,107 +122,107 @@ module "internet_gateway" {
 
 # argocd 모듈 및 네임스페이스
 
-# module "argocd_namespace" {
-#   source  = "./modules/namespace"
-#   name    = "argocd"
-#   labels = {
-#     "managed-by" = "terraform"
-#   }
+module "argocd_namespace" {
+  source  = "./modules/namespace"
+  name    = "argocd"
+  labels = {
+    "managed-by" = "terraform"
+  }
 
-#   providers = {
-#     kubernetes.eks = kubernetes.eks 
-#   }
+  providers = {
+    kubernetes.eks = kubernetes.eks 
+  }
 
-#     depends_on = [
-#     module.eks,
-#     module.bastion
-#   ]
-# }
+    depends_on = [
+    module.eks,
+    module.bastion
+  ]
+}
 
-# module "argocd" {
-#   source        = "./modules/argocd"
-#   namespace     = module.argocd_namespace.name
-#   chart_version = "5.51.6"
-#   providers = {
-#     helm = helm.eks
-#     kubernetes = kubernetes.eks
-#   }
+module "argocd" {
+  source        = "./modules/argocd"
+  namespace     = module.argocd_namespace.name
+  chart_version = "5.51.6"
+  providers = {
+    helm = helm.eks
+    kubernetes = kubernetes.eks
+  }
 
-#     depends_on = [
-#     module.eks,
-#     module.bastion,
-#     module.argocd_namespace
-#   ]
-# }
+    depends_on = [
+    module.eks,
+    module.bastion,
+    module.argocd_namespace
+  ]
+}
 
-#프로메테오스 모듈 및 네임스페이스
+# 프로메테오스 모듈 및 네임스페이스
 
-# module "prometheus_namespace" {
-#   source  = "./modules/namespace"
-#   name    = "prometheus"
-#   labels = {
-#     "managed-by" = "terraform"
-#   }
+module "prometheus_namespace" {
+  source  = "./modules/namespace"
+  name    = "prometheus"
+  labels = {
+    "managed-by" = "terraform"
+  }
 
-#   providers = {
-#     kubernetes.eks = kubernetes.eks 
-#   }
-#     depends_on = [
-#     module.eks,
-#     module.bastion
-#   ]
-# }
+  providers = {
+    kubernetes.eks = kubernetes.eks 
+  }
+    depends_on = [
+    module.eks,
+    module.bastion
+  ]
+}
 
-# module "prometheus" {
-#   source        = "./modules/monitoring/prometheus"
-#   namespace     = module.prometheus_namespace.name
-#   chart_version = "25.21.0"
+module "prometheus" {
+  source        = "./modules/monitoring/prometheus"
+  namespace     = module.prometheus_namespace.name
+  chart_version = "25.21.0"
 
-#   providers = {
-#     helm       = helm.eks
-#     kubernetes = kubernetes.eks
-#   }
+  providers = {
+    helm       = helm.eks
+    kubernetes = kubernetes.eks
+  }
 
-#   depends_on = [
-#     module.eks,
-#     module.bastion,
-#     module.prometheus_namespace
-#   ]
+  depends_on = [
+    module.eks,
+    module.bastion,
+    module.prometheus_namespace
+  ]
 
-# }
+}
 
-#그라파나 모듈 및 네임스페이스
-# module "grafana_namespace" {
-#   source  = "./modules/namespace"
-#   name    = "grafana"
-#   labels = {
-#     "managed-by" = "terraform"
-#   }
+# 그라파나 모듈 및 네임스페이스
+module "grafana_namespace" {
+  source  = "./modules/namespace"
+  name    = "grafana"
+  labels = {
+    "managed-by" = "terraform"
+  }
 
-#   providers = {
-#     kubernetes.eks = kubernetes.eks 
-#   }
-#     depends_on = [
-#     module.eks,
-#     module.bastion
-#   ]
-# }
+  providers = {
+    kubernetes.eks = kubernetes.eks 
+  }
+    depends_on = [
+    module.eks,
+    module.bastion
+  ]
+}
 
-# module "grafana" {
-#   source        = "./modules/monitoring/grafana"
-#   namespace     = module.grafana_namespace.name
-#   chart_version = "7.3.11"
+module "grafana" {
+  source        = "./modules/monitoring/grafana"
+  namespace     = module.grafana_namespace.name
+  chart_version = "7.3.11"
 
-#   providers = {
-#     helm       = helm.eks
-#     kubernetes = kubernetes.eks
-#   }
+  providers = {
+    helm       = helm.eks
+    kubernetes = kubernetes.eks
+  }
 
-#     depends_on = [
-#     module.eks,
-#     module.bastion,
-#     module.grafana_namespace
-#   ]
+    depends_on = [
+    module.eks,
+    module.bastion,
+    module.grafana_namespace
+  ]
 
-# }
+}
 
