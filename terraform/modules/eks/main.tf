@@ -26,11 +26,7 @@ resource "aws_eks_node_group" "ng" {
   tags = {
     Name = "${var.team_name}-ng"
   }
-<<<<<<< HEAD
-=======
-<<<<<<< HEAD
-=======
->>>>>>> dev
+
 }
 
 # EKS 클러스터 생성 후 OIDC 정보 추출
