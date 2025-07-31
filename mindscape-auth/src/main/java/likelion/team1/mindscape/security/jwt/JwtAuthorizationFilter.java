@@ -99,10 +99,10 @@ public class JwtAuthorizationFilter extends BasicAuthenticationFilter {
                             .withExpiresAt(new Date(System.currentTimeMillis() + jwtProperties.getACCESS_TOKEN_EXPIRATION()))
                             .sign(Algorithm.HMAC512(jwtProperties.getSECRET()));
 
-                    Cookie newAccessTokenCookie = new Cookie(JwtProperties.ACCESS_TOKEN_STRING, newAccessToken);
-                    newAccessTokenCookie.setPath("/");
-                    newAccessTokenCookie.setHttpOnly(true);
-                    response.addCookie(newAccessTokenCookie);
+                    String accessCookie = String.format(
+                            "AccessToken=%s; Path=/; Max-Age=%d; HttpOnly; Secure; SameSite=None",
+                            newAccessToken,jwtProperties.getACCESS_TOKEN_EXPIRATION());
+                    response.addHeader("Set-Cookie", accessCookie);
 
                     // 인증 정보 설정
                     PrincipalDetails principalDetails = new PrincipalDetails(user);
