@@ -67,7 +67,7 @@ module "ebs_csi_driver" {
   irsa_role_arn       = module.ebs_csi_irsa.ebs_csi_irsa_role_arn
 
   providers = {
-    helm = helm.eks
+    helm.eks = helm.eks
   }
 
   depends_on = [

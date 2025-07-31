@@ -62,3 +62,8 @@ resource "aws_iam_policy" "ebs_csi_policy" {
   description = "Policy for AWS EBS CSI Driver"
   policy      = file("${path.module}/ebs-csi-policy.json")
 }
+
+resource "aws_iam_role_policy_attachment" "ebs_csi_attach" {
+  role       = aws_iam_role.ebs_csi_irsa.name
+  policy_arn = aws_iam_policy.ebs_csi_policy.arn
+}
