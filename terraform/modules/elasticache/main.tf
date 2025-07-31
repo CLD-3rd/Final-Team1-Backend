@@ -1,3 +1,8 @@
+resource "aws_elasticache_subnet_group" "this" {
+  name       = "team1-elasticache-subnet-group"
+  subnet_ids = var.subnet_ids
+}
+
 resource "aws_security_group" "elasticache_sg" {
   name        = "team1-elasticache-sg"
   description = "Security group for Redis"
