@@ -15,7 +15,7 @@ spec:
     spec:
       containers:
         - name: mindscape-service
-          image: 575108946475.dkr.ecr.ap-northeast-2.amazonaws.com/team1-mindscape-service:latest
+          image: 727646470302.dkr.ecr.ap-northeast-2.amazonaws.com/team1-mindscape-service:latest
           ports:
             - containerPort: service
           envFrom:
