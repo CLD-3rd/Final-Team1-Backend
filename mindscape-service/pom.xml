@@ -12,11 +12,7 @@
 	</parent>
 
 	<groupId>likelion.team1</groupId>
-<<<<<<< HEAD
-	<artifactId>mindscape</artifactId>
-=======
 	<artifactId>mindscape-service</artifactId>
->>>>>>> f7f8828 ([feat] dev)
 	<version>0.0.1-SNAPSHOT</version>
 	<name>mindscape-service</name>
 	<description>Demo project for Spring Boot</description>
@@ -96,9 +92,6 @@
             <artifactId>google-genai</artifactId>
             <version>1.0.0</version>
         </dependency>
-<<<<<<< HEAD
-=======
-
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-actuator</artifactId>
@@ -107,8 +100,6 @@
 			<groupId>io.micrometer</groupId>
 			<artifactId>micrometer-registry-prometheus</artifactId>
 		</dependency>
-
->>>>>>> f7f8828 ([feat] dev)
 	</dependencies>
 
 	<build>
