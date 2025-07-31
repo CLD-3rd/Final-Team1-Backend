@@ -6,12 +6,19 @@ metadata:
 spec:
   project: default
   source:
-    repoURL: https://github.com/CLD-3rd/Final-Team1-Backend.git
-    targetRevision: argocd              # ✅ Git 브랜치 이름 (예: main, argocd 등)
-    path: argocd/manifests/ingress/alb-controller
+    repoURL: https://aws.github.io/eks-charts
+    chart: aws-load-balancer-controller
+    targetRevision: 1.6.2
     helm:
-      valueFiles:
-        - values.yaml
+      values: |
+        clusterName: Team1-backend-eks-cluster
+        region: ap-northeast-2
+        vpcId: vpc-0bfe4943bb483cfbc # 계속 변경
+        serviceAccount:
+          create: true
+          name: aws-load-balancer-controller
+          annotations:
+            eks.amazonaws.com/role-arn: arn:aws:iam::727646470302:role/Team1-backend-alb-irsa-role # 확인해야함
   destination:
     server: https://kubernetes.default.svc
     namespace: kube-system
