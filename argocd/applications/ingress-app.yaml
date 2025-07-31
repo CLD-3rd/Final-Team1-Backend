@@ -9,10 +9,12 @@ spec:
     repoURL: https://github.com/CLD-3rd/Final-Team1-Backend.git
     targetRevision: argocd
     path: argocd/manifests/ingress
+    directory:
+      recurse: true   # ✅ 이 줄 꼭 필요!
   destination:
     server: https://kubernetes.default.svc
     namespace: argocd
   syncPolicy:
     automated:
-      selfHeal: true
       prune: true
+      selfHeal: true
