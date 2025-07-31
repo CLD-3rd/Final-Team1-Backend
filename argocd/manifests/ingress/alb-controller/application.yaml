@@ -6,10 +6,9 @@ metadata:
 spec:
   project: default
   source:
-    repoURL: https://github.com/CLD-3rd/Final-Team1-Backend.git        #  본인 Git
-    targetRevision: 1.62                     
-    path: argocd/manifests/ingress/alb-controller                            #  Helm values.yaml 위치
-    chart: aws-load-balancer-controller
+    repoURL: https://github.com/CLD-3rd/Final-Team1-Backend.git
+    targetRevision: argocd              # ✅ Git 브랜치 이름 (예: main, argocd 등)
+    path: argocd/manifests/ingress/alb-controller
     helm:
       valueFiles:
         - values.yaml
