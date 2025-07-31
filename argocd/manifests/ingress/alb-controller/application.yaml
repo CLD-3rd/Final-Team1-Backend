@@ -9,7 +9,6 @@ spec:
     repoURL: https://github.com/CLD-3rd/Final-Team1-Backend.git        #  본인 Git
     targetRevision: argocd                               #  브랜치
     path: argocd/manifests/ingress/alb-controller                            #  Helm values.yaml 위치
-    chart: aws-load-balancer-controller
     helm:
       valueFiles:
         - values.yaml
