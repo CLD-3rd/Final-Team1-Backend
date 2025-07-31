@@ -1,6 +1,6 @@
 clusterName: Team1-backend-eks-cluster
 region: ap-northeast-2
-vpcId: vpc-0bfe4943bb483cfbc
+vpcId: vpc-0bfe4943bb48a3fbc
 
 image:
   repository: 602401143452.dkr.ecr.ap-northeast-2.amazonaws.com/amazon/aws-load-balancer-controller
