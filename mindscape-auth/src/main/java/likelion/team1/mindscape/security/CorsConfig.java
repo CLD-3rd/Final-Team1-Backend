@@ -22,7 +22,9 @@ public class CorsConfig {
         config.setAllowCredentials(true);
 
         // 구체적인 origin을 설정
-        config.addAllowedOriginPattern("*");  // 개발 환경에서만 사용하세요
+//        config.addAllowedOriginPattern("*");  // 개발 환경에서만 사용하세요
+
+        config.addAllowedOrigin("https://aws.thejymes.com");
 
         // 모든 헤더와 메소드 허용
         config.addAllowedHeader("*");

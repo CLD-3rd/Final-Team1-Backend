@@ -59,24 +59,25 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
         redisRefreshTokenService.saveRefreshToken(user.getAccountId(), refreshToken,
                 jwtProperties.getREFRESH_TOKEN_EXPIRATION());
 
-        //JWT 토큰 httponly 쿠키에 저장
-        Cookie accessTokenCookie = new Cookie(JwtProperties.ACCESS_TOKEN_STRING, accessToken);
-        accessTokenCookie.setHttpOnly(true);
-        accessTokenCookie.setPath("/");
-        //cookie.setSecure(true);
+
+        String accessCookie = String.format(
+                "AccessToken=%s; Path=/; Max-Age=%d; HttpOnly; Secure; SameSite=None",
+                accessToken,jwtProperties.getACCESS_TOKEN_EXPIRATION());
 
 
-        Cookie refreshTokenCookie = new Cookie(JwtProperties.REFRESH_TOKEN_STRING, refreshToken);
-        refreshTokenCookie.setHttpOnly(true);
-        refreshTokenCookie.setPath("/");
+
+        String refreshCookie = String.format(
+                "RefreshToken=%s; Path=/; Max-Age=%d; HttpOnly; Secure; SameSite=None",
+                refreshToken, jwtProperties.getREFRESH_TOKEN_EXPIRATION());
+
 
         Cookie jsessionidCookie = new Cookie("JSESSIONID", null);
         jsessionidCookie.setMaxAge(0);
         jsessionidCookie.setPath("/");
 
 
-        response.addCookie(accessTokenCookie);
-        response.addCookie(refreshTokenCookie);
+        response.addHeader("Set-Cookie", accessCookie);
+        response.addHeader("Set-Cookie", refreshCookie);
         response.addCookie(jsessionidCookie);
 
         response.sendRedirect(redirectPageUrl);
