@@ -1,6 +1,0 @@
-resources:
-  - ../base
-patches:
-  - path: argocd-patch.yaml
-
-namespace: app

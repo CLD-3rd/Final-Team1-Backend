@@ -1,5 +1,0 @@
-resources:
-  - app-deployment.yaml
-  - app-service.yaml
-  - secret.yaml
-namespace: app
