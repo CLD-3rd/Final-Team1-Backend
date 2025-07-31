@@ -1,0 +1,23 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mindscape-auth
+  namespace: app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mindscape-auth
+  template:
+    metadata:
+      labels:
+        app: mindscape-auth
+    spec:
+      containers:
+        - name: mindscape-auth
+          image: 727646470302.dkr.ecr.ap-northeast-2.amazonaws.com/team1-mindscape-auth:latest
+          ports:
+            - containerPort: 8080
+          envFrom:
+            - secretRef:
+                name: mindscape-secret

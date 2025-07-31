@@ -1,11 +1,13 @@
-alertmanager:
-  enabled: false
 
 server:
-  resources:
-    limits:
-      memory: 256Mi
-      cpu: 200m
-    requests:
-      memory: 128Mi
-      cpu: 100m
+  persistentVolume:
+    enabled: true
+    storageClass: ebs-sc
+    size: 8Gi
+
+alertmanager:
+  persistentVolume:
+    enabled: true
+    storageClass: ebs-sc
+    size: 2Gi
+

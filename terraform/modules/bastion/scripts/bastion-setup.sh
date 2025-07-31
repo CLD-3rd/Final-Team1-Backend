@@ -93,7 +93,4 @@ ssh-keygen -t rsa -N "" -f /root/.ssh/id_rsa
 
 echo "cloud-init complete."
 
-# # SSM Agent 설치 및 실행 (Ubuntu 기준)
-# sudo snap install amazon-ssm-agent --classic
-# sudo systemctl enable amazon-ssm-agent
-# sudo systemctl start amazon-ssm-agent
+

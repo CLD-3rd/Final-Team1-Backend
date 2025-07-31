@@ -1,0 +1,5 @@
+resources:
+  - auth/
+  - info/
+  - service/
+  - secret.yaml

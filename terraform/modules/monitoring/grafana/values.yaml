@@ -1,13 +1,8 @@
-adminUser: admin
-adminPassword: prom-graph-admin
+# grafana-values.yaml
+adminPassword: "admin123!"
 
-service:
-  type: LoadBalancer
-
-resources:
-  limits:
-    cpu: 200m
-    memory: 256Mi
-  requests:
-    cpu: 100m
-    memory: 128Mi
+grafana.ini:
+  server:
+    # ALB 호스트네임이 자동으로 들어가도록 변수 치환
+    root_url: "%(protocol)s://%(domain)s/grafana"
+    serve_from_sub_path: true
