@@ -15,7 +15,7 @@ spec:
     spec:
       containers:
         - name: mindscape-info
-          image: 727646470302.dkr.ecr.ap-northeast-2.amazonaws.com/team1-mindscape-info:latest
+          image: 194722398200.dkr.ecr.ap-northeast-2.amazonaws.com/team1-mindscape-info:latest
           ports:
             - containerPort: 8080
           envFrom:
