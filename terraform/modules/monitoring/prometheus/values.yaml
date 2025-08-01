@@ -1,10 +1,3 @@
-
-server:
-  persistentVolume:
-    enabled: true
-    storageClass: ebs-sc
-    size: 8Gi
-
 alertmanager:
   alertmanagerSpec:
     storage:
@@ -16,3 +9,8 @@ alertmanager:
             requests:
               storage: 2Gi
 
+server:
+  persistentVolume:
+    enabled: true
+    storageClass: ebs-sc
+    size: 8Gi
