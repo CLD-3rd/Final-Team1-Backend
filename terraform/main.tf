@@ -301,8 +301,6 @@ module "ecr" {
   source     = "./modules/ecr"
 }
 
-
-
 # terraform {
 #   backend "remote" {
 #     organization = "final-team1"
@@ -312,3 +310,4 @@ module "ecr" {
 #     }
 #   }
 # }
+
