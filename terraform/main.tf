@@ -38,7 +38,7 @@ module "iam" {
 
 
 module "alb_irsa" {
-  source               = "./modules/irsa"
+  source               = "./modules/irsa/alb"
   team_name            = var.team_name
   oidc_url             = module.eks.oidc_url
   cluster_name         = module.eks.cluster_name
@@ -50,7 +50,7 @@ module "alb_irsa" {
 
 
 module "ebs_csi_irsa" {
-  source               = "./modules/irsa"
+  source               = "./modules/irsa/ebs_csi"
   team_name            = var.team_name
   oidc_url             = module.eks.oidc_url
   cluster_name         = module.eks.cluster_name
