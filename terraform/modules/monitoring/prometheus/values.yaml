@@ -1,13 +1,8 @@
 alertmanager:
-  alertmanagerSpec:
-    storage:
-      volumeClaimTemplate:
-        spec:
-          storageClassName: ebs-sc
-          accessModes: ["ReadWriteOnce"]
-          resources:
-            requests:
-              storage: 2Gi
+  persistentVolume:
+    enabled: true
+    storageClass: ebs-sc
+    size: 2Gi
 
 server:
   persistentVolume:
