@@ -159,6 +159,24 @@ module "ebs_storage_class" {
 }
 
 
+module "app_namespace" {
+  source  = "./modules/namespace"
+  name    = "app"
+  labels = {
+    "managed-by" = "terraform"
+  }
+
+  providers = {
+    kubernetes.eks = kubernetes.eks 
+  }
+
+    depends_on = [
+    module.eks,
+    module.bastion
+  ]
+}
+
+
 # argocd 모듈 및 네임스페이스
 
 module "argocd_namespace" {
