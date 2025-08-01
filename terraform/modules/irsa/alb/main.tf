@@ -16,7 +16,7 @@ resource "aws_iam_role" "alb_irsa" {
       Action = "sts:AssumeRoleWithWebIdentity",
       Condition = {
         StringEquals = {
-          "${replace(var.oidc_url, "https://", "")}:sub" = "system:serviceaccount:${var.namespace}:${var.service_account_name}"
+          "${replace(var.oidc_url, "https://", "")}:sub" = "system:serviceaccount:kube-system:${var.service_account_name}"
         }
       }
     }]
