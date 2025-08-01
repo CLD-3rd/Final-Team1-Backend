@@ -15,20 +15,20 @@ spec:
             pathType: Prefix
             backend:
               service:
-                name: api-service
+                name: mindscape-service
                 port:
                   number: 80
           - path: /api
             pathType: Prefix
             backend:
               service:
-                name: auth-service
+                name: mindscape-auth
                 port:
                   number: 80
           - path: /api
             pathType: Prefix
             backend:
               service:
-                name: info-service
+                name: mindscape-service
                 port:
                   number: 80
