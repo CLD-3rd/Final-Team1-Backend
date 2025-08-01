@@ -24,3 +24,13 @@ variable "service_account_name" {
   type        = string
   default     = "aws-load-balancer-controller"
 }
+
+variable "create_alb_irsa" {
+  type    = bool
+  default = false
+}
+
+variable "create_ebs_csi_irsa" {
+  type    = bool
+  default = false
+}
