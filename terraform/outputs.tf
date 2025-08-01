@@ -80,10 +80,11 @@ output "ecr_repositories" {
   value = module.ecr.ecr_repositories
 }
 
+
 output "rds_endpoint" { 
   value = module.rds.rds_endpoint
 }
-output "redis_endpoint" { 
+
+output "redis_endpoint" {
   value = module.elasticache.endpoint
 }
-

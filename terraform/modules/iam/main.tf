@@ -140,6 +140,34 @@ resource "aws_iam_role_policy_attachment" "eks_node_amazon_ebs_csi_driver" {
   policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonEBSCSIDriverPolicy"
 }
 
+resource "aws_iam_role" "github_actions_oidc" {
+  name = "Team1-github-role"
 
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Principal = {
+          Federated = "arn:aws:iam::194722398200:oidc-provider/token.actions.githubusercontent.com"
+        }
+        Action = "sts:AssumeRoleWithWebIdentity"
+        Condition = {
+          StringLike = {
+            "token.actions.githubusercontent.com:sub" = "repo:CLD-3rd/Final-Team1-Backend:*"
+          }
+          StringEquals = {
+            "token.actions.githubusercontent.com:aud" = "sts.amazonaws.com"
+          }
+        }
+      }
+    ]
+  })
+}
+
+resource "aws_iam_role_policy_attachment" "attach_admin" {
+  role       = aws_iam_role.github_actions_oidc.name
+  policy_arn = "arn:aws:iam::aws:policy/AdministratorAccess"
+}
 
 

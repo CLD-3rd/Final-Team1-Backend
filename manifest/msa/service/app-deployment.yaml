@@ -17,7 +17,7 @@ spec:
         - name: mindscape-service
           image: 727646470302.dkr.ecr.ap-northeast-2.amazonaws.com/team1-mindscape-service:latest
           ports:
-            - containerPort: service
+            - containerPort: 8080
           envFrom:
             - secretRef:
                 name: mindscape-secret
