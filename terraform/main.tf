@@ -301,12 +301,14 @@ module "ecr" {
   source     = "./modules/ecr"
 }
 
-terraform {
-   backend "remote" {
-     organization = "final-team1"
 
-     workspaces {
-       name = "Final-Team1-Infra"
-     }
-   }
- }
+
+# terraform {
+#   backend "remote" {
+#     organization = "final-team1"
+
+#     workspaces {
+#       name = "Final-Team1-Infra"
+#     }
+#   }
+# }
