@@ -8,4 +8,5 @@ variable "services" {
   description = "Services to create ECR repositories"
   type        = list(string)
   default     = ["auth", "info", "service"]
+
 }
