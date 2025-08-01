@@ -147,6 +147,10 @@ module "ebs_storage_class" {
   reclaim_policy = "Delete"
   binding_mode  = "WaitForFirstConsumer"
 
+  providers = {
+    kubernetes.eks = kubernetes.eks
+  }
+
     depends_on = [
     module.ebs_csi_irsa,
     module.eks,
