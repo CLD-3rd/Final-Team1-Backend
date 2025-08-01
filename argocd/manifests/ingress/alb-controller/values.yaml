@@ -1,6 +1,6 @@
 clusterName: Team1-backend-eks-cluster         #  콘솔에서 사용한 클러스터 이름
 region: ap-northeast-2              #  리전
-vpcId: vpc-05278145330d14204        #  콘솔에서 사용한 VPC ID
+vpcId: vpc-0505fa9b8eb7e15e5        #  콘솔에서 사용한 VPC ID
 
 image:
   repository: 602401143452.dkr.ecr.ap-northeast-2.amazonaws.com/amazon/aws-load-balancer-controller
@@ -11,7 +11,7 @@ serviceAccount:
   annotations:
     eks.amazonaws.com/role-arn:clusterName: Team1-backend-eks-cluster         #  콘솔에서 사용한 클러스터 이름
 region: ap-northeast-2              #  리전
-vpcId: vpc-05278145330d14204        #  콘솔에서 사용한 VPC ID
+vpcId: vpc-0505fa9b8eb7e15e5        #  콘솔에서 사용한 VPC ID
 
 image:
   repository: 602401143452.dkr.ecr.ap-northeast-2.amazonaws.com/amazon/aws-load-balancer-controller
@@ -20,4 +20,4 @@ serviceAccount:
   create: false                     #  콘솔에서 이미 IRSA 만들었기 때문에 false
   name: aws-load-balancer-controller
   annotations:
-    eks.amazonaws.com/role-arn: arn:aws:iam::727646470302:role/Team1-backend-alb-irsa-role # <- CI/CD에서 자동 삽입되게 하거나, 수동으로 붙이세요
+    eks.amazonaws.com/role-arn: arn:aws:iam::194722398200:role/Team1-backend-alb-irsa-role # <- CI/CD에서 자동 삽입되게 하거나, 수동으로 붙이세요
