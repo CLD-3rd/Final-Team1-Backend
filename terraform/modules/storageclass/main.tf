@@ -1,4 +1,6 @@
 resource "kubernetes_storage_class_v1" "ebs_sc" {
+  provider = kubernetes.eks
+  
   metadata {
     name = var.name
   }
