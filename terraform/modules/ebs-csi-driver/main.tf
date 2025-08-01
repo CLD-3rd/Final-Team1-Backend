@@ -11,7 +11,7 @@ resource "helm_release" "ebs_csi_driver" {
     yamlencode({
       controller = {
         serviceAccount = {
-          create = false
+          create = true
           name   = var.service_account_name
           annotations = {
             "eks.amazonaws.com/role-arn" = var.irsa_role_arn
@@ -20,4 +20,5 @@ resource "helm_release" "ebs_csi_driver" {
       }
     })
   ]  
+  wait = false
 }
