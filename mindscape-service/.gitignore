@@ -34,7 +34,7 @@ build/
 
 
 ### properties ###
-*.properties
+application-env.properties
 
 # Redis AOF & RDB logs
 redis/conf/appendonlydir/
