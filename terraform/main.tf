@@ -238,7 +238,7 @@ module "prometheus_namespace" {
 module "prometheus" {
   source        = "./modules/monitoring/prometheus"
   namespace     = module.prometheus_namespace.name
-  chart_version = "25.21.0"
+  chart_version = "75.15.1"
 
   providers = {
     helm       = helm.eks
