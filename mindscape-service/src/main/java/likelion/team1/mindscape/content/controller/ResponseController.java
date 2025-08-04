@@ -18,7 +18,7 @@ import java.util.List;
 import java.util.Map;
 
 @RestController
-@RequestMapping("/api/test")
+@RequestMapping("/api/response")
 @RequiredArgsConstructor
 public class ResponseController {
     private final ResponseService responseService;
