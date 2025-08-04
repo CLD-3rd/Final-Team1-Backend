@@ -94,3 +94,15 @@ ssh-keygen -t rsa -N "" -f /root/.ssh/id_rsa
 echo "cloud-init complete."
 
 
+# k6 설치
+echo "[INFO] Installing k6..."
+
+apt install -y gnupg curl ca-certificates
+
+curl -fsSL https://dl.k6.io/key.gpg | gpg --dearmor -o /usr/share/keyrings/k6-archive-keyring.gpg
+
+echo "deb [signed-by=/usr/share/keyrings/k6-archive-keyring.gpg] https://dl.k6.io/deb stable main" \
+  > /etc/apt/sources.list.d/k6.list
+
+apt update
+apt install -y k6
