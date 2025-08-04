@@ -25,4 +25,4 @@ spec:
               service:
                 name: prometheus-stack-kube-prom-prometheus
                 port:
-                  number: 80
+                  number: 9090
