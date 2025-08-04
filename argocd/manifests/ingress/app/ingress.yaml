@@ -17,7 +17,7 @@ spec:
               service:
                 name: mindscape-service
                 port:
-                  number: 8081
+                  number: 8080
           - path: /auth
             pathType: Prefix
             backend:
@@ -31,4 +31,4 @@ spec:
               service:
                 name: mindscape-info
                 port:
-                  number: 8082
+                  number: 8080
