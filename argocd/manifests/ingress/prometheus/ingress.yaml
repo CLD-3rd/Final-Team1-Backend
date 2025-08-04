@@ -23,6 +23,6 @@ spec:
             pathType: Prefix
             backend:
               service:
-                name: prometheus-server
+                name: prometheus-stack-kube-prom-prometheus
                 port:
                   number: 80
