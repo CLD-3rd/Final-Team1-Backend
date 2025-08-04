@@ -21,3 +21,5 @@ spec:
           envFrom:
             - secretRef:
                 name: mindscape-secret
+      dependencies:
+        - name: mindscape-secret
