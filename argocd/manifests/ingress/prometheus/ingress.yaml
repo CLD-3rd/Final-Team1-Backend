@@ -16,7 +16,7 @@ metadata:
 spec:
   ingressClassName: alb
   rules:
-    - host: k8s-monitoring-c127b00cfa-2132501318.ap-northeast-2.elb.amazonaws.com
+    - host: k8s-monitoring-c127b00cfa-1605564233.ap-northeast-2.elb.amazonaws.com
       http:
         paths:
           - path: /prometheus
