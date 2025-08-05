@@ -1,7 +1,7 @@
 # modules/karpenter/main.tf
 
 resource "helm_release" "karpenter" {
-  depends_on       = [helm_release.karpenter_crds]
+  //depends_on       = [helm_release.karpenter_crds]
   name             = "karpenter"
   repository       = "oci://public.ecr.aws/karpenter"
   chart            = "karpenter"
