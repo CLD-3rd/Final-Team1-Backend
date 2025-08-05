@@ -13,3 +13,10 @@ variable "namespace_dependency" {
   type        = any
   default     = null
 }
+
+#삭제 필요~
+variable "enabled" {
+  description = "Enable or disable this module"
+  type        = bool
+  default     = true
+}
