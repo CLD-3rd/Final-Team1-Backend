@@ -106,3 +106,15 @@ echo "deb [signed-by=/usr/share/keyrings/k6-archive-keyring.gpg] https://dl.k6.i
 
 apt update
 apt install -y k6
+
+
+# kube-ops-view 설치
+echo "[INFO] Installing kube-ops-view..."
+
+helm repo add geek-cookbook https://geek-cookbook.github.io/charts/
+helm repo update
+
+helm install kube-ops-view geek-cookbook/kube-ops-view \
+  --version 1.2.2 \
+  --set env.TZ="Asia/Seoul" \
+  --namespace kube-system
