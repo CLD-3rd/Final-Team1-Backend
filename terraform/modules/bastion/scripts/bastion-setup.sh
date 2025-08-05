@@ -93,6 +93,67 @@ ssh-keygen -t rsa -N "" -f /root/.ssh/id_rsa
 
 echo "cloud-init complete."
 
+# k6 설치 -----
+# k6 설치 블록 
+echo "[INFO] Installing k6..."
+
+set -euo pipefail
+
+# 필수 패키지 설치
+echo "[INFO] Installing dependencies for k6..."
+apt update -y
+apt install -y gnupg curl ca-certificates || { echo "[ERROR] Failed to install dependencies"; exit 1; }
+
+# GPG 키 등록
+echo "[INFO] Adding GPG key for k6..."
+curl -fsSL https://dl.k6.io/key.gpg | gpg --dearmor -o /usr/share/keyrings/k6-archive-keyring.gpg || {
+  echo "[ERROR] Failed to fetch GPG key"; exit 1;
+}
+
+# APT 저장소 등록
+echo "[INFO] Adding APT repo for k6..."
+echo "deb [signed-by=/usr/share/keyrings/k6-archive-keyring.gpg] https://dl.k6.io/deb stable main" \
+  > /etc/apt/sources.list.d/k6.list
+
+# k6 설치
+echo "[INFO] Updating package list and installing k6..."
+apt update -y
+apt install -y k6 || { echo "[ERROR] Failed to install k6"; exit 1; }
+
+# 설치 확인
+echo "[INFO] k6 version:"
+k6 version || { echo "[ERROR] k6 not found after install"; exit 1; }
+
+
+
+# kube-ops-view 설치 --- 
+# kube-ops-view 설치
+echo "[INFO] Installing kube-ops-view..."
+
+# Helm 설치 여부 확인
+if ! command -v helm &>/dev/null; then
+  echo "[ERROR] Helm is not installed. Skipping kube-ops-view install."
+  exit 1
+fi
+
+# Helm Repo 등록
+helm repo add geek-cookbook https://geek-cookbook.github.io/charts/ || {
+  echo "[ERROR] Failed to add helm repo"; exit 1;
+}
+
+helm repo update || {
+  echo "[ERROR] Failed to update helm repo"; exit 1;
+}
+
+# 설치 실행
+helm install kube-ops-view geek-cookbook/kube-ops-view \
+  --version 1.2.2 \
+  --set env.TZ="Asia/Seoul" \
+  --namespace kube-system || {
+    echo "[ERROR] Failed to install kube-ops-view"; exit 1;
+  }
+
+echo "[INFO] kube-ops-view installation complete."
 
 # k6 설치
 echo "[INFO] Installing k6..."
