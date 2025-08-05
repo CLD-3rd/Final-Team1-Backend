@@ -21,10 +21,10 @@ spec:
           envFrom:
             - secretRef:
                 name: mindscape-secret1
-          resources:
-            requests:   
-              cpu: 50m
-              memory: 20Mi        
+          resources: 
+            requests:
+              cpu: 200m
+              memory: 128Mi
             limits:
-              cpu: 100m 
-              memory: 40Mi
+              cpu: 500m
+              memory: 256Mi
