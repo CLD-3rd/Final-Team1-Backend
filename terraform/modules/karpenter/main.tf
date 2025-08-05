@@ -1,14 +1,11 @@
-# modules/karpenter/main.tf
-
 resource "helm_release" "karpenter" {
-  //depends_on       = [helm_release.karpenter_crds]
   name             = "karpenter"
   repository       = "oci://public.ecr.aws/karpenter"
   chart            = "karpenter"
   version          = var.karpenter_version
   namespace        = var.namespace
   create_namespace = false
-  skip_crds        = false
+  skip_crds        = false  # CRDs 자동 설치
   wait             = true
 
   values = [
