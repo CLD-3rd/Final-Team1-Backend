@@ -14,12 +14,13 @@ resource "helm_release" "karpenter" {
         clusterName     = var.cluster_name
         clusterEndpoint = var.cluster_endpoint
       }
-      serviceAccount = {
-        annotations = {
-          "eks.amazonaws.com/role-arn" = var.irsa_role_arn
-        }
-        name   = "karpenter"
-        create =  true
+       serviceAccount = {
+      name   = "karpenter"
+      create = true
+      annotations = {
+        "eks.amazonaws.com/role-arn" = var.irsa_role_arn
+      }
+      automountServiceAccountToken = true   # 여기로 이동해야 정상 작동
       }
       controller = {
         resources = {
