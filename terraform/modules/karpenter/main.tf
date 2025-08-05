@@ -19,7 +19,7 @@ resource "helm_release" "karpenter" {
           "eks.amazonaws.com/role-arn" = var.irsa_role_arn
         }
         name   = "karpenter"
-        create = false
+        create =  true
       }
       controller = {
         resources = {
