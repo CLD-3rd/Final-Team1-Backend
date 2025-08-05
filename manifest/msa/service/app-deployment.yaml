@@ -20,7 +20,7 @@ spec:
             - containerPort: 8080
           envFrom:
             - secretRef:
-                name: mindscape-secret1
+                name: mindscape-secret
           resources: 
             requests:
               cpu: 200m
