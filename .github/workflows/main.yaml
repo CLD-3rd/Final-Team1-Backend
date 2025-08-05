@@ -3,7 +3,7 @@ name: Team1 CI - Build and Push Docker Image
 on:
   push:
     branches: ## TODO: dev, main으로 변경
-      - dev-terraform
+      - dev
   workflow_dispatch:
 
 jobs:
