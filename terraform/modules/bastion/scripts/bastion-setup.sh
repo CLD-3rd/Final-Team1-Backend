@@ -93,18 +93,37 @@ ssh-keygen -t rsa -N "" -f /root/.ssh/id_rsa
 
 echo "cloud-init complete."
 
-# k6 설치
+# k6 설치 -----
+# k6 설치 블록 
 echo "[INFO] Installing k6..."
 
-apt install -y gnupg curl ca-certificates
+set -euo pipefail
 
-curl -fsSL https://dl.k6.io/key.gpg | gpg --dearmor -o /usr/share/keyrings/k6-archive-keyring.gpg
+# 필수 패키지 설치
+echo "[INFO] Installing dependencies for k6..."
+apt update -y
+apt install -y gnupg curl ca-certificates || { echo "[ERROR] Failed to install dependencies"; exit 1; }
 
+# GPG 키 등록
+echo "[INFO] Adding GPG key for k6..."
+curl -fsSL https://dl.k6.io/key.gpg | gpg --dearmor -o /usr/share/keyrings/k6-archive-keyring.gpg || {
+  echo "[ERROR] Failed to fetch GPG key"; exit 1;
+}
+
+# APT 저장소 등록
+echo "[INFO] Adding APT repo for k6..."
 echo "deb [signed-by=/usr/share/keyrings/k6-archive-keyring.gpg] https://dl.k6.io/deb stable main" \
   > /etc/apt/sources.list.d/k6.list
 
-apt update
-apt install -y k6
+# k6 설치
+echo "[INFO] Updating package list and installing k6..."
+apt update -y
+apt install -y k6 || { echo "[ERROR] Failed to install k6"; exit 1; }
+
+# 설치 확인
+echo "[INFO] k6 version:"
+k6 version || { echo "[ERROR] k6 not found after install"; exit 1; }
+
 
 
 # kube-ops-view 설치
