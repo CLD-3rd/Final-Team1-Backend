@@ -13,3 +13,4 @@ output "bastion_private_ip" {
   description = "Private IP address of the Bastion EC2"
   value       = aws_instance.bastion.private_ip
 }
+

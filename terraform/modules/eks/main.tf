@@ -17,6 +17,8 @@ resource "aws_eks_node_group" "ng" {
   node_role_arn   = var.node_iam_role_arn
   subnet_ids      = var.subnet_ids
 
+  instance_types = ["t3.large", "m5.large"]  # ← 추가된 부분!
+
   scaling_config {
     desired_size = 3
     min_size     = 1

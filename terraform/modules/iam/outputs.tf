@@ -14,3 +14,15 @@ output "bastion_role_arn" {
 output "bastion_instance_profile_name" {
   value = aws_iam_instance_profile.bastion.name
 }
+
+
+#karpenter
+output "karpenter_node_role_arn" {
+  value       = aws_iam_role.karpenter_node.arn
+  description = "IAM Role ARN for Karpenter node"
+}
+
+output "karpenter_node_instance_profile_name" {
+  value       = aws_iam_instance_profile.karpenter_node.name
+  description = "Instance profile name for Karpenter node"
+}
