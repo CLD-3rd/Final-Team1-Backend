@@ -8,21 +8,29 @@ resource "helm_release" "karpenter" {
   skip_crds        = false  # CRDs 자동 설치
   wait             = true
 
-  values = [
+   values = [
     yamlencode({
       settings = {
         clusterName     = var.cluster_name
-        clusterEndpoint = var.cluster_endpoint 
+        clusterEndpoint = var.cluster_endpoint
       }
       serviceAccount = {
         annotations = {
           "eks.amazonaws.com/role-arn" = var.irsa_role_arn
         }
+        name   = "karpenter"
+        create = false
       }
       controller = {
         resources = {
           requests = { cpu = "1", memory = "1Gi" }
           limits   = { cpu = "1", memory = "1Gi" }
+        }
+        serviceAccount = {
+          automountServiceAccountToken = true
+        }
+        podSecurityContext = {
+          fsGroup = 65534
         }
       }
     })
