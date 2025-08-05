@@ -126,13 +126,32 @@ k6 version || { echo "[ERROR] k6 not found after install"; exit 1; }
 
 
 
+# kube-ops-view 설치 --- 
 # kube-ops-view 설치
 echo "[INFO] Installing kube-ops-view..."
 
-helm repo add geek-cookbook https://geek-cookbook.github.io/charts/
-helm repo update
+# Helm 설치 여부 확인
+if ! command -v helm &>/dev/null; then
+  echo "[ERROR] Helm is not installed. Skipping kube-ops-view install."
+  exit 1
+fi
 
+# Helm Repo 등록
+helm repo add geek-cookbook https://geek-cookbook.github.io/charts/ || {
+  echo "[ERROR] Failed to add helm repo"; exit 1;
+}
+
+helm repo update || {
+  echo "[ERROR] Failed to update helm repo"; exit 1;
+}
+
+# 설치 실행
 helm install kube-ops-view geek-cookbook/kube-ops-view \
   --version 1.2.2 \
   --set env.TZ="Asia/Seoul" \
-  --namespace kube-system
+  --namespace kube-system || {
+    echo "[ERROR] Failed to install kube-ops-view"; exit 1;
+  }
+
+echo "[INFO] kube-ops-view installation complete."
+
