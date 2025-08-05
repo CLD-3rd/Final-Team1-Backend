@@ -9,4 +9,5 @@ resource "helm_release" "karpenter_crds" {
   create_namespace = false
   skip_crds        = false
   wait             = true
+  provider = helm.eks
 }
