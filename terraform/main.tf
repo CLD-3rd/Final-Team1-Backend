@@ -26,7 +26,7 @@ module "bastion" {
     module.eks,         # 클러스터 먼저 생성
     module.iam          # IAM 역할도 먼저 있어야 함
   ]
-}
+} 
 
 #iam
 module "iam" {
@@ -323,13 +323,67 @@ module "ecr" {
   source     = "./modules/ecr"
 }
 
-# terraform {
-#   backend "remote" {
-#     organization = "final-team1"
+terraform {
+  backend "remote" {
+    organization = "final-team1"
 
-#     workspaces {
-#       name = "Final-Team1-Infra"
-#     }
-#   }
-# }
 
+    workspaces {
+      name = "Final-Team1-Infra"
+    }
+  }
+}
+
+#karpenter - aws_ami 정의(ububntu용)
+data "aws_ami" "ubuntu" {
+  most_recent = true
+
+  filter {
+    name   = "name"
+    values = ["ubuntu/images/hvm-ssd/ubuntu-*-20.04-amd64-server-*"]
+  }
+
+  filter {
+    name   = "virtualization-type"
+    values = ["hvm"]
+  }
+
+  owners = ["099720109477"] # Canonical
+}
+
+
+# karpenter
+module "karpenter" {
+  source             = "./modules/karpenter"
+
+  cluster_name       = module.eks.cluster_name
+  cluster_endpoint   = module.eks.cluster_endpoint
+  karpenter_version  = "1.5.0"
+  namespace          = "kube-system"
+  irsa_role_arn      = module.irsa_karpenter_controller.karpenter_controller_role_arn
+  # oidc_provider_url = module.eks.oidc_url
+
+  subnet_ids              = module.subnet.private_subnet_ids
+  cluster_security_group_id = module.eks.cluster_security_group_id
+  instance_profile         = module.iam.karpenter_instance_profile_name
+  ubuntu_ami_id = data.aws_ami.ubuntu.id
+  bastion_host       = module.bastion.bastion_public_ip
+  bastion_user       = "ubuntu"
+  
+  providers = {
+    kubernetes = kubernetes   # 루트에 선언된 plain provider 이름을 그대로 넘깁니다
+    helm       = helm
+    kubectl    = kubectl
+  }
+  depends_on = [module.irsa_karpenter_controller, module.bastion]
+}
+
+
+
+module "irsa_karpenter_controller" {
+  source             = "./modules/irsa/karpenter-controller"
+  cluster_name       = module.eks.cluster_name
+  oidc_provider_arn  = module.eks.oidc_provider_arn
+  oidc_provider_url  = module.eks.oidc_url
+  team_name          = var.team_name
+}

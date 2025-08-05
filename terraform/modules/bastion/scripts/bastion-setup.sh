@@ -155,3 +155,27 @@ helm install kube-ops-view geek-cookbook/kube-ops-view \
 
 echo "[INFO] kube-ops-view installation complete."
 
+# k6 설치
+echo "[INFO] Installing k6..."
+
+apt install -y gnupg curl ca-certificates
+
+curl -fsSL https://dl.k6.io/key.gpg | gpg --dearmor -o /usr/share/keyrings/k6-archive-keyring.gpg
+
+echo "deb [signed-by=/usr/share/keyrings/k6-archive-keyring.gpg] https://dl.k6.io/deb stable main" \
+  > /etc/apt/sources.list.d/k6.list
+
+apt update
+apt install -y k6
+
+
+# kube-ops-view 설치
+echo "[INFO] Installing kube-ops-view..."
+
+helm repo add geek-cookbook https://geek-cookbook.github.io/charts/
+helm repo update
+
+helm install kube-ops-view geek-cookbook/kube-ops-view \
+  --version 1.2.2 \
+  --set env.TZ="Asia/Seoul" \
+  --namespace kube-system

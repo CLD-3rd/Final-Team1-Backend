@@ -12,6 +12,10 @@ terraform {
       source  = "hashicorp/aws"
       version = ">= 5.0.0"
     }
+    kubectl = {
+      source  = "gavinbunney/kubectl"
+      version = "~> 1.14.0"  # 원하시는 버전으로 조정하세요
+    }
   }
 }
 
