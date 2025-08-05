@@ -375,7 +375,7 @@ module "karpenter" {
     helm       = helm.eks
     kubectl    = kubectl
   }
-  depends_on = [module.irsa_karpenter_controller, module.bastion]
+  depends_on = [module.eks, module.irsa_karpenter_controller, module.bastion]
 }
 
 

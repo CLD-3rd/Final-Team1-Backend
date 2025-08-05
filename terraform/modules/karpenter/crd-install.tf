@@ -1,6 +1,7 @@
 // modules/karpenter/crd-install.tf
 
 resource "helm_release" "karpenter_crds" {
+  provider = helm.eks
   name             = "karpenter-crd"
   repository       = "oci://public.ecr.aws/karpenter"
   chart            = "karpenter-crd"
@@ -9,5 +10,9 @@ resource "helm_release" "karpenter_crds" {
   create_namespace = false
   skip_crds        = false
   wait             = true
-  provider = helm.eks
+
+
 }
+
+
+
