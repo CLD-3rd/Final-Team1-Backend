@@ -9,8 +9,8 @@ variable "chart_version" {
 }
 
 #삭제 필요~
-variable "enabled" {
-  description = "Enable or disable ArgoCD module"
-  type        = bool
-  default     = true
-}
+#variable "enabled" {
+#  description = "Enable or disable ArgoCD module"
+#  type        = bool
+#  default     = true
+#}
