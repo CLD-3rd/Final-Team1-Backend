@@ -9,3 +9,8 @@ variable "team_name" {
   description = "Team prefix for naming"
   type        = string
 }
+
+variable "cluster_name" {
+  type        = string
+  description = "EKS 클러스터 이름"
+}
