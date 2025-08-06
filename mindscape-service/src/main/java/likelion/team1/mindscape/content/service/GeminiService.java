@@ -40,6 +40,12 @@ public class GeminiService {
                 userType
         );
 
+//        String prompt = String.format(
+//                "사용자의 성향은 D.I.S.C 검사 중 랜덤으로 1개를 골라서, 골라준 성향에 맞는 영화 3개, 책 3개, 음악 3개를 추천해줘. 아래 JSON 형식으로 출력해주세요. 답변은 json만 주세요:\n" +
+//                        "{\n  \"movie\": [\"제목1\", \"제목2\", \"제목3\"],\n  \"book\": [\"제목1\", \"제목2\", \"제목3\"],\n  \"music\": [\"가수 - 제목1\", \"가수 - 제목2\", \"가수 - 제목3\"]\n}",
+//                userType
+//        );
+
         GeminiResponse geminiResponse = geminiApiClient.getRecommendations(prompt);
 
         RecomContent savedRecom = recomContentRepository.save(new RecomContent(testId));
