@@ -6,6 +6,7 @@ metadata:
     app.kubernetes.io/managed-by: terraform
 spec:
   instanceProfile: "${instance_profile}"
+  amiFamily: Ubuntu
   amiSelectorTerms:
     - id: "${ubuntu_ami_id}"
   subnetSelectorTerms:
