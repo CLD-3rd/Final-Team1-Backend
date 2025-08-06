@@ -5,7 +5,7 @@ variable "cluster_name" {
 
 variable "namespace" {
   type        = string
-  default     = "karpenter"
+  default     = "kube-system"
   description = "Karpenter가 설치될 네임스페이스"
 }
 

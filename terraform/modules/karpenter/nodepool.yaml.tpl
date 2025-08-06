@@ -2,7 +2,6 @@ apiVersion: karpenter.sh/v1
 kind: NodePool
 metadata:
   name: default
-  namespace: karpenter
   labels:
     app.kubernetes.io/managed-by: terraform
 spec:
