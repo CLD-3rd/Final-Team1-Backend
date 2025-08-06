@@ -375,9 +375,9 @@ module "karpenter" {
   bastion_user       = "ubuntu"
   
   providers = {
-    kubernetes = kubernetes   # 루트에 선언된 plain provider 이름을 그대로 넘깁니다
+    kubernetes = kubernetes.eks   # 루트에 선언된 plain provider 이름을 그대로 넘깁니다
     helm       = helm.eks
-    kubectl = kubectl.bastion
+    kubectl = kubectl.eks
 
   }
   depends_on = [module.eks, module.irsa_karpenter_controller, module.bastion]

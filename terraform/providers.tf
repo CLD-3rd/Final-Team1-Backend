@@ -60,7 +60,22 @@ provider "helm" {
 
 }
 
+# # 1) default kubectl 프로바이더 선언
+# provider "kubectl" {
+#   load_config_file = true
+# }
+
+# # 2) bastion alias 프로바이더 선언
+# provider "kubectl" {
+#   alias       = "bastion"
+#   config_path = "/root/.kube/config"
+# }
+
 provider "kubectl" {
-  alias       = "bastion"
-  config_path = "/root/.kube/config"
+  alias                  = "eks"
+  host                   = module.eks.cluster_endpoint
+    cluster_ca_certificate = base64decode(module.eks.cluster_certificate_authority)
+    token                  = data.aws_eks_cluster_auth.eks.token 
+    load_config_file       = false
 }
+
