@@ -179,3 +179,34 @@ helm install kube-ops-view geek-cookbook/kube-ops-view \
   --version 1.2.2 \
   --set env.TZ="Asia/Seoul" \
   --namespace kube-system
+
+
+  # ─── Docker Compose 설치 및 InfluxDB 컨테이너 기동 ───
+echo "[INFO] Installing Docker Compose and launching InfluxDB container..."
+
+# Docker Compose 설치
+curl -SL https://github.com/docker/compose/releases/download/v2.39.1/docker-compose-linux-x86_64 \
+  -o /usr/local/bin/docker-compose
+chmod +x /usr/local/bin/docker-compose
+
+# docker-compose 파일 생성
+cat << 'EOF' > /home/ubuntu/docker-compose.yaml
+version: '3.8'
+
+services:
+  influxdb:
+    image: influxdb:1.8
+    container_name: influxdb
+    ports:
+      - "8086:8086"
+    volumes:
+      - influxdb_volume_data:/var/lib/influxdb
+
+volumes:
+  influxdb_volume_data:
+EOF
+
+# 컨테이너 띄우기
+cd /home/ubuntu
+docker-compose -f docker-compose.yaml up -d
+echo "[INFO] InfluxDB is up on port 8086."
