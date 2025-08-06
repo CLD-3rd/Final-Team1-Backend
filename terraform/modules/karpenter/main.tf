@@ -3,7 +3,7 @@ resource "helm_release" "karpenter" {
   repository       = "oci://public.ecr.aws/karpenter"
   chart            = "karpenter"
   version          = var.karpenter_version
-  namespace        = "karpenter"
+  namespace        = "kube-system"
   create_namespace = false
   skip_crds        = false  # CRDs 자동 설치
   wait             = true
