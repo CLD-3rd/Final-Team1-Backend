@@ -1,5 +1,6 @@
 # modules/karpenter/node_resources.tf
 
+
 resource "kubectl_manifest" "ec2nodeclass" {
   depends_on = [helm_release.karpenter]
   yaml_body  = templatefile("${path.module}/ec2nodeclass.yaml.tpl", {

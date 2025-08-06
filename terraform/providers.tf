@@ -59,3 +59,8 @@ provider "helm" {
   }
 
 }
+
+provider "kubectl" {
+  alias       = "bastion"
+  config_path = "/root/.kube/config"
+}

@@ -8,31 +8,31 @@ resource "helm_release" "karpenter" {
   skip_crds        = false  # CRDs 자동 설치
   wait             = true
 
-   values = [
-    yamlencode({
-      settings = {
-        clusterName     = var.cluster_name
-        clusterEndpoint = var.cluster_endpoint
+  values = [
+  yamlencode({
+    settings = {
+      clusterName     = var.cluster_name
+      clusterEndpoint = var.cluster_endpoint
+    }
+    serviceAccount = {
+      annotations = {
+        "eks.amazonaws.com/role-arn" = var.irsa_role_arn
+      }
+      name   = "karpenter"
+      create = true         # 여기 true로 변경!!
+    }
+    controller = {
+      resources = {
+        requests = { cpu = "1", memory = "1Gi" }
+        limits   = { cpu = "1", memory = "1Gi" }
       }
       serviceAccount = {
-        annotations = {
-          "eks.amazonaws.com/role-arn" = var.irsa_role_arn
-        }
-        name   = "karpenter"
-        create = false
+        automountServiceAccountToken = true
       }
-      controller = {
-        resources = {
-          requests = { cpu = "1", memory = "1Gi" }
-          limits   = { cpu = "1", memory = "1Gi" }
-        }
-        serviceAccount = {
-          automountServiceAccountToken = true
-        }
-        podSecurityContext = {
-          fsGroup = 65534
-        }
+      podSecurityContext = {
+        fsGroup = 65534
       }
-    })
-  ]
+    }
+  })
+]
 }

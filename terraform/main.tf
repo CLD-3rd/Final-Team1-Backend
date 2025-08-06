@@ -377,7 +377,8 @@ module "karpenter" {
   providers = {
     kubernetes = kubernetes   # 루트에 선언된 plain provider 이름을 그대로 넘깁니다
     helm       = helm.eks
-    kubectl    = kubectl
+    kubectl = kubectl.bastion
+
   }
   depends_on = [module.eks, module.irsa_karpenter_controller, module.bastion]
 }
