@@ -1,0 +1,28 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: mindscape-app-alerts
+  namespace: prometheus
+  labels:
+    app: kube-prometheus-stack
+    prometheus: kube-prometheus
+spec:
+  groups:
+  - name: spring-boot-app
+    interval: 30s
+    rules:
+    - alert: HighCPUUsage
+      expr: |
+        (
+          sum(rate(container_cpu_usage_seconds_total{namespace="app", pod=~"mindscape-(auth|info|service)-.*"}[5m])) by (pod)
+          /
+          sum(kube_pod_container_resource_limits{namespace="app", pod=~"mindscape-(auth|info|service)-.*", resource="cpu"}) by (pod)
+        ) * 100 > 70
+      for: 5m
+      labels:
+        severity: warning
+        team: backend
+        component: spring-boot
+      annotations:
+        summary: "높은 CPU 사용률 감지"
+        description: "Pod {{ $labels.pod }}의 CPU 사용률이 {{ $value | humanize }}%입니다. (임계값: 70%)"
