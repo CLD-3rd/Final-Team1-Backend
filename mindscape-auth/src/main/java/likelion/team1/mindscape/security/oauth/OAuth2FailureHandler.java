@@ -13,7 +13,7 @@ import java.io.IOException;
 @Component
 public class OAuth2FailureHandler implements AuthenticationFailureHandler {
 
-    @Value("${server.redirect.pageUrl}")
+    @Value("${server.frontend.pageUrl}")
     private String redirectPageUrl;
 
     @Override

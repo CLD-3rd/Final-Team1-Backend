@@ -24,7 +24,7 @@ import java.util.Date;
 @RequiredArgsConstructor
 public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
 
-    @Value("${server.redirect.pageUrl}")
+    @Value("${server.frontend.pageUrl}")
     private String redirectPageUrl;
 
     private final UserRepository userRepository;
