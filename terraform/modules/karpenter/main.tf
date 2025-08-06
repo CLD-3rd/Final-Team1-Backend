@@ -26,13 +26,21 @@ resource "helm_release" "karpenter" {
         requests = { cpu = "1", memory = "1Gi" }
         limits   = { cpu = "1", memory = "1Gi" }
       }
-      serviceAccount = {
-        automountServiceAccountToken = true
+       serviceAccount = {
+      name   = "karpenter"
+      create = true
+      annotations = {
+        "eks.amazonaws.com/role-arn" = var.irsa_role_arn
+      }
+      automountServiceAccountToken = true   # 여기로 이동해야 정상 작동
       }
       podSecurityContext = {
         fsGroup = 65534
       }
+
     }
   })
 ]
 }
+
+

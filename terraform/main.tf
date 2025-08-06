@@ -199,7 +199,7 @@ module "argocd_namespace" {
 module "argocd" {
  source        = "./modules/argocd"
  #삭제 필요~
- enabled = false
+# enabled = false
  namespace     = module.argocd_namespace.name
  chart_version = "5.51.6"
  providers = {
@@ -238,7 +238,7 @@ module "prometheus_namespace" {
 module "prometheus" {
  source        = "./modules/monitoring/prometheus"
   #삭제 필요~
- enabled = false
+# enabled = false
  namespace     = module.prometheus_namespace.name
  chart_version = "75.15.1"
 
@@ -280,7 +280,7 @@ module "grafana_namespace" {
 module "grafana" {
  source        = "./modules/monitoring/grafana"
   #삭제 필요~
- enabled = false
+ #enabled = false
  namespace     = module.grafana_namespace.name
  chart_version = "7.3.11"
 
