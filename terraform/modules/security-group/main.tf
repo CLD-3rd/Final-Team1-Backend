@@ -49,6 +49,7 @@ resource "aws_security_group" "eks_node" {
 
   tags = {
     Name = "${var.team_name}-eks-node-sg"
+    "karpenter.sh/discovery" = var.cluster_name
   }
 }
 

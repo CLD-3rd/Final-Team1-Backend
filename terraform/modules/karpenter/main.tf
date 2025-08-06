@@ -8,6 +8,8 @@ resource "helm_release" "karpenter" {
   skip_crds        = false  # CRDs 자동 설치
   wait             = true
 
+  depends_on = [var.namespace_dependency]
+
   values = [
   yamlencode({
     settings = {

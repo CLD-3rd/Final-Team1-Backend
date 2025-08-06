@@ -5,7 +5,7 @@ variable "cluster_name" {
 
 variable "namespace" {
   type        = string
-  default     = "kube-system"
+  default     = "karpenter"
   description = "Karpenter가 설치될 네임스페이스"
 }
 
@@ -64,4 +64,10 @@ variable "bastion_host" {
 variable "bastion_user" {
   type        = string
   description = "SSH user on Bastion (e.g., ec2-user)"
+}
+
+variable "namespace_dependency" {
+  description = "Optional dependency on namespace module"
+  type        = any
+  default     = null
 }
