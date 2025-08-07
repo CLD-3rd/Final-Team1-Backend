@@ -7,6 +7,8 @@ import likelion.team1.mindscape.test.dto.TestResponseSimpleDto;
 import likelion.team1.mindscape.test.entity.Test;
 import likelion.team1.mindscape.test.repository.TestRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -52,8 +54,10 @@ public class TestService {
                 .userType(test.getUserType())
                 .build();
     }
-    public List<Long> getTestIdsByUserId(Long userId) {
-        return testRepository.findTestIdsByUserId(userId);
+    public List<Long> getTestIdsByUserId(Long userId, Pageable pageable) {
+        Page<Long> page = testRepository.findByUserIdOrderByCreatedAtDesc(userId, pageable).map(Test::getTestId);
+        List<Long> res = page.stream().toList();
+        return res;
     }
 
 }

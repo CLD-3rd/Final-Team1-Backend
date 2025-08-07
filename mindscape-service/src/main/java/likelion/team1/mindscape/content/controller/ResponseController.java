@@ -15,7 +15,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 @RestController
 @RequestMapping("/api/test")
@@ -37,10 +36,12 @@ public class ResponseController {
         return ResponseEntity.ok(response);
     }
 
-    @GetMapping(value = "/history", params = "userId")
-    public ResponseEntity<List<HistoryResponse>> getHistoryByUserId(@RequestParam Long userId) {
+    @GetMapping(value = "/history", params = {"userId", "page", "size"})
+    public ResponseEntity<List<HistoryResponse>> getHistoryByUserId(@RequestParam Long userId,
+                                                                    @RequestParam(defaultValue = "0") int page,
+                                                                    @RequestParam(defaultValue = "5") int size) {
         //TODO: get test ID with user ID
-        List<Long> testIds = testServiceClient.getTestIdsByUserId(userId);
+        List<Long> testIds = testServiceClient.getTestIdsByUserId(userId, page, size);
         List<HistoryResponse> responses = new ArrayList<>();
 
         for (Long testId : testIds) {

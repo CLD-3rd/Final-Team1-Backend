@@ -5,6 +5,8 @@ import likelion.team1.mindscape.test.dto.TestResponseDto;
 import likelion.team1.mindscape.test.dto.TestResponseSimpleDto;
 import likelion.team1.mindscape.test.service.TestService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -43,8 +45,11 @@ public class TestController {
     }
 
     @GetMapping("/ids")
-    public ResponseEntity<List<Long>> getTestIdsByUser(@RequestParam("id") Long userId) {
-        List<Long> testIds = testService.getTestIdsByUserId(userId);
+    public ResponseEntity<List<Long>> getTestIdsByUser(@RequestParam("id") Long userId,
+                                                       @RequestParam int page,
+                                                       @RequestParam int size) {
+        Pageable pageable = PageRequest.of(page, size);
+        List<Long> testIds = testService.getTestIdsByUserId(userId, pageable);
         return ResponseEntity.ok(testIds);
     }
 
