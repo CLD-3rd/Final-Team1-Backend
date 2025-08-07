@@ -27,3 +27,8 @@ variable "azs" {
   description = "사용할 가용영역 리스트"
   type        = list(string)
 }
+
+variable "cluster_name" {
+  type        = string
+  description = "EKS 클러스터 이름"
+}

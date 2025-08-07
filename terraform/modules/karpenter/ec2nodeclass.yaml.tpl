@@ -2,13 +2,11 @@ apiVersion: karpenter.k8s.aws/v1
 kind: EC2NodeClass
 metadata:
   name: default
-  labels:
-    app.kubernetes.io/managed-by: terraform
 spec:
-  instanceProfile: "${instance_profile}"
-  amiFamily: "AL2" 
-  #amiSelectorTerms:
-  #  - id: "${ubuntu_ami_id}"
+  amiFamily: "AL2023"
+  amiSelectorTerms:
+    - ssmParameter: "/aws/service/eks/optimized-ami/1.33/amazon-linux-2023/x86_64/standard/recommended/image_id"
+  instanceProfile: "KarpenterNodeInstanceProfile-${cluster_name}"
   subnetSelectorTerms:
     - tags:
         karpenter.sh/discovery: "${cluster_name}"
