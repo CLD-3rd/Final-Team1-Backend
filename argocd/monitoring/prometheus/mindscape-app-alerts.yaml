@@ -6,6 +6,7 @@ metadata:
   labels:
     app: kube-prometheus-stack
     prometheus: kube-prometheus
+    release: prometheus
 spec:
   groups:
   - name: spring-boot-app
