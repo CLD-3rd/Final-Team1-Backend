@@ -12,6 +12,7 @@ resource "aws_instance" "bastion" {
   cluster_name = var.cluster_name
   eks_node_role_arn   = var.eks_node_role_arn   
     bastion_role_arn    = var.bastion_role_arn 
+    bastion_role_name  = var.bastion_role_name
   })
   tags = {
     Name = "${var.team_name}-bastion"

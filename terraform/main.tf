@@ -21,6 +21,7 @@ module "bastion" {
   eks_node_role_arn        = module.iam.eks_node_role_arn
   bastion_role_arn         = module.iam.bastion_role_arn
   key_name                  = var.bastion_key_name
+  bastion_role_name  = module.iam.bastion_role_name
 
     depends_on = [
     module.eks,         # 클러스터 먼저 생성
@@ -381,7 +382,7 @@ module "karpenter" {
     kubectl = kubectl.eks
 
   }
-  depends_on = [module.eks, module.irsa_karpenter_controller, module.bastion, module.karpenter_namespace]
+  depends_on = [module.eks, module.irsa_karpenter_controller, module.bastion]
 }
 
 
