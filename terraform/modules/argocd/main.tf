@@ -7,7 +7,7 @@
 
 resource "helm_release" "argocd" {
   #삭제 필요~
-  count            = var.enabled ? 1 : 0
+  #count            = var.enabled ? 1 : 0
   name             = "argocd"
   namespace        = var.namespace
   repository       = "https://argoproj.github.io/argo-helm"
@@ -22,7 +22,7 @@ resource "helm_release" "argocd" {
 
 resource "kubernetes_cluster_role_binding" "argocd_controller_admin" {
   #삭제 필요~
-  count            = var.enabled ? 1 : 0
+  #count            = var.enabled ? 1 : 0
   provider = kubernetes
 
   metadata {
