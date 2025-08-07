@@ -52,5 +52,4 @@ public class TestController {
         List<Long> testIds = testService.getTestIdsByUserId(userId, pageable);
         return ResponseEntity.ok(testIds);
     }
-
 }

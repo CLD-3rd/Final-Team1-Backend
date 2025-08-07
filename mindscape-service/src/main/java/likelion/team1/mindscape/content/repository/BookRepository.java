@@ -9,5 +9,5 @@ import java.util.Optional;
 public interface BookRepository extends JpaRepository<Book, Long> {
     Optional<Book> findByTitle(String title);
 
-    List<Book> findAllByRecommendedContent_RecomId(Long recommendedContentRecomId);
+    List<Book> findTop3AllByRecommendedContent_RecomId(Long recommendedContentRecomId);
 }
