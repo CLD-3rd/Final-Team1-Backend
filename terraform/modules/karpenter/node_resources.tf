@@ -7,7 +7,6 @@ resource "kubectl_manifest" "ec2nodeclass" {
   yaml_body  = templatefile("${path.module}/ec2nodeclass.yaml.tpl", {
     cluster_name     = var.cluster_name,
     instance_profile = var.instance_profile,
-    ubuntu_ami_id    = var.ubuntu_ami_id,
   })
 }
 
