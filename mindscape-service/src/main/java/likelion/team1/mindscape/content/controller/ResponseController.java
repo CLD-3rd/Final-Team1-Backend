@@ -5,14 +5,15 @@ import likelion.team1.mindscape.content.dto.response.HistoryResponse;
 import likelion.team1.mindscape.content.dto.response.content.BookDto;
 import likelion.team1.mindscape.content.dto.response.content.MovieDto;
 import likelion.team1.mindscape.content.dto.response.content.MusicDto;
+import likelion.team1.mindscape.content.global.security.AESUtil;
 import likelion.team1.mindscape.content.service.ResponseService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.*;
 
+import java.net.URLDecoder;
+import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -20,6 +21,8 @@ import java.util.List;
 @RequestMapping("/api/test")
 @RequiredArgsConstructor
 public class ResponseController {
+
+    private final AESUtil aesUtil;
     private final ResponseService responseService;
     private final TestServiceClient testServiceClient;
 
@@ -33,6 +36,7 @@ public class ResponseController {
 
         HistoryResponse.Recommend recommend = new HistoryResponse.Recommend(bookList, musicList, movieList);
         HistoryResponse response = new HistoryResponse(testId, recommend);
+
         return ResponseEntity.ok(response);
     }
 
@@ -49,4 +53,47 @@ public class ResponseController {
         }
         return ResponseEntity.ok().body(responses);
     }
+
+    @GetMapping(value = "/share/{testId}/{name}")
+    public ResponseEntity<Model> createShareLink(@PathVariable String testId,
+                                                  @PathVariable String name, Model model) throws Exception {
+
+        String rowData = testId + "|" + name;
+
+        //testId 암호화
+        String encryptedTestId = aesUtil.encrypt(rowData);
+
+        //testId URL값에 맞게 인코딩
+        String sharingURLvalue = URLEncoder.encode(encryptedTestId, "UTF-8");
+
+        model.addAttribute("value", sharingURLvalue);
+
+        return ResponseEntity.ok(model);
+    }
+
+    @GetMapping(value = "/share", params = "value")
+    public ResponseEntity<Model> getHistoryBySharingURLvalue(@RequestParam String value, Model model) throws Exception {
+
+        //testId URL값에 맞게 인코딩
+        String decodedData = URLDecoder.decode(value, "UTF-8");
+
+        //testId 복호화
+        String encryptedTestId = aesUtil.decrypt(decodedData);
+
+
+
+        String testId = encryptedTestId.split("\\|")[0];
+
+        String name = encryptedTestId.split("\\|")[1];
+
+
+        ResponseEntity<HistoryResponse> recommendHistory = getHistoryByTestId(Long.parseLong(testId));
+
+        model.addAttribute("name", name);
+        model.addAttribute("RecommendHistory", recommendHistory);
+
+        return  ResponseEntity.ok(model);
+    }
+
+
 }
