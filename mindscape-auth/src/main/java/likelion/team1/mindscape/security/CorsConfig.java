@@ -1,5 +1,6 @@
 package likelion.team1.mindscape.security;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.cors.CorsConfiguration;
@@ -10,6 +11,9 @@ import java.util.Arrays;
 
 @Configuration
 public class CorsConfig {
+
+    @Value("${server.frontend.pageUrl}")
+    private String pageUrl;
 
     @Bean
     public CorsFilter corsFilter() {
@@ -22,9 +26,7 @@ public class CorsConfig {
         config.setAllowCredentials(true);
 
         // 구체적인 origin을 설정
-//        config.addAllowedOriginPattern("*");  // 개발 환경에서만 사용하세요
-
-        config.addAllowedOrigin("https://aws.thejymes.com");
+        config.addAllowedOrigin(pageUrl);
 
         // 모든 헤더와 메소드 허용
         config.addAllowedHeader("*");

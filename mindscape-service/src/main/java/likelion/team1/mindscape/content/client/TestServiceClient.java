@@ -1,5 +1,7 @@
 package likelion.team1.mindscape.content.client;
 
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Configuration;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 
@@ -15,6 +17,9 @@ public class TestServiceClient {
 
      private final RestTemplate restTemplate = new RestTemplate();
 
+     @Value("${info.app.url}")
+     private String infoAppUrl;
+
     // 주소 정확히 입력해야함
     public TestInfoResponse getTestInfo(Long testId) {
         // 실제 호출은 주석 처리
@@ -28,7 +33,7 @@ public class TestServiceClient {
     }
 
     public List<Long> getTestIdsByUserId(Long userId) {
-        String url = "http://localhost:8082/api/test/ids?id=" + userId;
+        String url = infoAppUrl + "/api/test/ids?id=" + userId;
         Long[] testIds = restTemplate.getForObject(url, Long[].class);
         return testIds != null ? Arrays.asList(testIds) : Collections.emptyList();
     }
