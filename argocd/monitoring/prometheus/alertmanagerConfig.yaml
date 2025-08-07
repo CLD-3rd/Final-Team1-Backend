@@ -1,0 +1,28 @@
+apiVersion: monitoring.coreos.com/v1alpha1
+kind: AlertmanagerConfig
+metadata:
+  name: mindscape-app-alerts
+  namespace: prometheus
+spec:
+  route:
+    groupBy:
+      - alertname
+    groupWait: 30s
+    groupInterval: 5m
+    repeatInterval: 1h
+    receiver: discord-webhook
+
+  receivers:
+    - name: discord-webhook
+      webhookConfigs:
+        - url: "https://discord.com/api/webhooks/1402903514820382772/J48da40zo22RRfzpVqRNqxltAtS10g6MChSnPJ5fwwHETz9GV2G7k8XgavWcrvpjshOF"
+
+  inhibitRules:
+    - sourceMatch:
+        severity: "critical"
+      targetMatch:
+        severity: "warning"
+      equal:
+        - alertname
+        - dev
+        - instance
