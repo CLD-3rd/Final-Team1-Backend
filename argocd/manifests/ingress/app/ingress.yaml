@@ -46,6 +46,14 @@ spec:
                 name: mindscape-auth
                 port:
                   number: 80
+
+          - path: /login
+            pathType: Prefix
+            backend:
+              service:
+                name: mindscape-auth
+                port:
+                  number: 80
                   
           - path: /api/test
             pathType: Prefix
