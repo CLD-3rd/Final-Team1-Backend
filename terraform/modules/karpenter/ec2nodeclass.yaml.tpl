@@ -7,8 +7,8 @@ metadata:
 spec:
   instanceProfile: "${instance_profile}"
   amiFamily: "AL2" 
-  amiSelectorTerms:
-    - id: "${ubuntu_ami_id}"
+  #amiSelectorTerms:
+  #  - id: "${ubuntu_ami_id}"
   subnetSelectorTerms:
     - tags:
         karpenter.sh/discovery: "${cluster_name}"
