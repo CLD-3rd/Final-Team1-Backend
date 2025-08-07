@@ -15,7 +15,7 @@ spec:
     - alert: HighCPUUsage
       expr: |
         (
-          sum(rate(container_cpu_usage_seconds_total{namespace="app", pod=~"mindscape-(auth|info|service)-.*"}[5m])) by (pod)
+          sum(rate(container_cpu_usage_seconds_total{namespace="app", pod=~"mindscape-(auth|info|service)-.*"}[1m])) by (pod)
           /
           sum(kube_pod_container_resource_limits{namespace="app", pod=~"mindscape-(auth|info|service)-.*", resource="cpu"}) by (pod)
         ) * 100 > 70
