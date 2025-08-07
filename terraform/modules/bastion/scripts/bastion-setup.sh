@@ -48,15 +48,35 @@ metadata:
   namespace: kube-system
 data:
   mapRoles: |
-    - rolearn: ${eks_node_role_arn}
+    # 기존 EKS 관리 노드 그룹 Role
+    - rolearn: arn:aws:iam::194722398200:role/Team1-backend-eks-node-role
       username: system:node:{{EC2PrivateDNSName}}
       groups:
         - system:bootstrappers
         - system:nodes
-    - rolearn: ${bastion_role_arn}
+
+    # Bastion EC2 용 Role (관리자)
+    - rolearn: arn:aws:iam::194722398200:role/${bastion_role_name}
       username: bastion-admin
       groups:
         - system:masters
+
+    # ▶ Karpenter 노드용 Role (추가)
+    - rolearn: arn:aws:iam::194722398200:role/KarpenterNodeRole-Team1-backend-eks-cluster
+      username: system:node:{{EC2PrivateDNSName}}
+      groups:
+        - system:bootstrappers
+        - system:nodes
+
+  mapUsers: |
+    # IAM 유저 매핑 (필요시)
+    - userarn: arn:aws:iam::194722398200:user/lion3fteam01
+      username: lion3fteam01
+      groups:
+        - karpenter-iac-group
+        - system:bootstrappers
+        - system:nodes
+
 EOF
 
 # 3. aws-auth.yaml 적용 재시도
@@ -181,6 +201,7 @@ helm install kube-ops-view geek-cookbook/kube-ops-view \
   --namespace kube-system
 
 
+
   # ─── Docker Compose 설치 및 InfluxDB 컨테이너 기동 ───
 echo "[INFO] Installing Docker Compose and launching InfluxDB container..."
 
@@ -210,3 +231,4 @@ EOF
 cd /home/ubuntu
 docker-compose -f docker-compose.yaml up -d
 echo "[INFO] InfluxDB is up on port 8086."
+
