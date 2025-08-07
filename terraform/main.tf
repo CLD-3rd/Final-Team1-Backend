@@ -393,20 +393,3 @@ module "irsa_karpenter_controller" {
   oidc_provider_url  = module.eks.oidc_url
   team_name          = var.team_name
 }
-
-# 그라파나 모듈 및 네임스페이스
-module "karpenter_namespace" {
- source  = "./modules/namespace"
- name    = "karpenter"
- labels = {
-   "managed-by" = "terraform"
- }
-
- providers = {
-   kubernetes.eks = kubernetes.eks 
- }
-   depends_on = [
-   module.eks,
-   module.bastion
- ]
-}
