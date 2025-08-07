@@ -1,6 +1,6 @@
 resource "helm_release" "grafana" {
   #삭제 필요~
-  count = var.enabled ? 1 : 0
+  #count = var.enabled ? 1 : 0
   name             = "grafana"
   repository       = "https://grafana.github.io/helm-charts"
   chart            = "grafana"
