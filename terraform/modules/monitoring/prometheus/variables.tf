@@ -15,8 +15,8 @@ variable "namespace_dependency" {
 }
 
 #삭제 필요~
-# variable "enabled" {
-#  description = "Enable or disable this module"
-#  type        = bool
-#  default     = true
-# }
+variable "enabled" {
+ description = "Enable or disable this module"
+ type        = bool
+ default     = true
+}
