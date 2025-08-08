@@ -33,7 +33,7 @@ spec:
                 name: prometheus-kube-prometheus-alertmanager
                 port:
                   number: 9093  
-          - path: /api/v2(/|$)(.*)
+          - path: /api/v2
             pathType: Prefix
             backend:
               service:
