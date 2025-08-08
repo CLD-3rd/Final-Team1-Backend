@@ -148,6 +148,7 @@ public class ResponseService {
     private List<Map<Object, Object>> getDetailsFromRedis(String type, List<Object> list) {
         List<Map<Object, Object>> res = new ArrayList<>();
         for (Object o : list) {
+            if(res.size() == 3) return res;
             String key = type + ":" + o;
             log.info("Redis in use for {}", key);
             res.add(redisTemplate.opsForHash().entries(key));
@@ -169,7 +170,7 @@ public class ResponseService {
 
         if (type == "book") {
             log.info("SQL in use for {}, recomId: {}", type, recomId);
-            List<Book> books = bookRepository.findAllByRecommendedContent_RecomId(recomId);
+            List<Book> books = bookRepository.findTop3AllByRecommendedContent_RecomId(recomId);
             for (Book book : books) {
                 Map<Object, Object> tmp = new HashMap<>();
                 tmp.put("title", book.getTitle());
@@ -183,7 +184,7 @@ public class ResponseService {
 
         if (type == "music") {
             log.info("SQL in use for {}, recomId: {}", type, recomId);
-            List<Music> music = musicRepository.findAllByRecommendedContent_RecomId(recomId);
+            List<Music> music = musicRepository.findTop3AllByRecommendedContent_RecomId(recomId);
             for (Music m : music) {
                 Map<Object, Object> tmp = new HashMap<>();
                 tmp.put("title", m.getTitle());
@@ -196,7 +197,7 @@ public class ResponseService {
 
         if (type == "movie") {
             log.info("SQL in use for {}, recomId: {}", type, recomId);
-            List<Movie> movies = movieRepository.findByRecommendedContent_RecomId(recomId);
+            List<Movie> movies = movieRepository.findTop3AllByRecommendedContent_RecomId(recomId);
             for (Movie movie : movies) {
                 Map<Object, Object> tmp = new HashMap<>();
                 tmp.put("title", movie.getTitle());
