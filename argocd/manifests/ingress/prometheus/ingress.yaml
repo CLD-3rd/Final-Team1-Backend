@@ -40,3 +40,10 @@ spec:
                 name: prometheus-kube-prometheus-alertmanager
                 port:
                   number: 9093
+          - path: /discord
+            pathType: Prefix
+            backend:
+              service:
+                name: alertmanager-discord  # ⚠️ 이 이름은 서비스 이름과 일치해야 함
+                port:
+                  number: 80
