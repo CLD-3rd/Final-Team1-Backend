@@ -9,5 +9,5 @@ import java.util.Optional;
 public interface MusicRepository extends JpaRepository<Music, Long> {
     Optional<Music> findByTitleAndArtist(String title, String artist);
 
-    List<Music> findAllByRecommendedContent_RecomId(Long recommendedContentRecomId);
+    List<Music> findTop3AllByRecommendedContent_RecomId(Long recommendedContentRecomId);
 }
