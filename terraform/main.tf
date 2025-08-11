@@ -202,8 +202,14 @@ module "argocd_namespace" {
 module "argocd" {
  source        = "./modules/argocd"
  #삭제 필요~
+
+
  #enabled = false
- enabled = true
+
+ #enabled = true
+
+
+
 
 
  namespace     = module.argocd_namespace.name
@@ -291,7 +297,11 @@ module "grafana" {
  source        = "./modules/monitoring/grafana"
   #삭제 필요~
 #enabled = false
-enabled = true
+
+#enabled = true
+
+
+
 
 
  namespace     = module.grafana_namespace.name
