@@ -1,0 +1,40 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: alertmanager-discord
+  namespace: prometheus
+  labels: { app: alertmanager-discord }
+spec:
+  replicas: 1
+  selector:
+    matchLabels: { app: alertmanager-discord }
+  template:
+    metadata:
+      labels: { app: alertmanager-discord }
+    spec:
+      containers:
+      - name: alertmanager-discord
+        image: benjojo/alertmanager-discord:latest
+        ports:
+        - containerPort: 9094
+        env:
+        - name: DISCORD_WEBHOOK
+          valueFrom:
+            secretKeyRef:
+              name: alertmanager-discord-secret   # ← SealedSecret가 생성해줄 평문 Secret 이름과 일치
+              key: DISCORD_WEBHOOK
+        - name: DISCORD_USERNAME
+          value: "Prometheus Bot"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: alertmanager-discord
+  namespace: prometheus
+  labels: { app: alertmanager-discord }
+spec:
+  selector: { app: alertmanager-discord }
+  ports:
+  - name: http
+    port: 9094
+    targetPort: 9094
