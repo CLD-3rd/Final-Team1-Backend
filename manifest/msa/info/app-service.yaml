@@ -2,7 +2,7 @@ apiVersion: v1
 kind: Service
 metadata:
   name: mindscape-info
-  namespace: app
+  namespace: app2
 spec:
   type: ClusterIP
   selector:
