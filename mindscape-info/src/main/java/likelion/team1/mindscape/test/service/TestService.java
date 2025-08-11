@@ -62,4 +62,10 @@ public class TestService {
         return res;
     }
 
+    public List<Long> getTestIdsByUserType(String userType) {
+        List<Test> tests = testRepository.findByUserType(userType);
+        return tests.stream().map(Test::getTestId).collect(Collectors.toList());
+    }
+
+
 }
