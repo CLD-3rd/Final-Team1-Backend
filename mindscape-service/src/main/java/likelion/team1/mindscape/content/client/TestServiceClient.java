@@ -21,7 +21,7 @@ public class TestServiceClient {
 
     // 주소 정확히 입력해야함
     public TestInfoResponse getTestInfo(Long testId) {
-        String url = infoAppUrl + "/api/test/internal/tests/" + testId;
+        String url = infoAppUrl + "/internal/tests/" + testId;
         return restTemplate.getForObject(url, TestInfoResponse.class);
 
         //----------------------------------------------------
@@ -31,7 +31,7 @@ public class TestServiceClient {
     }
 
     public List<Long> getTestIdsByUserId(Long userId, int page, int size) {
-        String url = infoAppUrl + "/api/test/ids?id=" + userId + "&page=" + page + "&size=" + size;
+        String url = infoAppUrl + "/ids?id=" + userId + "&page=" + page + "&size=" + size;
         Long[] testIds = restTemplate.getForObject(url, Long[].class);
         return testIds != null ? Arrays.asList(testIds) : Collections.emptyList();
     }
