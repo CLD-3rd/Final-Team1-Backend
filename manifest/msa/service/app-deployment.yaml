@@ -1,0 +1,23 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mindscape-service
+  namespace: app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mindscape-service
+  template:
+    metadata:
+      labels:
+        app: mindscape-service
+    spec:
+      containers:
+        - name: mindscape-service
+          image: 194722398200.dkr.ecr.ap-northeast-2.amazonaws.com/team1-mindscape-service:latest
+          ports:
+            - containerPort: 8080
+          envFrom:
+            - secretRef:
+                name: mindscape-secret
