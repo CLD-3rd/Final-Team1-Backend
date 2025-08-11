@@ -1,0 +1,35 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: pod-high-cpu
+  namespace: prometheus
+  labels:
+    release: prometheus   # ← 필수! (Prometheus CR의 ruleSelector에 맞춤)
+spec:
+  groups:
+  - name: pod-cpu.rules
+    interval: 5s
+    rules:
+    - alert: PodHighCPU
+      expr: |
+        (
+          100 *
+          sum by (namespace, pod) (
+            rate(container_cpu_usage_seconds_total{container!="POD"}[1m])
+          ) /
+          clamp_min(
+            sum by (namespace, pod) (
+              kube_pod_container_resource_requests{resource="cpu"}
+            ),
+            0.001
+          )
+        ) > 70
+      labels:
+        severity: warning
+      annotations:
+        summary: "🔥 CPU 과부하: {{ $labels.namespace }}/{{ $labels.pod }}"
+        description: |
+          • 사용률: {{ printf "%.1f" $value }}%
+          • 임계치: > 70%
+          • namespace: {{ $labels.namespace }}
+          • pod: {{ $labels.pod }}
