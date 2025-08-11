@@ -3,6 +3,7 @@ kind: Kustomization
 namespace: prometheus
 
 resources:
-  - alert-discord.yaml
-  - prometheusRules.yaml
-  - alertmanager-secret.yaml
+  - alertmanager-discord-sealed.yaml   # 방금 만든 SealedSecret
+  - alert-discord.yaml                 # 디스코드 브릿지(Deployment+Service)
+  - alertmanager-secret.yaml           # Alertmanager 라우팅 설정
+  - prometheusRules.yaml               # CPU 알림 룰
