@@ -203,7 +203,7 @@ module "argocd" {
  source        = "./modules/argocd"
  #삭제 필요~
 
- enabled = false
+ #enabled = false
 
  #enabled = true
 
@@ -292,7 +292,7 @@ module "grafana_namespace" {
 module "grafana" {
  source        = "./modules/monitoring/grafana"
   #삭제 필요~
-  enabled = false
+#enabled = false
 #enabled = true
 
 
