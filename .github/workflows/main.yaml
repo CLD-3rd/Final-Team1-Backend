@@ -2,7 +2,7 @@ name: Team1 CI - Build and Push Docker Image
 
 on:
   push:
-    branches: ## TODO: dev, main으로 변경
+    branches: ## TODO: dev or main
       - dev-sealed
   workflow_dispatch:
 
