@@ -7,7 +7,7 @@
 
 resource "helm_release" "argocd" {
   #삭제 필요~
-  #count            = var.enabled ? 1 : 0
+  count            = var.enabled ? 1 : 0
   name             = "argocd"
   namespace        = var.namespace
   repository       = "https://argoproj.github.io/argo-helm"
