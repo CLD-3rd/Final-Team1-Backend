@@ -45,7 +45,7 @@ public class MovieService {
 
         TestInfoResponse testInfo = testServiceClient.getTestInfo(testId);
         Long userId = testInfo.getUserId();
-        List<Movie> targetMovies = movieRepository.findByRecommendedContent_RecomId(testId);
+        List<Movie> targetMovies = movieRepository.findTop3AllByRecommendedContent_RecomId(testId);
         List<Movie> updatedList = new ArrayList<>();
         boolean isFirstRequest = true;
 

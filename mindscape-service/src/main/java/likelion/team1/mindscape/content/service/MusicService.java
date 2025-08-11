@@ -85,7 +85,7 @@ public class MusicService {
         Long recomId = testId; // testId = recomId
 
         log.info("[SQL@MusicService.getMusicWithTestId] Find music by recomId={}", recomId);
-        List<Music> musics = musicRepository.findAllByRecommendedContent_RecomId(recomId);
+        List<Music> musics = musicRepository.findTop3AllByRecommendedContent_RecomId(recomId);
         if (musics.isEmpty()) {
             return musics;
         }
