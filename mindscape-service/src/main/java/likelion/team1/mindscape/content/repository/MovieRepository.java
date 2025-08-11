@@ -9,5 +9,5 @@ import java.util.Optional;
 @Repository
 public interface MovieRepository extends JpaRepository<Movie, Long> {
     List<Movie> findByTitle(String title);
-    List<Movie> findByRecommendedContent_RecomId(Long recomId);
+    List<Movie> findTop3AllByRecommendedContent_RecomId(Long recomId);
 }
