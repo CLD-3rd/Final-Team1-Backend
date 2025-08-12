@@ -62,9 +62,10 @@ public class TestService {
         return res;
     }
 
-    public List<Long> getTestIdsByUserType(String userType) {
-        List<Test> tests = testRepository.findByUserType(userType);
-        return tests.stream().map(Test::getTestId).collect(Collectors.toList());
+    public List<Long> getTestIdsByUserType(String userType, Pageable pageable) {
+        Page<Long> page = testRepository.findByUserType(userType, pageable).map(Test::getTestId);
+        List<Long> res = page.stream().toList();
+        return res;
     }
 
 

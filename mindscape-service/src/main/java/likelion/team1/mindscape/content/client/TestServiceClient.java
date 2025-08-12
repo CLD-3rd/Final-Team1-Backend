@@ -35,4 +35,10 @@ public class TestServiceClient {
         Long[] testIds = restTemplate.getForObject(url, Long[].class);
         return testIds != null ? Arrays.asList(testIds) : Collections.emptyList();
     }
+
+    public List<Long> getTestIdsByUserType(String userType, int size) {
+        String url = infoAppUrl + "/type/ids?userType=" + userType + "&size=" + size;
+        Long[] testIds = restTemplate.getForObject(url, Long[].class);
+        return testIds != null ? Arrays.asList(testIds) : Collections.emptyList();
+    }
 }
