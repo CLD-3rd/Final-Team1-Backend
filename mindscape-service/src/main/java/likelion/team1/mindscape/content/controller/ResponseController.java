@@ -2,9 +2,7 @@ package likelion.team1.mindscape.content.controller;
 
 import likelion.team1.mindscape.content.client.TestServiceClient;
 import likelion.team1.mindscape.content.dto.response.HistoryResponse;
-import likelion.team1.mindscape.content.dto.response.content.BookDto;
-import likelion.team1.mindscape.content.dto.response.content.MovieDto;
-import likelion.team1.mindscape.content.dto.response.content.MusicDto;
+import likelion.team1.mindscape.content.dto.response.content.*;
 import likelion.team1.mindscape.content.global.security.AESUtil;
 import likelion.team1.mindscape.content.service.ResponseService;
 import lombok.RequiredArgsConstructor;
@@ -54,9 +52,17 @@ public class ResponseController {
         return ResponseEntity.ok().body(responses);
     }
 
+    @GetMapping(value = "/ranking", params = {"type", "size"})
+    public ResponseEntity<HistoryResponse> getRanking(@RequestParam String type,
+                                                      @RequestParam(defaultValue = "3") int size) {
+        List<Long> testIds = testServiceClient.getTestIdsByUserType(type, size);
+
+        return ResponseEntity.ok(responseService.getRankingResponse(testIds, size));
+    }
+
     @GetMapping(value = "/share/{testId}/{name}")
     public ResponseEntity<Model> createShareLink(@PathVariable String testId,
-                                                  @PathVariable String name, Model model) throws Exception {
+                                                 @PathVariable String name, Model model) throws Exception {
 
         String rowData = testId + "|" + name;
 
@@ -81,7 +87,6 @@ public class ResponseController {
         String encryptedTestId = aesUtil.decrypt(decodedData);
 
 
-
         String testId = encryptedTestId.split("\\|")[0];
 
         String name = encryptedTestId.split("\\|")[1];
@@ -92,7 +97,7 @@ public class ResponseController {
         model.addAttribute("name", name);
         model.addAttribute("RecommendHistory", recommendHistory);
 
-        return  ResponseEntity.ok(model);
+        return ResponseEntity.ok(model);
     }
 
 

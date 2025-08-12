@@ -14,7 +14,7 @@ public interface TestRepository extends JpaRepository<Test, Long> {
 
     Page<Test> findByUserIdOrderByCreatedAtDesc(Long userId, Pageable pageable);
 
-    List<Test> findByUserType(String userType);
+    Page<Test> findByUserType(String userType, Pageable pageable);
 
 //    Long findUserIdByTestId(Long testId);
 }

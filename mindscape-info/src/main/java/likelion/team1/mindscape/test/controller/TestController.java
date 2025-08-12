@@ -54,8 +54,11 @@ public class TestController {
     }
 
     @GetMapping("/type/ids")
-    public ResponseEntity<List<Long>> getTestIdsByUserType(@RequestParam("userType") String userType) {
-        List<Long> testIds = testService.getTestIdsByUserType(userType);
+    public ResponseEntity<List<Long>> getTestIdsByUserType(@RequestParam("userType") String userType,
+                                                           @RequestParam(defaultValue = "3") int size) {
+
+        Pageable pageable = PageRequest.of(0, size);
+        List<Long> testIds = testService.getTestIdsByUserType(userType, pageable);
         return ResponseEntity.ok(testIds);
     }
 }
