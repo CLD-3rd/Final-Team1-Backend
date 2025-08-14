@@ -29,6 +29,11 @@ resource "aws_eks_node_group" "ng" {
     Name = "${var.team_name}-ng"
   }
 
+   launch_template {
+    id      = aws_launch_template.ng_launch_template.id
+    version = "$Latest"
+  }
+
 }
 
 # EKS 클러스터 생성 후 OIDC 정보 추출
@@ -48,3 +53,17 @@ resource "aws_iam_openid_connect_provider" "this" {
 
 }
 
+# 노드 그룹을 위한 시작 템플릿 생성
+resource "aws_launch_template" "ng_launch_template" {
+  name = "${var.team_name}-ng-template"
+
+  user_data = base64encode(<<-EOF
+    #!/bin/bash
+    # Set timezone to Asia/Seoul
+    rm -rf /etc/localtime
+    ln -s /usr/share/zoneinfo/Asia/Seoul /etc/localtime
+    # Restart chronyd service
+    systemctl restart chronyd
+    EOF
+  )
+}
