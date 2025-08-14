@@ -15,7 +15,7 @@ resource "helm_release" "argocd" {
   version          = var.chart_version
   create_namespace = false
 
-  # values = [file("${path.module}/values.yaml")]
+  values = [file("${path.module}/values.yaml")]
 
 }
 
