@@ -9,10 +9,6 @@ resource "aws_eks_cluster" "this" {
   tags = {
     Name = "${var.team_name}-eks-cluster"
   }
-  launch_template {
-    id      = aws_launch_template.ng_launch_template.id
-    version = "$Latest"
-  }
 }
 
 resource "aws_eks_node_group" "ng" {
@@ -32,7 +28,10 @@ resource "aws_eks_node_group" "ng" {
   tags = {
     Name = "${var.team_name}-ng"
   }
-
+  launch_template {
+    id      = aws_launch_template.ng_launch_template.id
+    version = "$Latest"
+  }
 }
 
 # EKS 클러스터 생성 후 OIDC 정보 추출
