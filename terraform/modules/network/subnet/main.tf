@@ -26,5 +26,6 @@ resource "aws_subnet" "private" {
     Environment = var.environment
     Tier        = "private"
     type        = count.index < length(var.azs) ? "app" : "data"
+    "karpenter.sh/discovery" = "Team1-backend-eks-cluster"
   }
 }

@@ -28,12 +28,10 @@ resource "aws_eks_node_group" "ng" {
   tags = {
     Name = "${var.team_name}-ng"
   }
-
-   launch_template {
+  launch_template {
     id      = aws_launch_template.ng_launch_template.id
     version = "$Latest"
   }
-
 }
 
 # EKS 클러스터 생성 후 OIDC 정보 추출
@@ -57,13 +55,21 @@ resource "aws_iam_openid_connect_provider" "this" {
 resource "aws_launch_template" "ng_launch_template" {
   name = "${var.team_name}-ng-template"
 
-  user_data = base64encode(<<-EOF
+   user_data = base64encode(<<-EOT
+    MIME-Version: 1.0
+    Content-Type: multipart/mixed; boundary="==BOUNDARY=="
+
+    --==BOUNDARY==
+    Content-Type: text/x-shellscript; charset="us-ascii"
+
     #!/bin/bash
     # Set timezone to Asia/Seoul
     rm -rf /etc/localtime
     ln -s /usr/share/zoneinfo/Asia/Seoul /etc/localtime
     # Restart chronyd service
     systemctl restart chronyd
-    EOF
+
+    --==BOUNDARY==--
+    EOT
   )
 }

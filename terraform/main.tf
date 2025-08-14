@@ -21,6 +21,7 @@ module "bastion" {
   eks_node_role_arn        = module.iam.eks_node_role_arn
   bastion_role_arn         = module.iam.bastion_role_arn
   key_name                  = var.bastion_key_name
+  bastion_role_name  = module.iam.bastion_role_name
 
     depends_on = [
     module.eks,         # 클러스터 먼저 생성
@@ -82,6 +83,7 @@ module "sg" {
   source     = "./modules/security-group"
   vpc_id     = module.vpc.vpc_id
   team_name  = var.team_name
+  cluster_name       = module.eks.cluster_name
 }
 
 #vpc
@@ -101,6 +103,7 @@ module "subnet" {
   public_subnet_cidrs  = ["192.168.1.0/24", "192.168.2.0/24"]
   private_subnet_cidrs = ["192.168.3.0/24", "192.168.4.0/24"]
   azs                  = ["ap-northeast-2a", "ap-northeast-2c"]
+  
 }
 
   
@@ -199,7 +202,16 @@ module "argocd_namespace" {
 module "argocd" {
  source        = "./modules/argocd"
  #삭제 필요~
- enabled = false
+
+
+ #enabled = false
+
+ #enabled = true
+
+
+
+
+
  namespace     = module.argocd_namespace.name
  chart_version = "5.51.6"
  providers = {
@@ -238,7 +250,11 @@ module "prometheus_namespace" {
 module "prometheus" {
  source        = "./modules/monitoring/prometheus"
   #삭제 필요~
- enabled = false
+
+ #enabled = false
+
+# enabled = true
+
  namespace     = module.prometheus_namespace.name
  chart_version = "75.15.1"
 
@@ -280,7 +296,14 @@ module "grafana_namespace" {
 module "grafana" {
  source        = "./modules/monitoring/grafana"
   #삭제 필요~
- enabled = false
+#enabled = false
+
+#enabled = true
+
+
+
+
+
  namespace     = module.grafana_namespace.name
  chart_version = "7.3.11"
 

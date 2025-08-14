@@ -12,6 +12,15 @@ resource "aws_security_group" "bastion" {
     cidr_blocks = ["0.0.0.0/0"]
   }
 
+# InfluxDB HTTP API (8086) 허용 룰 추가
+  ingress {
+    description = "Allow InfluxDB HTTP API"
+    from_port   = 8086
+    to_port     = 8086
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
   egress {
     description = "Allow all outbound traffic"
     from_port   = 0
@@ -49,6 +58,7 @@ resource "aws_security_group" "eks_node" {
 
   tags = {
     Name = "${var.team_name}-eks-node-sg"
+    "karpenter.sh/discovery" = var.cluster_name
   }
 }
 

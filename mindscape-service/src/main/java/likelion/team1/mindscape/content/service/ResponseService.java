@@ -1,5 +1,7 @@
 package likelion.team1.mindscape.content.service;
 
+import likelion.team1.mindscape.content.dto.ContentCountDto;
+import likelion.team1.mindscape.content.dto.response.HistoryResponse;
 import likelion.team1.mindscape.content.dto.response.content.BookDto;
 import likelion.team1.mindscape.content.dto.response.content.MovieDto;
 import likelion.team1.mindscape.content.dto.response.content.MusicDto;
@@ -14,10 +16,10 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
-import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -110,7 +112,141 @@ public class ResponseService {
         return movieList;
     }
 
+    /**
+     * Test ID로 size만큼 저장 많이 되어 있는 것 가져오기
+     *
+     * @param ids
+     * @param size
+     * @return
+     */
+    public HistoryResponse getRankingResponse(List<Long> ids, int size) {
+        List<BookDto> books = getTopBooksByIds(ids, size);
+        List<MusicDto> music = getTopMusicByIds(ids, size);
+        List<MovieDto> movie = getTopMoviesByIds(ids, size);
 
+        HistoryResponse.Recommend recommend = new HistoryResponse.Recommend(books, music, movie);
+        return new HistoryResponse(0L, recommend);
+    }
+
+    /**
+     * Test ID로 sql에서 책 size만큼 가져오기
+     *
+     * @param ids
+     * @param size
+     * @return
+     */
+    private List<BookDto> getTopBooksByIds(List<Long> ids, int size) {
+        List<Long> bookIds = getContentCountByType("book", ids, size)
+                .stream().map(book -> book.getIds().get(0)).toList();
+
+        List<BookDto> books = new ArrayList<>();
+        for (Long id : bookIds) {
+            Book tmp = bookRepository.findById(id).orElse(null);
+            if (tmp != null) {
+                books.add(new BookDto(tmp.getTitle(), tmp.getAuthor(), tmp.getDescription(), tmp.getImage()));
+            }
+        }
+        return books;
+    }
+
+    /**
+     * Test ID로 sql에서 음악 size만큼 가져오기
+     *
+     * @param ids
+     * @param size
+     * @return
+     */
+    private List<MusicDto> getTopMusicByIds(List<Long> ids, int size) {
+        List<Long> musicIds = getContentCountByType("music", ids, size)
+                .stream().map(music -> music.getIds().get(0)).toList();
+
+        List<MusicDto> music = new ArrayList<>();
+        for (Long id : musicIds) {
+            Music tmp = musicRepository.findById(id).orElse(null);
+            if (tmp != null) {
+                music.add(new MusicDto(tmp.getTitle(), tmp.getArtist(), tmp.getElbum()));
+            }
+        }
+        return music;
+    }
+
+    /**
+     * Test ID로 sql에서 영화 size만큼 가져오기
+     *
+     * @param ids
+     * @param size
+     * @return
+     */
+    private List<MovieDto> getTopMoviesByIds(List<Long> ids, int size) {
+        List<Long> movieIds = getContentCountByType("movie", ids, size)
+                .stream().map(movie -> movie.getIds().get(0)).toList();
+
+        List<MovieDto> movie = new ArrayList<>();
+        for (Long id : movieIds) {
+            Movie tmp = movieRepository.findById(id).orElse(null);
+            if (tmp != null) {
+                movie.add(new MovieDto(tmp.getTitle(), tmp.getReleaseDate(), tmp.getDescription(), tmp.getPoster()));
+            }
+        }
+        return movie;
+    }
+
+    /**
+     * Test ID로 sql에서 컨텐츠의 개수를 개수가 많은 순으로 limit만큼 가져오기
+     *
+     * @param contentType
+     * @param recomIds
+     * @param limit
+     * @return
+     */
+    private List<ContentCountDto> getContentCountByType(String contentType, List<Long> recomIds, int limit) {
+        switch (contentType.toLowerCase()) {
+            case "book":
+                List<Object[]> bookResults = bookRepository.getBookCountWithIds(recomIds, limit);
+                return bookResults.stream()
+                        .map(row -> {
+                            String title = (String) row[0];
+                            Long cnt = ((Number) row[1]).longValue();
+                            String recomIdsStr = (String) row[2];
+                            List<Long> recomIdsList = Arrays.stream(recomIdsStr.split(","))
+                                    .map(Long::parseLong)
+                                    .collect(Collectors.toList());
+                            return new ContentCountDto(title, cnt, recomIdsList);
+                        })
+                        .collect(Collectors.toList());
+
+            case "movie":
+                List<Object[]> movieResults = movieRepository.getMovieCountWithIds(recomIds, limit);
+                return movieResults.stream()
+                        .map(row -> {
+                            String title = (String) row[0];
+                            Long cnt = ((Number) row[1]).longValue();
+                            String recomIdsStr = (String) row[2];
+                            List<Long> recomIdsList = Arrays.stream(recomIdsStr.split(","))
+                                    .map(Long::parseLong)
+                                    .collect(Collectors.toList());
+                            return new ContentCountDto(title, cnt, recomIdsList);
+                        })
+                        .collect(Collectors.toList());
+
+            case "music":
+                List<Object[]> musicResults = musicRepository.getMusicCountWithIds(recomIds, limit);
+                return musicResults.stream()
+                        .map(row -> {
+                            String title = (String) row[0];
+                            Long cnt = ((Number) row[1]).longValue();
+                            String recomIdsStr = (String) row[2];
+                            List<Long> recomIdsList = Arrays.stream(recomIdsStr.split(","))
+                                    .map(Long::parseLong)
+                                    .collect(Collectors.toList());
+                            return new ContentCountDto(title, cnt, recomIdsList);
+                        })
+                        .collect(Collectors.toList());
+
+            default:
+                throw new IllegalArgumentException("Unknown content type: " + contentType);
+        }
+    }
 
     /**
      * Redis에 저장되어 있는지 확인
@@ -121,7 +257,7 @@ public class ResponseService {
      */
     private List<Object> chkRedis(String type, Long testId) {
         String pattern = "user:*:test:" + testId + ":" + type;
-        log.info("Redis checking for {}, testId: {}",type,testId);
+        log.info("Redis checking for {}, testId: {}", type, testId);
         Set<String> keys = redisTemplate.keys(pattern);
 
         if (keys == null || keys.isEmpty()) {
@@ -148,6 +284,7 @@ public class ResponseService {
     private List<Map<Object, Object>> getDetailsFromRedis(String type, List<Object> list) {
         List<Map<Object, Object>> res = new ArrayList<>();
         for (Object o : list) {
+            if (res.size() == 3) return res;
             String key = type + ":" + o;
             log.info("Redis in use for {}", key);
             res.add(redisTemplate.opsForHash().entries(key));
@@ -169,7 +306,7 @@ public class ResponseService {
 
         if (type == "book") {
             log.info("SQL in use for {}, recomId: {}", type, recomId);
-            List<Book> books = bookRepository.findAllByRecommendedContent_RecomId(recomId);
+            List<Book> books = bookRepository.findTop3AllByRecommendedContent_RecomId(recomId);
             for (Book book : books) {
                 Map<Object, Object> tmp = new HashMap<>();
                 tmp.put("title", book.getTitle());
@@ -183,7 +320,7 @@ public class ResponseService {
 
         if (type == "music") {
             log.info("SQL in use for {}, recomId: {}", type, recomId);
-            List<Music> music = musicRepository.findAllByRecommendedContent_RecomId(recomId);
+            List<Music> music = musicRepository.findTop3AllByRecommendedContent_RecomId(recomId);
             for (Music m : music) {
                 Map<Object, Object> tmp = new HashMap<>();
                 tmp.put("title", m.getTitle());
@@ -196,7 +333,7 @@ public class ResponseService {
 
         if (type == "movie") {
             log.info("SQL in use for {}, recomId: {}", type, recomId);
-            List<Movie> movies = movieRepository.findByRecommendedContent_RecomId(recomId);
+            List<Movie> movies = movieRepository.findTop3AllByRecommendedContent_RecomId(recomId);
             for (Movie movie : movies) {
                 Map<Object, Object> tmp = new HashMap<>();
                 tmp.put("title", movie.getTitle());

@@ -83,7 +83,7 @@ public class BookService {
         Long recomId = testId; // testId = recomId
 
         log.info("[SQL@BookService.getBooksWithTestId] Find books by recomId={}", recomId);
-        List<Book> books = bookRepository.findAllByRecommendedContent_RecomId(recomId);
+        List<Book> books = bookRepository.findTop3AllByRecommendedContent_RecomId(recomId);
         if (books.isEmpty()) {
             return books;
         }

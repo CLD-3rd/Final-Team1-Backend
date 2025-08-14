@@ -26,3 +26,8 @@ output "karpenter_node_instance_profile_name" {
   value       = aws_iam_instance_profile.karpenter_node.name
   description = "Instance profile name for Karpenter node"
 }
+
+output "bastion_role_name" {
+  description = "Name of the IAM role for the Bastion host"
+  value       = aws_iam_role.bastion.name
+}
