@@ -25,11 +25,26 @@
           <entry name="$MAVEN_REPOSITORY$/org/projectlombok/lombok/1.18.34/lombok-1.18.34.jar" />
         </processorPath>
         <module name="mindscape (2)" />
+<<<<<<< HEAD
+=======
+      </profile>
+      <profile name="Annotation profile for mindscape" enabled="true">
+        <sourceOutputDir name="target/generated-sources/annotations" />
+        <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
+        <outputRelativeToContentRoot value="true" />
+        <processorPath useClasspath="false">
+          <entry name="$MAVEN_REPOSITORY$/org/projectlombok/lombok/1.18.34/lombok-1.18.34.jar" />
+        </processorPath>
+>>>>>>> e65f3bd ([feat] feat/search)
         <module name="mindscape (1)" />
       </profile>
     </annotationProcessing>
     <bytecodeTargetLevel>
       <module name="mindscape" target="17" />
+<<<<<<< HEAD
+=======
+      <module name="mindscape-service" target="1.5" />
+>>>>>>> e65f3bd ([feat] feat/search)
     </bytecodeTargetLevel>
   </component>
   <component name="JavacSettings">
