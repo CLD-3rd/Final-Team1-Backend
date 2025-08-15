@@ -52,7 +52,6 @@ public class TestController {
         List<Long> testIds = testService.getTestIdsByUserId(userId, pageable);
         return ResponseEntity.ok(testIds);
     }
-
     @GetMapping("/type/ids")
     public ResponseEntity<List<Long>> getTestIdsByUserType(@RequestParam("userType") String userType,
                                                            @RequestParam(defaultValue = "3") int size) {
