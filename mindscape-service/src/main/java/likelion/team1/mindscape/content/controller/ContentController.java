@@ -4,12 +4,14 @@ import likelion.team1.mindscape.content.dto.response.content.*;
 import likelion.team1.mindscape.content.entity.Book;
 import likelion.team1.mindscape.content.entity.Movie;
 import likelion.team1.mindscape.content.entity.Music;
+import likelion.team1.mindscape.content.enums.ContentType;
 import likelion.team1.mindscape.content.service.BookService;
 import likelion.team1.mindscape.content.service.MovieService;
 import likelion.team1.mindscape.content.service.MusicService;
 import likelion.team1.mindscape.content.service.RedisInitializer;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
@@ -25,7 +27,36 @@ public class ContentController {
     private final BookService bookService;
     private final MusicService musicService;
     private static final String ARTIST_TITLE_DELIMITER_REGEX = "[–-]"; // en dash or hyphen
+    @GetMapping("/search")
+    public ResponseEntity<?> search(
+            @RequestParam ContentType content,
+            @RequestParam(required = false) String query,   // MOVIE
+            @RequestParam(required = false) String artist,  // MUSIC
+            @RequestParam(required = false) String title    // MUSIC/BOOK
+    ) throws IOException {
 
+        Object result = switch (content) {
+            case MOVIE -> {
+                require(StringUtils.hasText(query), "MOVIE requires title");
+                yield movieService.getMovieInfo(query);        // returns List<MovieDto>
+            }
+            case MUSIC -> {
+                require(StringUtils.hasText(artist) && StringUtils.hasText(title),
+                        "MUSIC requires artist and title");
+                yield musicService.getMusicDetail(artist, title); // returns MusicResponse
+            }
+            case BOOK -> {
+                require(StringUtils.hasText(title), "BOOK requires title");
+                yield bookService.getBookDetail(title);        // returns BookResponse
+            }
+        };
+
+        return ResponseEntity.ok(result);
+    }
+
+    private static void require(boolean condition, String message) {
+        if (!condition) throw new IllegalArgumentException(message);
+    }
     @GetMapping("/movie")
     public ResponseEntity<Map<String, Object>> getContents(@RequestParam("testId") Long testId) {
         List<Movie> updatedList = movieService.updateMovieFromTitle(testId);

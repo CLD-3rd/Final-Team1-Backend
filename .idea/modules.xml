@@ -2,11 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-<<<<<<< HEAD
-      <module fileurl="file://$PROJECT_DIR$/.idea/Final-Team1-Backend-main.iml" filepath="$PROJECT_DIR$/.idea/Final-Team1-Backend-main.iml" />
-=======
-      <module fileurl="file://$PROJECT_DIR$/.idea/Final-Team1-Backend.iml" filepath="$PROJECT_DIR$/.idea/Final-Team1-Backend.iml" />
->>>>>>> user-test
+      <module fileurl="file://$PROJECT_DIR$/.idea/Final-Team1-Backend-dev 2.iml" filepath="$PROJECT_DIR$/.idea/Final-Team1-Backend-dev 2.iml" />
     </modules>
   </component>
 </project>
