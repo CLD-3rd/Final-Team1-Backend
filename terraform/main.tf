@@ -246,7 +246,7 @@ module "prometheus" {
  source        = "./modules/monitoring/prometheus"
   #삭제 필요~
 
- enabled = false
+ #enabled = false
  #enabled = true
 
  namespace     = module.prometheus_namespace.name
@@ -290,7 +290,7 @@ module "grafana_namespace" {
 module "grafana" {
  source        = "./modules/monitoring/grafana"
   #삭제 필요~
- enabled = false
+ #enabled = false
  #enabled = true
 
  namespace     = module.grafana_namespace.name
