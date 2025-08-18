@@ -1,0 +1,4 @@
+resources:
+  - app-deployment.yaml
+  - app-service.yaml
+  - hpa.yaml

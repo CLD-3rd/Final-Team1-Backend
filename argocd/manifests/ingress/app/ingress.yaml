@@ -1,0 +1,72 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: app-ingress
+  namespace: app
+  annotations:
+    kubernetes.io/ingress.class: alb
+    alb.ingress.kubernetes.io/scheme: internet-facing
+    alb.ingress.kubernetes.io/target-type: ip
+    alb.ingress.kubernetes.io/listen-ports: '[{"HTTPS":443}]'
+    alb.ingress.kubernetes.io/group.name: app
+    alb.ingress.kubernetes.io/certificate-arn: arn:aws:acm:ap-northeast-2:194722398200:certificate/6dbefdb5-afea-4d21-9928-8536cb706e50
+
+spec:
+  rules:
+    - http:
+        paths:
+          - path: /api/content
+            pathType: Prefix
+            backend:
+              service:
+                name: mindscape-service
+                port:
+                  number: 80
+                  
+          - path: /api/response
+            pathType: Prefix
+            backend:
+              service:
+                name: mindscape-service
+                port:
+                  number: 80
+
+          - path: /api/gemini/recommend
+            pathType: Prefix
+            backend:
+              service:
+                name: mindscape-service
+                port:
+                  number: 80
+                  
+          - path: /auth
+            pathType: Prefix
+            backend:
+              service:
+                name: mindscape-auth
+                port:
+                  number: 80
+
+          - path: /login
+            pathType: Prefix
+            backend:
+              service:
+                name: mindscape-auth
+                port:
+                  number: 80
+                  
+          - path: /oauth2
+            pathType: Prefix
+            backend:
+              service:
+                name: mindscape-auth
+                port:
+                  number: 80
+                  
+          - path: /api/test
+            pathType: Prefix
+            backend:
+              service:
+                name: mindscape-info
+                port:
+                  number: 80
