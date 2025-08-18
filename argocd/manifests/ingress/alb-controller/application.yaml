@@ -13,7 +13,7 @@ spec:
       values: |
         clusterName: Team1-backend-eks-cluster
         region: ap-northeast-2
-        vpcId: vpc-08895c92bc08c6fd7 # 계속 변경
+        vpcId: vpc-0ba91d143722e7e7b # 계속 변경
         serviceAccount:
           create: true
           name: aws-load-balancer-controller
