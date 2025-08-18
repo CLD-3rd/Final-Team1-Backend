@@ -2,4 +2,3 @@ resources:
   - auth/
   - info/
   - service/
-  - secret/
