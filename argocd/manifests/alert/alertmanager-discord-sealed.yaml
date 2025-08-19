@@ -1,4 +1,3 @@
----
 apiVersion: bitnami.com/v1alpha1
 kind: SealedSecret
 metadata:
@@ -7,7 +6,8 @@ metadata:
   namespace: prometheus
 spec:
   encryptedData:
-    DISCORD_WEBHOOK: AgBmn9eRrBnkEdSA+vE/LrvLTEgxqbYY0x727mUwDOQVehrkyjHSFVzLqHsFsxeoqCU+MI+BLHE1A6fksjqP2phveKFNr6hyBjAdBpdxhuAM92/Ae2mGltF/pX/RSS/hDW7zCfx7WVpcJIxk5Ec9Y/1ycSbzMCht/vw3/4SNq5C8gx3kQu15ibVr6Ik0gat/0I63PZ7WcgnI+aauOiu/emYYryT4udVFjTBMLvnpzBnZ93ykimuIqBYqCX3THoKSVuirpm>  template:
+    DISCORD_WEBHOOK: AgBmn9eRrBnkEdSA+vE/LrvLTEgxqbYY0x727mUwDOQVehrkyjHSFVzLqHsFsxeoqCU+MI+BLHE1A6fksjqP2phveKFNr6hyBjAdBpdxhuAM92/Ae2mGltF/pX/RSS/hDW7zCfx7WVpcJIxk5Ec9Y/1ycSbzMCht/vw3/4SNq5C8gx3kQu15ibVr6Ik0gat/0I63PZ7WcgnI+aauOiu/emYYryT4udVFjTBMLvnpzBnZ93ykimuIqBYqCX3THoKSVuirpmEmc79bSzSO2uGovdHTMQ2Rkd1Pg79YvqaBhO5FJhgAWn+/sNkGJo8ga9YjDMuWwwABjpS/J2RCWok/GmL/bxSDy/VKm/oU6dK6Hh594zjXPXhX/+hKP/oFTXfaLbFBRsHkXACEjidtqoCbjabh5hx3I2GqfOTx57EEB97LptxfsY0EM6zuYAgY2WGS+6YhwXIfzh6qrGi76gkxKb99EI2A6z98VGctEIUwNd8LWj46iWOMzlNGIq3QY8aG+DsoEf07t6gtVuJLr7i+w4FCXUptoXs6/cDPuIFkt5e8kCbGosvRfi47F5zQvn/BwpBJFIut0pC9AeKYTTn7rXUIz+OW8a1vc4Dx8sf3fGIwbQs4z215/Xzr5VD33MOQv7YAHy6V7tfc9fWUAZ7+QXo9JbsP1pzcSvM6k4UDUFngLLlzRFkeyJsNQcyLdkWK1EVXegxknUtny/R+TaUGdTM6ZHTkrlszGm8rf8SMOJl8WaXefb4X3MiIeC3BH9Qu4+6OYMzf9D+LmQYRgsWsenV/eawSonv6jKMIErpsKuyINiGgPzv1C8ymTnD0MkiN+MzQRlxjjTV78kuu7liuOJU5iSaYMn+3Iyu25+wN
+  template:
     metadata:
       creationTimestamp: null
       name: alertmanager-discord-secret
