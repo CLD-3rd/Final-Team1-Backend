@@ -23,8 +23,8 @@ spec:
                 name: mindscape-secret
           resources: 
             requests:
-              cpu: 2Gi
+              cpu: 2000m
               memory: 128Mi
             limits:
-              cpu: 4Gi
+              cpu: 4000m
               memory: 512Mi
