@@ -16,7 +16,7 @@ metadata:
 spec:
   ingressClassName: alb
   rules:
-    - host: k8s-monitoring-c127b00cfa-831783799.ap-northeast-2.elb.amazonaws.com # alb dns 주소 
+    - host: k8s-monitoring-c127b00cfa-1844328069.ap-northeast-2.elb.amazonaws.com # alb dns 주소 
       http:
         paths:
           - path: /prometheus
