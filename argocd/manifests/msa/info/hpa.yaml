@@ -19,7 +19,7 @@ spec:
   # 앱 배포 초반 spike 방지용
   behavior:
     scaleUp:
-      stabilizationWindowSeconds: 120
+      stabilizationWindowSeconds: 60
       policies:
       - type: Percent
         value: 100
