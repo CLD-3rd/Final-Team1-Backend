@@ -225,7 +225,7 @@
 - InfluxDB, Prometheus, Loki와 Discord 알림을 활용해 로그 및 모니터링 시스템을 구축했습니다.
 
 
-## Auto Scaling (Pods ↔ Nodes) & Alert
+## 5️⃣ Auto Scaling (Pods ↔ Nodes) & Alert
 
 <div align="center">
   <img src="images/autoScaling.png" alt="autoScaling" width="420" style="display:inline-block; margin: 0 20px;">
@@ -246,4 +246,18 @@
 
 ### Alert
 - **CPU 사용률이 70% 이상**으로 상승(예: 5분 지속)하면 **Discord**로 알림 전송.
+
+## 6️⃣ Grafana
+#### cpu, memory 사용률, node 자원 한계
+<img src="images/total.png" width="700"/>
+
+#### 과부하 테스트
+<img src="images/hpa.png" width="700"/>
+
+#### MSA 서비스별 로그
+<img src="images/log_msa.png" width="700"/>
+
+#### Prometheus & Argocd 로그
+<img src="images/log_progra.png" width="700"/>
+
 
