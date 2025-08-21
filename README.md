@@ -223,3 +223,27 @@
 - Terraform으로 AWS 인프라(VPC, EKS, RDS 등)를 구성하고 Terraform Helm provider로 Prometheus·Grafana·ArgoCD를 배포했으며, Karpenter 설치와 IRSA/IAM 기반 인증·권한 설정까지 포함했습니다.
 - GitHub Actions와 Argo CD로 MSA를 자동 배포했으며, ALB Controller, ingress는 Argo CD의 yaml로 설치·관리했습니다.
 - InfluxDB, Prometheus, Loki와 Discord 알림을 활용해 로그 및 모니터링 시스템을 구축했습니다.
+
+
+## Auto Scaling (Pods ↔ Nodes) & Alert
+
+<div align="center">
+  <img src="images/autoScaling.png" alt="autoScaling" width="420" style="display:inline-block; margin: 0 20px;">
+  <img src="images/alert.png" alt="alert" width="420" style="display:inline-block; margin: 0 20px;">
+</div>
+
+### Pod 오토스케일링 (HPA)
+- 워크로드의 CPU/메모리(필요 시 커스텀 메트릭) 기준으로 **Replica 수 자동 조절**.
+- 예) CPU 60% 초과 시 스케일아웃, 내려가면 스케일인.
+
+### 노드 오토스케일링 (Karpenter)
+- HPA가 파드를 늘려 **Pending**이 생기면 요구사항(리소스/taint/affinity)에 맞는 **노드를 즉시 프로비저닝**.
+- 부하가 줄어 **유휴 노드**가 생기면 **consolidation/TTL** 정책으로 **노드 축소**.
+
+### 동작 흐름
+1) 부하 ↑ → **HPA 파드 증가** → Pending 발생 → **Karpenter 노드 생성** → 트래픽 처리  
+2) 부하 ↓ → **HPA 파드 감소** → 유휴 노드 발생 → **Karpenter 노드 회수**
+
+### Alert
+- **CPU 사용률이 70% 이상**으로 상승(예: 5분 지속)하면 **Discord**로 알림 전송.
+
