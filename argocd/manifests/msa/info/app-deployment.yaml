@@ -1,0 +1,30 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mindscape-info
+  namespace: app
+spec:
+  # replicas: 1
+  selector:
+    matchLabels:
+      app: mindscape-info
+  template:
+    metadata:
+      labels:
+        app: mindscape-info
+    spec:
+      containers:
+        - name: mindscape-info
+          image: 194722398200.dkr.ecr.ap-northeast-2.amazonaws.com/team1-mindscape-info:latest
+          ports:
+            - containerPort: 8080
+          envFrom:
+            - secretRef:
+                name: mindscape-secret
+          resources: 
+            requests:
+              cpu: 300m
+              memory: 256Mi
+            limits:
+              cpu: 500m
+              memory: 512Mi

@@ -1,0 +1,77 @@
+name: Team1 CI - Build and Push Docker Image
+
+on:
+  push:
+    branches: ## TODO: dev or main
+      - dev
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        service: [mindscape-auth, mindscape-info, mindscape-service]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+          cache: maven
+
+# TEST: mindscape-info
+      - name: Build with Maven
+        run: mvn -B -DskipTests package --file pom.xml
+        working-directory: ./${{ matrix.service }}
+
+## JAR
+      - name: Rename jar file
+        run: mv ./target/*.jar ./target/app.jar
+        working-directory: ./${{ matrix.service }}
+
+      - name: Check jar file
+        run: ls ./target
+        working-directory: ./${{ matrix.service }}
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: app-${{ matrix.service }}
+          path: ./${{ matrix.service }}/target/*.jar
+## AWS SETTINGS
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ap-northeast-2
+
+      - name: Set SHORT_SHA environment variable
+        run: echo "SHORT_SHA=${GITHUB_SHA::7}" >> $GITHUB_ENV
+## DOCKER
+      - name: Setup Docker Buildx
+        uses: docker/setup-buildx-action@v3
+        with:
+          install: true
+          driver: docker-container
+
+      - name: Login to Amazon ECR
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Build and push Docker image to ECR
+        uses: docker/build-push-action@v6
+        with:
+          context: ./${{ matrix.service }}
+          file: ./${{ matrix.service }}/Dockerfile
+          push: true
+          platforms: linux/amd64,linux/arm64
+          tags: |
+            ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.ap-northeast-2.amazonaws.com/team1-${{ matrix.service }}:${{ env.SHORT_SHA }}
+            ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.ap-northeast-2.amazonaws.com/team1-${{ matrix.service }}:latest
+            
+            
+      
+      

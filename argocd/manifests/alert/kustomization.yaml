@@ -1,0 +1,9 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: prometheus
+
+resources:
+  - alertmanager-discord-sealed.yaml   # 방금 만든 SealedSecret
+  - alert-discord.yaml                 # 디스코드 브릿지(Deployment+Service)
+  - alertmanager-secret.yaml           # Alertmanager 라우팅 설정
+  - prometheusRules.yaml               # CPU 알림 룰
