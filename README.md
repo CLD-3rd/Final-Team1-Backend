@@ -224,13 +224,13 @@
 - GitHub Actions와 Argo CD로 MSA를 자동 배포했으며, ALB Controller, ingress는 Argo CD의 yaml로 설치·관리했습니다.
 - InfluxDB, Prometheus, Loki와 Discord 알림을 활용해 로그 및 모니터링 시스템을 구축했습니다.
 
-
+<br/><br/>
 ## 5️⃣ Auto Scaling (Pods ↔ Nodes) & Alert
 
-<div align="left">
-  <img src="images/autoScaling.png" alt="autoScaling" width="500" style="display:inline-block; margin: 0 20px;">
-  <img src="images/alert.png" alt="alert" width="500" style="display:inline-block; margin: 0 20px;">
-</div>
+| Auto Scaling | Alert |
+|---|---|
+| <img src="images/autoScaling.png" alt="autoScaling" width="700"> | <img src="images/alert.png" alt="alert" width="700"> |
+
 
 #### Pod 오토스케일링 (HPA)
 - 워크로드의 CPU/메모리(필요 시 커스텀 메트릭) 기준으로 **Replica 수 자동 조절**.
@@ -295,8 +295,6 @@ K6로 단계적 부하를 가해 HPA 확장 동작과 서비스 안정성을 검
 - **처리량**: 평균 **~64 req/s**에서 안정적으로 유지되었습니다.  
 
 
-
-- 
 
 
 
