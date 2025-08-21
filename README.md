@@ -30,27 +30,38 @@
         <img src="https://github.com/door-JH.png" width="100" style="border-radius:50%"/><br/>
       </a>
       <br/>
-      역할1<br/>
-      역할2<br/>
-      역할3
+       Frontend infra <br/>
+       Log <br/>
+       Auth server <br/>
+       회원가입 페이지<br/>
+       로그인 페이지<br/>
+       공유
     </td>
     <td align="center">
       <a href="https://github.com/ju0204">
         <img src="https://github.com/ju0204.png" width="100" style="border-radius:50%"/><br/>
       </a>
       <br/>
-      역할1<br/>
-      역할2<br/>
-      역할3
+      Backend infra<br/>
+      Argocd<br/>
+      Alert<br/>
+      Hpa, Karpenter<br/>
+      Service server<br/>
+      결과페이지<br/>
+      마이페이지<br/>
     </td>
     <td align="center">
       <a href="https://github.com/yhy0009">
         <img src="https://github.com/yhy0009.png" width="100" style="border-radius:50%"/><br/>
       </a>
       <br/>
-      역할1<br/>
-      역할2<br/>
-      역할3
+      Backend infra<br/>
+      Argocd<br/>
+      Hpa<br/>
+      Info server<br/>
+      결과 페이지<br/>
+      테스트 페이지<br/>
+      인기 컨텐츠<br/>
     </td>
   </tr>
   <tr>
@@ -64,27 +75,35 @@
         <img src="https://github.com/rossenzii.png" width="100" style="border-radius:50%"/><br/>
       </a>
       <br/>
-      역할1<br/>
-      역할2<br/>
-      역할3
+      ECR, RDS<br/>
+      ElasticCache<br/>
+      Argocd<br/>
+      Cicd<br/>
+      Log<br/>
+      Grafana<br/>
+      Service server<br/>
     </td>
     <td align="center">
       <a href="https://github.com/jyoungmin-com">
         <img src="https://github.com/jyoungmin-com.png" width="100" style="border-radius:50%"/><br/>
       </a>
       <br/>
-      역할1<br/>
-      역할2<br/>
-      역할3
+      Frontend infra <br/>
+      Grafana<br/>
+      K6<br/>
+      Service server<br/>
+      인기 컨텐츠<br/>
     </td>
     <td align="center">
       <a href="https://github.com/yejipo">
         <img src="https://github.com/yejipo.png" width="100" style="border-radius:50%"/><br/>
       </a>
       <br/>
-      역할1<br/>
-      역할2<br/>
-      역할3
+      RDS<br/>
+      Grafana<br/>
+      Info server<br/>
+      검색<br/>
+      Dark 모드 <br/>
     </td>
   </tr>
 </table>
@@ -100,7 +119,7 @@
 | 인프라        | AWS, Terraform |
 | 컨테이너 / 배포 | Docker, Kubernetes, Helm, ArgoCD |
 | CI/CD & GitOps | GitHub Actions, ArgoCD |
-| 모니터링 / 테스트 | Prometheus, Grafana, k6, Loki, Promtail |
+| 모니터링 / 테스트 | Prometheus, Grafana, k6, Loki, Promtail, InfluxDB |
 
 
 <br>
@@ -119,6 +138,7 @@
 - 회원가입시 중복 아이디 방지를 위한 중복 확인 기능 추가했습니다.
 - 중복 확인 검사가 통과 되어야만 회원가입 버튼이 활성화 됩니다.
 - 구글 아이디로 로그인이 가능합니다.
+- Spring Security 기반 Stateless JWT 인증 시스템을 도입하고 구글 소셜 로그인 구현하였습니다.
   
    
 ### 2. DISC 테스트 
@@ -129,8 +149,10 @@
 </div>
  
 
-- 사용자는 DISC 테스트 검사를 진행하고
+- 사용자는 DISC 테스트 검사를 진행합니다.
+- 답변 선택 시 페이지가 이동되도록 React Router를 활용한 client-side routing을 구현하였습니다.
 - 결과 확인하러가기 버튼을 눌러 결과 페이지로 이동합니다.
+
 
 ### 3. 결과페이지
 
@@ -139,6 +161,7 @@
 
 - DISC 테스트 결과에 따라 분석된 성향 유형과 그에 맞는 콘텐츠 추천 리스트를 보여줍니다.
 - 영화, 책, 음악 콘텐츠를 유형별로 분류하여 제공합니다.
+- 추천 결과를 redis에 저장하고 히스토리 열람을 위해 AOF 기능을 사용하였습니다.
 
 
 ### 4. 공유
@@ -147,6 +170,7 @@
  <img src="images/share.gif" alt="공유" width="480"> 
 
 - 테스트 결과를 링크로 공유하여 외부에서 해당 결과를 확인할 수 있습니다.
+- 사용자별 추천 결과를 url에 매핑하여 외부에서 접근하도록 동적 라우팅 기반 공유 기능을 구현하였습니다.
 
 
 ### 5.마이페이지
@@ -155,6 +179,7 @@
  <img src="images/mypage.gif" alt="마이페이지" width="480"> 
 
 - 유저가 테스트를 통해 추천받은 영화, 책, 음악 등의 콘텐츠 이력을 한눈에 확인할 수 있습니다.
+- 마이페이지 진입 시 DB에 저장된 테스트 데이터를 불러오고, 해당 userId의 모든 테스트 정보를 불러와서 json 형식으로 프론트엔드에 전달합니다.
 - 유형별 히스토리와 나의 취향 데이터를 기반으로 개인화된 기록을 제공합니다.
 
 ### 6. 인기컨텐츠
@@ -163,6 +188,8 @@
 <img src="images/ranking.gif" alt="인기컨텐츠" width="480"> 
 
 - 유형별로 유저들이 가장 많이 추천한 인기 콘텐츠를 확인할 수 있습니다.
+- Info service에 유저의 성향 타입별 test id 목록을 가져와서 각각의 항목(책, 음악, 영화)에 대해 sql에서 제목별 개수 카운트하여 내림차순으로 정렬합니다.
+- 각 항목 고유 id로 sql에서 상세 정보 가져온 후 보여줍니다
 - DISC 성향에 따라 어떤 콘텐츠가 많이 선택되었는지 시각적으로 확인할 수 있습니다.
 
 ### 7. 검색
@@ -184,7 +211,7 @@
 - 사용자가 테마를 선택해서 눈에 편한 화면 제공받을 수 있도록 합니다.
 - 모든 페이지에서 라이트 모드일 때는 기존 디자인이 유지되며, 다크 모드일 때만 배경·텍스트·카드 색상이 어둡게 변경됩니다.
 - 해당 설정은 페이지를 나갔다 와도 유지됩니다.
-- TailwindCSS `dark:` prefix 활용 
+- TailwindCSS `dark:` prefix 활용해 다크모를 적용했습니다.
 
 ## 4️⃣ 아키텍처
 
