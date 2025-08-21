@@ -265,7 +265,7 @@
 | <br><img src="images/log_msa.png" width="700"/> | <br><img src="images/log_progra.png" width="700"/> |
 
 <br/><br/>
-##  K6
+## 8️⃣ K6
 K6로 단계적 부하를 가해 HPA 확장 동작과 서비스 안정성을 검증하고, 응답시간·에러율·초당처리량(RPS) 을 측정합니다.
 
 <b>과부하 테스트</b> <br/>
