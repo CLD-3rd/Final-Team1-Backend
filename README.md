@@ -75,8 +75,7 @@
         <img src="https://github.com/rossenzii.png" width="100" style="border-radius:50%"/><br/>
       </a>
       <br/>
-      ECR, RDS<br/>
-      ElasticCache<br/>
+      Backend Terraform<br/>
       Argocd<br/>
       Cicd<br/>
       Log<br/>
@@ -99,7 +98,7 @@
         <img src="https://github.com/yejipo.png" width="100" style="border-radius:50%"/><br/>
       </a>
       <br/>
-      RDS<br/>
+      Backend Terraform<br/>
       Grafana<br/>
       Info server<br/>
       검색<br/>
