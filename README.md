@@ -80,7 +80,7 @@
       Backend Terraform<br/>
       Argocd<br/>
       Cicd<br/>
-      Log<br/>
+      Promtail/Loki<br/>
       Grafana<br/>
       Service server<br/>
     </td>
