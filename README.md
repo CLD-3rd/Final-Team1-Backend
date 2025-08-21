@@ -227,7 +227,7 @@
 
 ## 5️⃣ Auto Scaling (Pods ↔ Nodes) & Alert
 
-<div align="center">
+<div align="left">
   <img src="images/autoScaling.png" alt="autoScaling" width="420" style="display:inline-block; margin: 0 20px;">
   <img src="images/alert.png" alt="alert" width="420" style="display:inline-block; margin: 0 20px;">
 </div>
