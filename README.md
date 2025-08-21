@@ -249,7 +249,7 @@
 
 <br/><br/>
 ## 6️⃣ Argocd
-<img src="images/argocd.png" width="700"/>
+<img src="images/msa.png" width="700"/>
 - <b> MSA:</b> 각 마이크로서비스를 Kubernetes Deployment로 구성하고, Argo CD(GitOps)로 배포/관리합니다. <br/>
 - <b> Ingress:</b> 단일 Publicc ALB로 경로 기반 라우팅합니다.
 
@@ -266,11 +266,37 @@
 
 <br/><br/>
 ##  K6
-K6로 두 가지 시나리오를 검증합니다: 과부하 테스트(HPA 자동 확장·안정성)와 MSA 테스트(서비스별 성능: 응답시간·에러율·RPS).
+K6로 단계적 부하를 가해 HPA 확장 동작과 서비스 안정성을 검증하고, 응답시간·에러율·초당처리량(RPS) 을 측정합니다.
 
-|과부하 테스트 | msa 테스트 |
-| :-------| :-------|
-|![image](https://github.com/user-attachments/assets/026eb04b-4aa3-4e23-8820-5d22f1d94d12)|![image](https://github.com/user-attachments/assets/b73b7838-48e6-4392-99cd-c6497a4958d1)|
-|✅ 총 120개의 요청이 문제없이 처리됨 <br>  - 평균 요청 처리 시간 : 82.09 ms <br>  - HPA Replica 수:  <br> |✅ 총 4002개의 요청이 문제없이 처리됨<br> - auth server 응답 평균시간 : 7.74s <br>  - info server 응답 평균시간: 21.9s <br>  - Service server 응답 평균시간 : 18.28s <br> - 95th 퍼센타일 : 14.95s|
+<b>과부하 테스트</b> <br/>
+- 시나리오: 단계적으로 **100 VU**까지 증가 후 **1분 유지** (총 실행 ~5분)
 
-## 테스트 결과
+<img src="images/k6.png" width="700"/> <br/>
+
+
+#### 핵심 지표
+| 항목 | 값 |
+|---|---:|
+| 총 요청 수 | **19,199** |
+| 평균 처리량(RPS) | **63.90 req/s** |
+| 평균 응답시간 | **7.34 ms** |
+| p90 / p95 | **8.37 ms / 10.16 ms** |
+| 최소 / 최대 응답시간 | **4.7 ms / 81.75 ms** |
+| 에러율(http_req_failed) | **0.00% (0 / 19,199)** |
+
+#### 임계치(Threshold) 판정
+- `http_req_duration`: **p(90)<300ms**, **p(95)<400ms** → **통과**
+- `http_req_failed`: **rate<0.1** → **통과**
+- 체크: `authme status is 200` → **모두 성공**
+
+#### 테스트 결과
+- **지연 시간**: p95=10.16ms로 매우 낮아, 설정한 임계치 대비 큰 여유가 있습니다.  
+- **안정성**: 에러율 0%로 요청 19,199건 전부 성공했습니다.  
+- **처리량**: 평균 **~64 req/s**에서 안정적으로 유지되었습니다.  
+
+
+
+- 
+
+
+
