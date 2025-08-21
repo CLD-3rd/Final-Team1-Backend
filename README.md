@@ -35,8 +35,7 @@
        Frontend infra <br/>
        Log <br/>
        Auth server <br/>
-       CI/CD <br/>
-       MSA 설계 <br/>
+       MSA 설계, CI/CD <br/>
        회원가입 페이지<br/>
        로그인 페이지<br/>
        공유
