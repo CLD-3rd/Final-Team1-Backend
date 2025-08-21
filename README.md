@@ -95,12 +95,12 @@
 
 | 구분               | 기술 스택 |
 |--------------------|-----------|
-| **⚙️ 운영 도구**     | Termius, STS (Spring Tool Suite), Visual Studio Code, Intellij IDEA, Cursor |
-| **💻 백엔드**        | Java 17, Spring Boot 3, Spring Data JPA, Maven |
-| **☁️ 인프라**        | AWS, Terraform |
-| **🐳 컨테이너 / 배포** | Docker, Kubernetes, Helm, ArgoCD |
-| **🔄 CI/CD & GitOps** | GitHub Actions, ArgoCD |
-| **📊 모니터링 / 테스트** | Prometheus, Grafana, k6, Loki, Promtail |
+| ** 운영 도구**     | Termius, STS (Spring Tool Suite), Visual Studio Code, Intellij IDEA, Cursor |
+| ** 백엔드**        | Java 17, Spring Boot 3, Spring Data JPA, Maven |
+| ** 인프라**        | AWS, Terraform |
+| ** 컨테이너 / 배포** | Docker, Kubernetes, Helm, ArgoCD |
+| ** CI/CD & GitOps** | GitHub Actions, ArgoCD |
+| ** 모니터링 / 테스트** | Prometheus, Grafana, k6, Loki, Promtail |
 
 
 <br>
@@ -186,6 +186,7 @@
 - 해당 설정은 페이지를 나갔다 와도 유지됩니다.
 - TailwindCSS `dark:` prefix 활용 
 
+## 4️⃣ 아키텍처
 
 
 
