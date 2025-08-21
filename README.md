@@ -119,8 +119,8 @@
 | 인프라        | AWS, Terraform |
 | 컨테이너 / 배포 | Docker, Kubernetes, Helm, ArgoCD |
 | CI/CD & GitOps | GitHub Actions, ArgoCD |
-| 모니터링 / 테스트 | Prometheus, Grafana, k6, Loki, Promtail, InfluxDB |
-
+| 모니터링 / 테스트 | Prometheus, Grafana, k6, Loki, Promtail, InfluxDB, Discord |
+| 협업 툴 | Discord, Gather |
 
 <br>
 
@@ -219,4 +219,6 @@
   <img src="images/architecture.png" width="750"/>
 </p>
 
-
+- Terraform으로 AWS 인프라(VPC, EKS, RDS 등)를 구성하고 Terraform Helm provider로 Prometheus·Grafana·ArgoCD를 배포했으며, Karpenter 설치와 IRSA/IAM 기반 인증·권한 설정까지 포함했습니다.
+- GitHub Actions와 Argo CD로 MSA를 자동 배포했으며, ALB Controller, ingress는 Argo CD의 yaml로 설치·관리했습니다.
+- InfluxDB, Prometheus, Loki와 Discord 알림을 활용해 로그 및 모니터링 시스템을 구축했습니다.
