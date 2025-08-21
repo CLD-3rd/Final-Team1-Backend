@@ -108,7 +108,7 @@
 ## 3️⃣ 앱 주요 기능
 
 
-## 1. 회원가입 · 로그인 
+### 1. 회원가입 · 로그인 
 
 <div align="center">
   <img src="images/signup.gif" alt="회원가입" width="420" style="display:inline-block; margin: 0 20px;">
@@ -121,7 +121,7 @@
 - 구글 아이디로 로그인이 가능합니다.
   
    
-## 2. DISC 테스트 
+### 2. DISC 테스트 
 
 <div align="center">
   <img src="images/moveTestpage.gif" alt="disc 테스트" width="420" style="display:inline-block; margin: 0 20px;">
@@ -132,7 +132,7 @@
 - 사용자는 DISC 테스트 검사를 진행하고
 - 결과 확인하러가기 버튼을 눌러 결과 페이지로 이동합니다.
 
-## 3. 결과페이지
+### 3. 결과페이지
 
 
 <img src="images/resultpage.gif" alt="결과페이지" width="480">
@@ -141,7 +141,7 @@
 - 영화, 책, 음악 콘텐츠를 유형별로 분류하여 제공합니다.
 
 
-## 4. 공유
+### 4. 공유
 
 
  <img src="images/share.gif" alt="공유" width="480"> 
@@ -149,7 +149,7 @@
 - 테스트 결과를 링크로 공유하여 외부에서 해당 결과를 확인할 수 있습니다.
 
 
-## 5.마이페이지
+### 5.마이페이지
 
 
  <img src="images/mypage.gif" alt="마이페이지" width="480"> 
@@ -157,7 +157,7 @@
 - 유저가 테스트를 통해 추천받은 영화, 책, 음악 등의 콘텐츠 이력을 한눈에 확인할 수 있습니다.
 - 유형별 히스토리와 나의 취향 데이터를 기반으로 개인화된 기록을 제공합니다.
 
-## 6. 인기컨텐츠
+### 6. 인기컨텐츠
 
 
 <img src="images/ranking.gif" alt="인기컨텐츠" width="480"> 
@@ -165,7 +165,7 @@
 - 유형별로 유저들이 가장 많이 추천한 인기 콘텐츠를 확인할 수 있습니다.
 - DISC 성향에 따라 어떤 콘텐츠가 많이 선택되었는지 시각적으로 확인할 수 있습니다.
 
-## 7. 검색
+### 7. 검색
 
 
  <img src="images/search.gif" alt="검색" width="480"> 
@@ -176,7 +176,7 @@
 - 검색 결과는 카드 형식으로 보여주며, 각 콘텐츠에 대한 상세 정보까지 확인 가능합니다.
  
 
-## 8. dark 모드
+### 8. dark 모드
 
 
  <img src="images/dark.gif" alt="검색" width="480"> 
