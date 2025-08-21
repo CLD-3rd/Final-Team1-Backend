@@ -188,6 +188,8 @@
 
 ## 4️⃣ 아키텍처
 
-
+<p align="center">
+  <img src="images/architecture.png" width="750"/>
+</p>
 
 
