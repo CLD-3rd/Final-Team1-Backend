@@ -35,6 +35,7 @@
        Frontend infra <br/>
        Log <br/>
        Auth server <br/>
+       MSA 설계 <br/>
        회원가입 페이지<br/>
        로그인 페이지<br/>
        공유
@@ -58,7 +59,7 @@
       </a>
       <br/>
       Backend infra<br/>
-      Argocd<br/>
+      Argocd, CI/CD<br/>
       Hpa<br/>
       Info server<br/>
       결과 페이지<br/>
@@ -79,7 +80,7 @@
       <br/>
       Backend Terraform<br/>
       Argocd<br/>
-      Cicd<br/>
+      CI/CD<br/>
       Promtail/Loki<br/>
       Grafana<br/>
       Service server<br/>
@@ -93,6 +94,7 @@
       Grafana<br/>
       K6<br/>
       Service server<br/>
+      CI/CD<br/>
       인기 컨텐츠<br/>
     </td>
     <td align="center">
@@ -130,11 +132,18 @@
 
 ### 1. 회원가입 · 로그인 
 
-<div align="center">
-  <img src="images/signup.gif" alt="회원가입" width="420" style="display:inline-block; margin: 0 20px;">
-  <img src="images/login.gif" alt="로그인" width="420" style="display:inline-block; margin: 0 20px;">
-</div>
-
+<table>
+  <tr>
+    <td align="center" width="50%">
+      <img src="images/signup.gif" alt="회원가입" width="100%"><br/>
+      <p>결과페이지</p>
+    </td>
+    <td align="center" width="50%">
+      <img src="images/login.gif" alt="로그인" width="100%"><br/>
+      <p>공유</p>
+    </td>
+  </tr>
+</table>
 
 - 회원가입시 중복 아이디 방지를 위한 중복 확인 기능 추가했습니다.
 - 중복 확인 검사가 통과 되어야만 회원가입 버튼이 활성화 됩니다.
@@ -143,58 +152,70 @@
  
 ### 2. DISC 테스트 
 
-<div align="center">
-  <img src="images/moveTestpage.gif" alt="disc 테스트" width="420" style="display:inline-block; margin: 0 20px;">
-  <img src="images/moveResultpage.gif" alt="결과페이지 이동" width="420" style="display:inline-block; margin: 0 20px;">
-</div>
- 
+<table>
+  <tr>
+    <td align="center" width="50%">
+      <img src="images/moveTestpage.gif" alt="DISC 테스트" width="100%"><br/>
+      <p>DISC 테스트</p>
+    </td>
+    <td align="center" width="50%">
+      <img src="images/moveResultpage.gif" alt="결과페이지 이동" width="100%"><br/>
+      <p>공유</p>
+    </td>
+  </tr>
+</table>
 
+ 
 - 사용자는 DISC 테스트 검사를 진행합니다.
 - 답변 선택 시 페이지가 이동되도록 React Router를 활용한 client-side routing을 구현하였습니다.
 - 결과 확인하러가기 버튼을 눌러 결과 페이지로 이동합니다.
 
 
-### 3. 결과페이지
+### 3. 결과페이지 & 공유 
 
+<table>
+  <tr>
+    <td align="center" width="50%">
+      <img src="images/resultpage.gif" alt="결과페이지" width="100%"><br/>
+      <p>결과페이지</p>
+    </td>
+    <td align="center" width="50%">
+      <img src="images/share.gif" alt="공유" width="100%"><br/>
+      <p>공유</p>
+    </td>
+  </tr>
+</table>
 
-<img src="images/resultpage.gif" alt="결과페이지" width="480">
 
 - DISC 테스트 결과에 따라 분석된 성향 유형과 그에 맞는 콘텐츠 추천 리스트를 보여줍니다.
 - 영화, 책, 음악 콘텐츠를 유형별로 분류하여 제공합니다.
-- 추천 결과를 redis에 저장하고 히스토리 열람을 위해 AOF 기능을 사용하였습니다.
-
-
-### 4. 공유
-
-
- <img src="images/share.gif" alt="공유" width="480"> 
-
+- 추천 결과를 Redis에 저장하고 히스토리 열람을 위해 AOF 기능을 사용하였습니다.
 - 테스트 결과를 링크로 공유하여 외부에서 해당 결과를 확인할 수 있습니다.
-- 사용자별 추천 결과를 url에 매핑하여 외부에서 접근하도록 동적 라우팅 기반 공유 기능을 구현하였습니다.
+- 사용자별 추천 결과를 URL에 매핑하여 외부 접근이 가능한 동적 라우팅 기반 공유 기능을 구현하였습니다.
 
 
+### 4.마이페이지 & 인기컨텐츠
 
-### 5.마이페이지
-
-
- <img src="images/mypage.gif" alt="마이페이지" width="480"> 
+<table>
+  <tr>
+    <td align="center" width="50%">
+      <img src="images/mypage.gif" alt="마이페이지" width="100%"><br/>
+      <p>마이페이지</p>
+    </td>
+    <td align="center" width="50%">
+      <img src="images/ranking.gif" alt="인기컨텐츠" width="100%"><br/>
+      <p>인기컨텐츠</p>
+    </td>
+  </tr>
+</table>
 
 - 유저가 테스트를 통해 추천받은 영화, 책, 음악 등의 콘텐츠 이력을 한눈에 확인할 수 있습니다.
 - 유형별 히스토리와 나의 취향 데이터를 기반으로 개인화된 기록을 제공합니다.
-
-
-
-
-### 6. 인기컨텐츠
-
-
-<img src="images/ranking.gif" alt="인기컨텐츠" width="480"> 
-
 - DISC 유형별로 유저들이 많이 추천받은 인기 콘텐츠를 확인할 수 있습니다.
 - 모든 사용자의 추천 기록을 기반으로 콘텐츠별 추천 횟수를 집계하고, DB에서 이를 내림차순 정렬하여 인기 콘텐츠를 조회합니다.
 
 
-### 7. 검색
+### 5. 검색
 
 
  <img src="images/search.gif" alt="검색" width="480"> 
@@ -204,7 +225,7 @@
 - 검색 결과는 카드 형식으로 보여주며, 각 콘텐츠에 대한 상세 정보까지 확인 가능합니다.
  
 
-### 8. dark 모드
+### 6. dark 모드
 
 
  <img src="images/dark.gif" alt="검색" width="480"> 
