@@ -136,11 +136,11 @@
   <tr>
     <td align="center" width="50%">
       <img src="images/signup.gif" alt="회원가입" width="100%"><br/>
-      <p>결과페이지</p>
+      <p>회원가입</p>
     </td>
     <td align="center" width="50%">
       <img src="images/login.gif" alt="로그인" width="100%"><br/>
-      <p>공유</p>
+      <p>로그인</p>
     </td>
   </tr>
 </table>
@@ -160,7 +160,7 @@
     </td>
     <td align="center" width="50%">
       <img src="images/moveResultpage.gif" alt="결과페이지 이동" width="100%"><br/>
-      <p>공유</p>
+      <p>결과페이지 이동</p>
     </td>
   </tr>
 </table>
