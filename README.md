@@ -2,7 +2,7 @@
 # 🌙 MindScape
 
 <p align="center">
-  <img src="images/mindscape.png" width="750"/>
+  <img src="images/Mindscape.png" width="750"/>
 </p>
 
 ### 🎯 성향으로 연결되는 콘텐츠 추천의 시작
