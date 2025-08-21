@@ -1,5 +1,0 @@
-resources:
-  - auth/
-  - info/
-  - service/
-  - sealed-secret.yaml
