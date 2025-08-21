@@ -228,8 +228,8 @@
 ## 5️⃣ Auto Scaling (Pods ↔ Nodes) & Alert
 
 <div align="left">
-  <img src="images/autoScaling.png" alt="autoScaling" width="420" style="display:inline-block; margin: 0 20px;">
-  <img src="images/alert.png" alt="alert" width="420" style="display:inline-block; margin: 0 20px;">
+  <img src="images/autoScaling.png" alt="autoScaling" width="500" style="display:inline-block; margin: 0 20px;">
+  <img src="images/alert.png" alt="alert" width="500" style="display:inline-block; margin: 0 20px;">
 </div>
 
 ### Pod 오토스케일링 (HPA)
@@ -247,37 +247,30 @@
 ### Alert
 - **CPU 사용률이 70% 이상**으로 상승(예: 5분 지속)하면 **Discord**로 알림 전송.
 
-## 6️⃣ Grafana
-#### cpu, memory 사용률, node 자원 한계
-<img src="images/total.png" width="700"/>
+<br/><br/>
+## 6️⃣ Argocd
+<img src="images/argocd.png" width="700"/>
+- <b> MSA:</b> 각 마이크로서비스를 Kubernetes Deployment로 구성하고, Argo CD(GitOps)로 배포/관리합니다. <br/>
+- <b> Ingress:</b> 단일 Publicc ALB로 경로 기반 라우팅합니다.
 
-#### 과부하 테스트
-<img src="images/hpa.png" width="700"/>
+<br/><br/>
+## 7️⃣ Grafana
 
-#### MSA 서비스별 로그
-<img src="images/log_msa.png" width="700"/>
+|  **cpu, memory 사용률, node 자원 한계**  |  **과부하 테스트**  |
+|---|---|
+|<br><img src="images/total.png" width="700"/> |<br><img src="images/hpa.png" width="700"/> |
 
-#### Prometheus & Argocd 로그
-<img src="images/log_progra.png" width="700"/>
+|  **MSA 서비스별 로그*  |  **Prometheus & Argo CD 로그**  |
+|---|---|
+| <br><img src="images/log_msa.png" width="700"/> | <br><img src="images/log_progra.png" width="700"/> |
 
-## 7️⃣ K6
-**1. 부하테스트 결과 화면**
-- 시나리오 : 단계적으로 사용자를 100명까지 증가 시킨 후 1분 유지
-- 주요 결과
-- 응답시간 :
-- 에러율 :
-- 초당처리량 :
-  
-**2. DB테스트 결과 화면**
-- 시나리오 : 50명 사용자 고정 후 Redis 적용 vs 미적용 비교
-- 주요 결과 :
-- 응답시간 :
-- 초당처리량 :
-  
-**3. MSA테스트 결과 화면**
-- 시나리오 : 50명 사용자 고정 후 각 마이크로 서비스 별 성능 측정
-- 주요 결과
-- 응답시간 :
-- 에러율 :
-- 초당처리량 :
+<br/><br/>
+##  K6
+K6로 두 가지 시나리오를 검증합니다: 과부하 테스트(HPA 자동 확장·안정성)와 MSA 테스트(서비스별 성능: 응답시간·에러율·RPS).
 
+|과부하 테스트 | msa 테스트 |
+| :-------| :-------|
+|![image](https://github.com/user-attachments/assets/026eb04b-4aa3-4e23-8820-5d22f1d94d12)|![image](https://github.com/user-attachments/assets/b73b7838-48e6-4392-99cd-c6497a4958d1)|
+|✅ 총 120개의 요청이 문제없이 처리됨 <br>  - 평균 요청 처리 시간 : 82.09 ms <br>  - HPA Replica 수:  <br> |✅ 총 4002개의 요청이 문제없이 처리됨<br> - auth server 응답 평균시간 : 7.74s <br>  - info server 응답 평균시간: 21.9s <br>  - Service server 응답 평균시간 : 18.28s <br> - 95th 퍼센타일 : 14.95s|
+
+## 테스트 결과
